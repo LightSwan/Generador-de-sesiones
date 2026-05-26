@@ -1,0 +1,3421 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Generador de sesiones</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+
+    :root{
+      --bg:#020617;
+      --panel:#0f172a;
+      --card:#111827;
+      --card2:#1e293b;
+      --border:#334155;
+      --text:#f8fafc;
+      --muted:#94a3b8;
+      --primary:#38bdf8;
+      --primary2:#0ea5e9;
+      --danger:#ef4444;
+      --success:#22c55e;
+    }
+
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+    }
+
+    body{
+      background:linear-gradient(180deg,#020617 0%, #0f172a 100%);
+      font-family:'Inter',sans-serif;
+      color:var(--text);
+      min-height:100vh;
+      padding:24px;
+    }
+
+    .container{
+      max-width:1600px;
+      margin:auto;
+    }
+
+    .header{
+      margin-bottom:30px;
+    }
+
+    .header h1{
+      font-size:42px;
+      margin-bottom:10px;
+    }
+
+    .header p{
+      color:var(--muted);
+    }
+
+    .layout{
+      display:grid;
+      grid-template-columns:380px 1fr;
+      gap:24px;
+    }
+
+    .panel{
+      background:rgba(15,23,42,.92);
+      border:1px solid var(--border);
+      border-radius:28px;
+      padding:24px;
+      position:sticky;
+      top:20px;
+      height:fit-content;
+      backdrop-filter:blur(12px);
+    }
+
+    .section{
+      margin-bottom:32px;
+    }
+
+    .section-title{
+      color:var(--primary);
+      font-size:13px;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      margin-bottom:18px;
+      font-weight:700;
+    }
+
+    .slider-group{
+      margin-bottom:24px;
+    }
+
+    .dual-range-wrapper{
+      position:relative;
+      height:40px;
+    }
+    .dual-range-wrapper input[type=range]{
+      position:absolute;
+      left:0;
+      top:50%;
+      transform:translateY(-50%);
+      width:100%;
+      height:8px;
+      pointer-events:none;
+      -webkit-appearance:none;
+      appearance:none;
+      background:transparent;
+      accent-color:var(--primary);
+    }
+    .dual-range-wrapper #intensidadMax::-webkit-slider-runnable-track{
+      height:8px;
+      border-radius:999px;
+      background:#1e293b;
+    }
+    .dual-range-wrapper #intensidadMax::-moz-range-track{
+      height:8px;
+      border-radius:999px;
+      background:#1e293b;
+    }
+    .dual-range-wrapper #intensidadMin::-webkit-slider-runnable-track{
+      height:8px;
+      border-radius:999px;
+      background:transparent;
+    }
+    .dual-range-wrapper #intensidadMin::-moz-range-track{
+      height:8px;
+      border-radius:999px;
+      background:transparent;
+    }
+    .dual-range-wrapper input[type=range]::-webkit-slider-thumb{
+      pointer-events:auto;
+      -webkit-appearance:none;
+      width:22px;
+      height:22px;
+      border-radius:50%;
+      background:var(--primary);
+      border:3px solid white;
+      cursor:pointer;
+      margin-top:-7px;
+    }
+    .dual-range-wrapper input[type=range]::-moz-range-thumb{
+      pointer-events:auto;
+      width:22px;
+      height:22px;
+      border-radius:50%;
+      background:var(--primary);
+      border:3px solid white;
+      cursor:pointer;
+      margin-top:-7px;
+    }
+
+    .slider-top{
+      display:flex;
+      justify-content:space-between;
+      margin-bottom:10px;
+      font-size:14px;
+    }
+
+    input[type=range]{
+      width:100%;
+      appearance:none;
+      height:8px;
+      background:#1e293b;
+      border-radius:999px;
+      outline:none;
+      transition:opacity .2s;
+    }
+
+    input[type=range]::-webkit-slider-thumb{
+      appearance:none;
+      width:22px;
+      height:22px;
+      border-radius:50%;
+      background:var(--primary);
+      border:3px solid white;
+      cursor:pointer;
+    }
+
+    .percentage-input-wrap{
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+
+    .percentage-input-wrap input[type=number]{
+      width:56px;
+      padding:6px 8px;
+      border-radius:10px;
+      border:1px solid var(--border);
+      background:#0f172a;
+      color:var(--text);
+      font-size:14px;
+      font-weight:600;
+      text-align:center;
+      outline:none;
+    }
+
+    .percentage-input-wrap span{
+      color:var(--primary);
+      font-weight:700;
+      font-size:14px;
+    }
+
+    .style-card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:18px;
+      padding:16px;
+      margin-bottom:14px;
+    }
+
+    .style-top{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:14px;
+    }
+
+    .style-left{
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+
+    .style-name{
+      font-weight:600;
+    }
+
+    .checkbox{
+      width:20px;
+      height:20px;
+      accent-color:var(--primary);
+      cursor:pointer;
+    }
+
+    .deficiencies{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-top:16px;
+    }
+
+    .tag{
+      padding:9px 14px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:#0f172a;
+      color:var(--muted);
+      font-size:13px;
+      cursor:pointer;
+      transition:.2s;
+    }
+
+    .tag:hover{
+      border-color:var(--primary);
+      transform:translateY(-2px);
+    }
+
+    .tag.active{
+      background:var(--primary);
+      color:#001018;
+      border-color:transparent;
+      font-weight:600;
+    }
+
+    .tag.implemento.active{
+      background:#f59e0b;
+      color:#001018;
+      border-color:transparent;
+      font-weight:600;
+    }
+
+    .generate-btn{
+      width:100%;
+      padding:18px;
+      border:none;
+      border-radius:18px;
+      background:linear-gradient(135deg,var(--primary),var(--primary2));
+      color:#001018;
+      font-weight:700;
+      font-size:16px;
+      cursor:pointer;
+      transition:.25s;
+    }
+
+    .generate-btn:hover{
+      transform:translateY(-2px);
+      box-shadow:0 10px 30px rgba(56,189,248,.25);
+    }
+
+    .content{
+      display:flex;
+      flex-direction:column;
+      gap:24px;
+    }
+
+    .empty-state{
+      background:rgba(17,24,39,.92);
+      border:1px solid var(--border);
+      border-radius:28px;
+      padding:80px 40px;
+      text-align:center;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:20px;
+    }
+
+    .empty-state-icon{
+      font-size:64px;
+      opacity:0.3;
+    }
+
+    .empty-state h2{
+      font-size:24px;
+      color:var(--muted);
+      font-weight:500;
+    }
+
+    .empty-state p{
+      color:var(--muted);
+      max-width:400px;
+      line-height:1.6;
+    }
+
+    .block{
+      background:rgba(17,24,39,.92);
+      border:1px solid var(--border);
+      border-radius:28px;
+      overflow:hidden;
+    }
+
+    .entrenamiento-titulo{
+      font-size:26px;
+      padding:20px 24px 0;
+      margin-bottom:-8px;
+    }
+    .entrenamiento-titulo strong{
+      color:var(--primary);
+    }
+    .variar-metros-sub{
+      margin-top:10px;
+      padding:8px 10px;
+      border:1px dashed var(--border);
+      border-radius:6px;
+    }
+    .variar-metros-sub button{
+      width:100%;
+    }
+    #seriesDualRange{
+      margin-top:8px;
+    }
+    #seriesDualRange .slider-top{
+      margin-bottom:4px;
+    }
+    #seriesDualRange .dual-range-wrapper{
+      display:flex;
+      gap:10px;
+    }
+    .extra-subsection{
+      margin-top:8px;
+      padding:8px 10px;
+      border:1px dashed var(--border);
+      border-radius:6px;
+    }
+    .extra-subsection .extra-toggle{
+      width:100%;
+    }
+    .extra-subsection .slider-group{
+      margin-top:6px;
+    }
+
+    .block-header{
+      padding:22px 24px;
+      border-bottom:1px solid var(--border);
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+
+    .block-title{
+      font-size:20px;
+      font-weight:700;
+    }
+
+    .block-distance{
+      color:var(--primary);
+      font-weight:700;
+    }
+
+    .exercise{
+      padding:22px 24px;
+      border-bottom:1px solid rgba(255,255,255,.05);
+      transition:.2s;
+    }
+
+    .exercise:hover{
+      background:rgba(255,255,255,.02);
+    }
+
+    .exercise:last-child{
+      border-bottom:none;
+    }
+
+    .exercise-top{
+      display:flex;
+      justify-content:space-between;
+      gap:20px;
+      margin-bottom:12px;
+    }
+
+    .exercise-name{
+      font-size:18px;
+      font-weight:600;
+      flex:1;
+    }
+
+    .exercise-distance{
+      color:var(--primary);
+      font-weight:700;
+      white-space:nowrap;
+    }
+
+    .exercise-desc{
+      color:var(--muted);
+      line-height:1.6;
+      margin-bottom:16px;
+    }
+
+    .exercise-tags{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-bottom:18px;
+    }
+
+    .mini-tag{
+      padding:6px 10px;
+      border-radius:999px;
+      background:#0f172a;
+      border:1px solid var(--border);
+      color:var(--muted);
+      font-size:12px;
+    }
+
+    .exercise-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+    }
+
+    .action-btn{
+      background:#0f172a;
+      border:1px solid var(--border);
+      color:var(--text);
+      padding:10px 14px;
+      border-radius:12px;
+      cursor:pointer;
+      font-size:13px;
+      transition:.2s;
+      font-family:'Inter',sans-serif;
+    }
+
+    .action-btn:hover{
+      border-color:var(--primary);
+    }
+
+
+    .btn-pdf {
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:8px 14px;
+      border-radius:12px;
+      background:rgba(56,189,248,.12);
+      color:var(--primary);
+      text-decoration:none;
+      font-size:13px;
+      font-weight:600;
+      transition:.2s;
+      font-family:'Inter',sans-serif;
+    }
+    .btn-pdf:hover {
+      background:rgba(56,189,248,.2);
+    }
+
+    .extra-toggle.active {
+      background:rgba(56,189,248,.15);
+      border-color:var(--primary);
+      color:var(--primary);
+    }
+
+        .action-btn.danger:hover{
+      border-color:var(--danger);
+      color:var(--danger);
+    }
+
+    .move{
+      display:flex;
+      gap:8px;
+    }
+
+    .edit-inline{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-top:8px;
+    }
+
+    .edit-inline input{
+      width:60px;
+      padding:6px 8px;
+      border-radius:10px;
+      border:1px solid var(--border);
+      background:#0f172a;
+      color:var(--text);
+      font-size:14px;
+      font-weight:600;
+      text-align:center;
+      outline:none;
+    }
+
+    .edit-inline label{
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    /* MODAL */
+    .modal-overlay{
+      display:none;
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.75);
+      backdrop-filter:blur(8px);
+      z-index:1000;
+      padding:40px;
+      overflow-y:auto;
+      animation:fadeIn .2s;
+    }
+
+    .modal-overlay.open{
+      display:flex;
+      justify-content:center;
+      align-items:flex-start;
+    }
+
+    @keyframes fadeIn{
+      from{opacity:0}
+      to{opacity:1}
+    }
+
+    .modal{
+      background:rgba(15,23,42,.98);
+      border:1px solid var(--border);
+      border-radius:28px;
+      padding:32px;
+      max-width:800px;
+      width:100%;
+      margin:auto;
+      animation:slideUp .25s;
+    }
+
+    @keyframes slideUp{
+      from{transform:translateY(30px);opacity:0}
+      to{transform:translateY(0);opacity:1}
+    }
+
+    .modal-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:24px;
+    }
+
+    .modal-header h2{
+      font-size:24px;
+      font-weight:700;
+    }
+
+    .modal-close{
+      width:40px;height:40px;
+      border-radius:50%;
+      border:1px solid var(--border);
+      background:transparent;
+      color:var(--text);
+      font-size:20px;
+      cursor:pointer;
+      transition:.2s;
+    }
+
+    .modal-close:hover{
+      background:var(--card2);
+      border-color:var(--primary);
+    }
+
+    .modal-search{
+      margin-bottom:20px;
+    }
+
+    .modal-search input{
+      width:100%;
+      padding:14px 18px;
+      border-radius:14px;
+      border:1px solid var(--border);
+      background:var(--card);
+      color:var(--text);
+      font-size:15px;
+      outline:none;
+      font-family:'Inter',sans-serif;
+    }
+
+    .modal-search input::placeholder{
+      color:var(--muted);
+    }
+
+    .modal-exercise-list{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      max-height:500px;
+      overflow-y:auto;
+      padding-right:8px;
+    }
+
+    .modal-exercise-item{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:16px 20px;
+      cursor:pointer;
+      transition:.2s;
+    }
+
+    .modal-exercise-item:hover{
+      border-color:var(--primary);
+      background:var(--card2);
+    }
+
+    .modal-exercise-item.selected{
+      border-color:var(--primary);
+      background:rgba(56,189,248,.08);
+    }
+
+    .modal-exercise-item h4{
+      font-size:15px;
+      font-weight:600;
+      margin-bottom:6px;
+    }
+
+    .modal-exercise-item .tags{
+      display:flex;
+      gap:6px;
+      flex-wrap:wrap;
+      margin-bottom:8px;
+    }
+
+    .modal-exercise-item .mini-tag{
+      padding:4px 8px;
+      border-radius:999px;
+      background:rgba(56,189,248,.12);
+      color:var(--primary);
+      font-size:11px;
+    }
+
+    .modal-exercise-item p{
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.5;
+      display:-webkit-box;
+      -webkit-line-clamp:2;
+      -webkit-box-orient:vertical;
+      overflow:hidden;
+    }
+
+    .modal-exercise-item .obj-preview{
+      color:var(--success);
+      font-size:11px;
+      margin-top:4px;
+    }
+
+    .modal-style-filter{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-bottom:20px;
+    }
+
+    .modal-style-filter .style-tag{
+      padding:8px 16px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:transparent;
+      color:var(--muted);
+      font-size:13px;
+      cursor:pointer;
+      transition:.2s;
+      font-family:'Inter',sans-serif;
+    }
+
+    .modal-style-filter .style-tag.active{
+      background:var(--primary);
+      color:#001018;
+      border-color:transparent;
+      font-weight:600;
+    }
+
+    .modal-style-filter .style-tag:hover{
+      border-color:var(--primary);
+    }
+
+    .block-header-actions{
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
+
+    .manual-modal-overlay{
+      display:none;
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.8);
+      backdrop-filter:blur(8px);
+      z-index:1100;
+      padding:30px;
+      overflow-y:auto;
+      animation:fadeIn .2s;
+    }
+    .manual-modal-overlay.open{ display:flex; justify-content:center; align-items:flex-start; }
+    .manual-modal{
+      background:rgba(15,23,42,.99);
+      border:1px solid var(--border);
+      border-radius:28px;
+      padding:28px;
+      max-width:860px;
+      width:100%;
+      margin:auto;
+      animation:slideUp .25s;
+    }
+    .manual-modal-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:20px;
+    }
+    .manual-modal-header h2{ font-size:22px; font-weight:700; }
+    .manual-modal-tabs{
+      display:flex;
+      gap:8px;
+      margin-bottom:18px;
+    }
+    .manual-modal-tab{
+      padding:9px 18px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:transparent;
+      color:var(--muted);
+      font-size:13px;
+      cursor:pointer;
+      transition:.2s;
+      font-family:'Inter',sans-serif;
+    }
+    .manual-modal-tab.active{
+      background:var(--primary);
+      color:#001018;
+      border-color:transparent;
+      font-weight:600;
+    }
+    .manual-modal-tab:not(.active):hover{ border-color:var(--primary); color:var(--text); }
+    .manual-modal-search{
+      margin-bottom:16px;
+    }
+    .manual-modal-search input{
+      width:100%;
+      padding:13px 18px;
+      border-radius:14px;
+      border:1px solid var(--border);
+      background:var(--card);
+      color:var(--text);
+      font-size:15px;
+      outline:none;
+      font-family:'Inter',sans-serif;
+    }
+    .manual-modal-search input:focus{ border-color:var(--primary); }
+    .manual-modal-list{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      max-height:420px;
+      overflow-y:auto;
+      padding-right:4px;
+    }
+    .manual-modal-item{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:14px 18px;
+      cursor:pointer;
+      transition:.2s;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+    }
+    .manual-modal-item:hover{ border-color:var(--primary); background:var(--card2); }
+    .manual-modal-item.selected{ border-color:var(--primary); background:rgba(56,189,248,.15); box-shadow:0 0 0 2px var(--primary); }
+    .manual-modal-item.selected h4{ color:var(--primary); }
+    .manual-modal-item h4{ font-size:14px; font-weight:600; margin-bottom:3px; }
+    .manual-modal-item p{ font-size:12px; color:var(--muted); }
+    .manual-modal-item .item-style-badge{
+      background:rgba(56,189,248,.12);
+      color:var(--primary);
+      padding:3px 10px;
+      border-radius:999px;
+      font-size:11px;
+      font-weight:600;
+      white-space:nowrap;
+      flex-shrink:0;
+    }
+    .manual-free-form{
+      display:none;
+      flex-direction:column;
+      gap:14px;
+    }
+    .manual-free-form.open{ display:flex; }
+    .manual-free-form input, .manual-free-form select{
+      width:100%;
+      padding:12px 16px;
+      border-radius:12px;
+      border:1px solid var(--border);
+      background:var(--card);
+      color:var(--text);
+      font-size:14px;
+      outline:none;
+      font-family:'Inter',sans-serif;
+    }
+    .manual-free-form input:focus, .manual-free-form select:focus{ border-color:var(--primary); }
+    .manual-free-form label{ font-size:13px; color:var(--muted); margin-bottom:4px; display:block; }
+    .manual-modal-cfg{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:14px 0 0;
+      border-top:1px solid var(--border);
+      margin-top:14px;
+      flex-wrap:wrap;
+    }
+    .manual-modal-cfg label{ color:var(--muted); font-size:13px; }
+    .manual-modal-cfg input[type=number]{
+      width:60px;
+      padding:7px 10px;
+      border-radius:10px;
+      border:1px solid var(--border);
+      background:#0f172a;
+      color:var(--text);
+      font-size:14px;
+      font-weight:600;
+      text-align:center;
+      outline:none;
+    }
+    .manual-modal-confirm{
+      padding:11px 22px;
+      border-radius:12px;
+      border:none;
+      background:var(--primary);
+      color:#001018;
+      font-weight:700;
+      font-size:14px;
+      cursor:pointer;
+      margin-left:auto;
+      font-family:'Inter',sans-serif;
+    }
+    .manual-modal-confirm:hover{ background:var(--primary2); }
+
+    /* MANUAL MODE */
+    .mode-switcher{
+      display:flex;
+      gap:10px;
+      margin-bottom:24px;
+    }
+    .mode-btn{
+      flex:1;
+      padding:12px;
+      border-radius:14px;
+      border:1px solid var(--border);
+      background:transparent;
+      color:var(--muted);
+      font-size:14px;
+      font-weight:600;
+      cursor:pointer;
+      transition:.2s;
+      font-family:'Inter',sans-serif;
+    }
+    .mode-btn.active{
+      background:linear-gradient(135deg,var(--primary),var(--primary2));
+      color:#001018;
+      border-color:transparent;
+    }
+    .mode-btn:not(.active):hover{
+      border-color:var(--primary);
+      color:var(--text);
+    }
+    .manual-block{
+      background:rgba(17,24,39,.92);
+      border:1px solid var(--border);
+      border-radius:28px;
+      overflow:hidden;
+      margin-bottom:0;
+    }
+    .manual-block-header{
+      padding:18px 24px;
+      border-bottom:1px solid var(--border);
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+    .manual-block-title{
+      font-size:18px;
+      font-weight:700;
+    }
+    .manual-block-dist{
+      color:var(--primary);
+      font-weight:700;
+    }
+    .manual-exercise-row{
+      padding:14px 24px;
+      border-bottom:1px solid rgba(255,255,255,.05);
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+    .manual-exercise-row:last-of-type{
+      border-bottom:none;
+    }
+    .manual-ex-name{
+      flex:1;
+      font-size:15px;
+      font-weight:600;
+    }
+    .manual-ex-dist{
+      color:var(--primary);
+      font-size:13px;
+      font-weight:700;
+      white-space:nowrap;
+    }
+    .manual-ex-remove{
+      background:transparent;
+      border:1px solid var(--border);
+      color:var(--muted);
+      border-radius:8px;
+      width:28px;height:28px;
+      cursor:pointer;
+      font-size:14px;
+      transition:.2s;
+      flex-shrink:0;
+    }
+    .manual-ex-remove:hover{ border-color:var(--danger); color:var(--danger); }
+    .manual-add-area{
+      padding:14px 24px;
+      border-top:1px dashed var(--border);
+    }
+    .manual-search-wrap{
+      position:relative;
+    }
+    .manual-search-input{
+      width:100%;
+      padding:11px 14px;
+      border-radius:12px;
+      border:1px solid var(--border);
+      background:var(--card);
+      color:var(--text);
+      font-size:14px;
+      outline:none;
+      font-family:'Inter',sans-serif;
+    }
+    .manual-search-input::placeholder{ color:var(--muted); }
+    .manual-search-input:focus{ border-color:var(--primary); }
+    .manual-search-dropdown{
+      position:absolute;
+      top:calc(100% + 6px);
+      left:0;right:0;
+      background:rgba(15,23,42,.99);
+      border:1px solid var(--border);
+      border-radius:14px;
+      max-height:260px;
+      overflow-y:auto;
+      z-index:200;
+      display:none;
+    }
+    .manual-search-dropdown.open{ display:block; }
+    .manual-dd-item{
+      padding:11px 16px;
+      cursor:pointer;
+      border-bottom:1px solid rgba(255,255,255,.04);
+      transition:.15s;
+    }
+    .manual-dd-item:last-child{ border-bottom:none; }
+    .manual-dd-item:hover{ background:var(--card2); }
+    .manual-dd-item-name{ font-size:14px; font-weight:600; }
+    .manual-dd-item-tags{ font-size:11px; color:var(--muted); margin-top:2px; }
+    .manual-series-cfg{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      margin-top:10px;
+      flex-wrap:wrap;
+    }
+    .manual-series-cfg label{ color:var(--muted); font-size:13px; }
+    .manual-series-cfg input[type=number]{
+      width:56px;
+      padding:6px 8px;
+      border-radius:10px;
+      border:1px solid var(--border);
+      background:#0f172a;
+      color:var(--text);
+      font-size:14px;
+      font-weight:600;
+      text-align:center;
+      outline:none;
+    }
+    .manual-add-btn{
+      padding:9px 18px;
+      border-radius:12px;
+      border:none;
+      background:var(--primary);
+      color:#001018;
+      font-weight:700;
+      font-size:13px;
+      cursor:pointer;
+      transition:.2s;
+      font-family:'Inter',sans-serif;
+    }
+    .manual-add-btn:hover{ background:var(--primary2); }
+    .manual-total-bar{
+      background:rgba(17,24,39,.92);
+      border:1px solid var(--border);
+      border-radius:18px;
+      padding:16px 24px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      font-weight:700;
+    }
+    .manual-total-bar span{ color:var(--muted); font-size:14px; font-weight:400; }
+
+    /* SUMMARY SIDEBAR */
+    .summary-sidebar{
+      position:fixed;
+      right:0;
+      top:0;
+      height:100vh;
+      width:300px;
+      background:rgba(15,23,42,.97);
+      border-left:1px solid var(--border);
+      backdrop-filter:blur(16px);
+      z-index:500;
+      display:none;
+      flex-direction:column;
+      transform:translateX(100%);
+      transition:transform .3s cubic-bezier(.4,0,.2,1);
+      overflow:hidden;
+    }
+    .summary-sidebar.open{
+      display:flex;
+      transform:translateX(0);
+    }
+    .summary-sidebar-header{
+      padding:18px 20px 14px;
+      border-bottom:1px solid var(--border);
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      flex-shrink:0;
+    }
+    .summary-sidebar-header h3{
+      font-size:15px;
+      font-weight:700;
+      color:var(--primary);
+    }
+    .summary-sidebar-close{
+      width:32px;height:32px;
+      border-radius:50%;
+      border:1px solid var(--border);
+      background:transparent;
+      color:var(--text);
+      font-size:16px;
+      cursor:pointer;
+      transition:.2s;
+    }
+    .summary-sidebar-close:hover{ background:var(--card2); }
+    .summary-sidebar-body{
+      overflow-y:auto;
+      padding:16px 20px;
+      flex:1;
+      font-size:13px;
+    }
+    .summary-row{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:6px 0;
+      border-bottom:1px solid rgba(255,255,255,.04);
+      gap:8px;
+    }
+    .summary-row:last-child{ border-bottom:none; }
+    .summary-label{ color:var(--muted); flex:1; }
+    .summary-val{ color:var(--text); font-weight:600; white-space:nowrap; }
+    .summary-section-title{
+      font-size:11px;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      color:var(--primary);
+      font-weight:700;
+      margin:14px 0 8px;
+    }
+    .summary-style-row{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      padding:5px 0;
+      border-bottom:1px solid rgba(255,255,255,.04);
+    }
+    .summary-style-dot{
+      width:8px;height:8px;
+      border-radius:50%;
+      background:var(--primary);
+      flex-shrink:0;
+    }
+    .summary-toggle-btn{
+      position:fixed;
+      right:0;
+      top:50%;
+      transform:translateY(-50%);
+      background:var(--primary);
+      color:#001018;
+      border:none;
+      border-radius:12px 0 0 12px;
+      padding:12px 10px;
+      cursor:pointer;
+      font-size:18px;
+      z-index:499;
+      display:none;
+      writing-mode:vertical-rl;
+      font-weight:700;
+      transition:.2s;
+      font-family:'Inter',sans-serif;
+    }
+    .summary-toggle-btn:hover{ background:var(--primary2); }
+
+    @media(max-width:1100px){
+      .layout{
+        grid-template-columns:1fr;
+      }
+      .panel{
+        position:relative;
+      }
+      .modal-overlay{
+        padding:16px;
+      }
+      .summary-sidebar{ width:260px; }
+    }
+
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="header">
+    <h1>Generador de sesiones</h1>
+    <p>Generador de entrenamientos desde la biblioteca de nataci&oacute;n.</p>
+    <div class="mode-switcher" style="margin-top:18px;max-width:480px;">
+      <button class="mode-btn" id="modeAutoBtn">⚙️ Creador automático</button>
+      <button class="mode-btn active" id="modeManualBtn">✏️ Creación manual</button>
+    </div>
+  </div>
+
+  <div class="layout" id="autoLayout" style="display:none;">
+
+    <!-- SIDEBAR -->
+    <aside class="panel">
+
+      <div class="section">
+        <div class="section-title">Volumen</div>
+        <div class="slider-group">
+          <div class="slider-top">
+            <span>Metros totales</span>
+            <strong id="totalValue">~1500m</strong>
+          </div>
+          <input type="range" min="500" max="10000" step="50" value="1500" id="totalMeters" />
+        </div>
+        <div class="slider-group">
+          <div class="slider-top">
+            <span>N.º de series total</span>
+            <strong id="seriesCountValue">15</strong>
+          </div>
+          <input type="range" min="2" max="60" step="1" value="15" id="seriesCount" />
+        </div>
+        <div class="slider-group" id="seriesMetrosGroup">
+          <div class="slider-top" id="seriesSingleTop">
+            <span>Metros por serie</span>
+            <strong id="seriesValue">100m</strong>
+          </div>
+          <input type="range" min="50" max="400" step="50" value="100" id="seriesMeters" />
+          <div id="seriesDualRange" style="display:none;">
+            <div class="slider-top">
+              <span>Variar metros entre</span>
+              <strong id="variarMetrosValue">50m &ndash; 200m</strong>
+            </div>
+            <div class="dual-range-wrapper">
+              <input type="range" min="50" max="400" step="50" value="200" id="variarMetrosMax" />
+              <input type="range" min="50" max="400" step="50" value="50" id="variarMetrosMin" />
+            </div>
+          </div>
+          <div class="variar-metros-sub">
+            <button class="action-btn" id="btnVariarMetros">📏 Variar metros</button>
+          </div>
+        </div>
+        <div class="extra-subsection">
+          <button class="action-btn extra-toggle" id="btn25hi" data-extra="hi25">⚡ 25m HI</button>
+          <div id="hi25Options" style="display:none;" class="slider-group">
+            <div class="slider-top">
+              <span>Cantidad de series</span>
+              <strong id="hi25CantValue">4</strong>
+            </div>
+            <input type="range" min="1" max="12" step="1" value="4" id="hi25Cant" />
+          </div>
+        </div>
+        <div class="extra-subsection">
+          <button class="action-btn extra-toggle" id="btnTiempo" data-extra="tiempo">⏱ Por tiempo</button>
+          <div id="tiempoOptions" style="display:none;" class="slider-group">
+            <div class="slider-top">
+              <span>Tiempo por serie</span>
+              <strong id="tiempoValue">60s</strong>
+            </div>
+            <input type="range" min="30" max="300" step="5" value="60" id="tiempoSlider" />
+            <div class="slider-top" style="margin-top:8px;">
+              <span>Distancia en ese tiempo</span>
+              <strong id="tiempoDistValue">50m</strong>
+            </div>
+            <input type="range" min="25" max="400" step="25" value="50" id="tiempoDistSlider" />
+            <div class="slider-top" style="margin-top:8px;">
+              <span>Cuantas series</span>
+              <strong id="tiempoSeriesValue">1</strong>
+            </div>
+            <input type="range" min="1" max="12" step="1" value="1" id="tiempoSeries" />
+            <div style="font-size:12px;color:var(--muted);margin-top:4px;">Ritmo: <strong id="tiempoRitmo">2:00</strong>/100m</div>
+          </div>
+        </div>
+        <div class="extra-subsection">
+          <button class="action-btn extra-toggle" id="btnFondo" data-extra="fondo">🏊 Fondo</button>
+          <div id="fondoOptions" style="display:none;" class="slider-group">
+            <div class="slider-top">
+              <span>Distancia de fondo</span>
+              <strong id="fondoValue">1000m</strong>
+            </div>
+            <input type="range" min="500" max="3000" step="100" value="1000" id="fondoSlider" />
+          </div>
+        </div>
+
+        <div class="slider-group dual-range">
+          <div class="slider-top">
+            <span>Intensidad</span>
+            <strong id="intensidadValue">40% &ndash; 60%</strong>
+          </div>
+          <div class="dual-range-wrapper">
+            <input type="range" min="40" max="100" step="5" value="60" id="intensidadMax" />
+            <input type="range" min="40" max="100" step="5" value="40" id="intensidadMin" />
+          </div>
+        </div>
+
+      </div>
+
+      <div class="section">
+        <div class="section-title">Estilos y porcentajes</div>
+        <div id="stylesContainer"></div>
+
+        <!-- Corrección 4: Botón para activar técnica + defectos -->
+        <div style="margin-top:14px;">
+          <button class="action-btn extra-toggle" id="btnTecnica" style="width:100%;justify-content:center;">🎯 Quiero ejercicios de técnica</button>
+        </div>
+        <div id="tecnicaSection" style="display:none;margin-top:14px;">
+          <div class="slider-group">
+            <div class="slider-top">
+              <span>T&eacute;cnica</span>
+              <strong id="cantTecnicaValue"><span style="color:var(--primary)">0%</span> · Rendimiento <span style="color:var(--success)">100%</span></strong>
+            </div>
+            <input type="range" min="0" max="100" step="5" value="0" id="cantTecnica" />
+            <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:4px;">
+              <span>0% técnica</span><span>50/50</span><span>100% técnica</span>
+            </div>
+            <div style="font-size:11px;color:var(--muted);margin-top:6px;" id="tecnicaHint">Selecciona defectos a corregir abajo para activar</div>
+          </div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">Defectos a corregir:</div>
+          <div id="stylesDefContainer"></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Implementos</div>
+        <div class="deficiencies" id="implementosContainer">
+          <div class="tag implemento" data-implemento="Aletas">Aletas</div>
+          <div class="tag implemento" data-implemento="Palas">Palas</div>
+          <div class="tag implemento" data-implemento="Pull">Pull</div>
+          <div class="tag implemento" data-implemento="Tabla">Tabla</div>
+        </div>
+        <div class="slider-group" style="margin-top:12px;">
+          <div class="slider-top">
+            <span>Ejercicios con implementos</span>
+            <strong id="cantImplementosValue">0</strong>
+          </div>
+          <input type="range" min="0" max="10" step="1" value="0" id="cantImplementos" />
+        </div>
+      </div>
+
+      <button class="generate-btn" id="generateBtn">Generar entrenamiento</button>
+    </aside>
+
+    <!-- CONTENIDO -->
+    <main class="content" id="content">
+      <div class="empty-state" id="emptyState">
+        <div class="empty-state-icon">🏊</div>
+        <h2>Sin entrenamiento generado</h2>
+        <p>
+          Configura los estilos, porcentajes e intensidad en el panel lateral
+          y presiona <strong>"Generar entrenamiento"</strong> para crear tu sesión.
+        </p>
+      </div>
+    </main>
+
+  </div><!-- /autoLayout -->
+
+  <!-- MODO MANUAL (corrección 8) -->
+  <div id="manualLayout">
+    <div style="display:flex;flex-direction:column;gap:24px;max-width:900px;margin:auto;">
+
+      <div id="manualBloque_cal" class="manual-block">
+        <div class="manual-block-header">
+          <div class="manual-block-title">🌅 Calentamiento</div>
+          <div class="manual-block-dist" id="manualDist_cal">0m</div>
+        </div>
+        <div id="manualExList_cal"></div>
+        <div class="manual-add-area" style="display:flex;justify-content:center;">
+          <button class="manual-add-btn" style="width:100%;max-width:320px;" onclick="openManualModal('cal')">+ Añadir ejercicio a Calentamiento</button>
+        </div>
+      </div>
+
+      <div id="manualBloque_main" class="manual-block">
+        <div class="manual-block-header">
+          <div class="manual-block-title">🏊 Sesión principal</div>
+          <div class="manual-block-dist" id="manualDist_main">0m</div>
+        </div>
+        <div id="manualExList_main"></div>
+        <div class="manual-add-area" style="display:flex;justify-content:center;">
+          <button class="manual-add-btn" style="width:100%;max-width:320px;" onclick="openManualModal('main')">+ Añadir ejercicio a Sesión principal</button>
+        </div>
+      </div>
+
+      <div id="manualBloque_cool" class="manual-block">
+        <div class="manual-block-header">
+          <div class="manual-block-title">🌊 Vuelta a la calma</div>
+          <div class="manual-block-dist" id="manualDist_cool">0m</div>
+        </div>
+        <div id="manualExList_cool"></div>
+        <div class="manual-add-area" style="display:flex;justify-content:center;">
+          <button class="manual-add-btn" style="width:100%;max-width:320px;" onclick="openManualModal('cool')">+ Añadir ejercicio a Vuelta a la calma</button>
+        </div>
+      </div>
+
+      <div class="manual-total-bar">
+        <span>Total de la sesión</span>
+        <strong id="manualTotalDist" style="color:var(--primary);font-size:20px;">0m</strong>
+        <div style="display:flex;gap:8px;">
+          <button class="action-btn" id="manualCopyBtn" title="Copiar al portapapeles" style="font-size:13px;">📋 Copiar</button>
+          <button class="action-btn" id="manualImgBtn" title="Descargar imagen" style="font-size:13px;">🖼️ Imagen</button>
+          <button class="action-btn" id="manualSummaryBtn" title="Ver resumen" style="font-size:13px;">≡ Resumen</button>
+        </div>
+      </div>
+
+    </div>
+  </div><!-- /manualLayout -->
+</div>
+
+<!-- SUMMARY SIDEBAR (corrección 6) -->
+<div class="summary-sidebar" id="summarySidebar">
+  <div class="summary-sidebar-header">
+    <h3>📋 Resumen sesión</h3>
+    <button class="summary-sidebar-close" id="summaryClose">&times;</button>
+  </div>
+  <div class="summary-sidebar-body" id="summaryBody"></div>
+</div>
+<button class="summary-toggle-btn" id="summaryToggleBtn" title="Ver resumen">≡</button>
+
+<!-- MANUAL EXERCISE MODAL (corrección 4) -->
+<div class="manual-modal-overlay" id="manualModalOverlay">
+  <div class="manual-modal">
+    <div class="manual-modal-header">
+      <h2 id="manualModalTitle">Añadir ejercicio</h2>
+      <button class="modal-close" id="manualModalClose">&times;</button>
+    </div>
+    <div class="manual-modal-tabs">
+      <button class="manual-modal-tab active" id="mmTabFree">✏️ Ejercicio libre</button>
+      <button class="manual-modal-tab" id="mmTabBib">📚 Biblioteca</button>
+    </div>
+
+    <!-- Libre (por defecto) -->
+    <div class="manual-free-form open" id="mmFreeSection">
+      <div>
+        <label>Nombre del ejercicio</label>
+        <input type="text" id="mmFreeName" placeholder="Ej: Crol con aletas, Espalda con tabla...">
+      </div>
+      <div>
+        <label>Descripción (opcional)</label>
+        <input type="text" id="mmFreeDesc" placeholder="Descripción breve...">
+      </div>
+    </div>
+
+    <!-- Biblioteca -->
+    <div id="mmBibSection" style="display:none;">
+      <div class="manual-modal-search">
+        <input type="text" id="manualModalSearch" placeholder="Buscar por nombre, estilo o descripción...">
+      </div>
+      <div class="manual-modal-tabs" id="mmStyleFilter" style="flex-wrap:wrap;"></div>
+      <div class="manual-modal-list" id="manualModalList"></div>
+    </div>
+
+    <div class="manual-modal-cfg">
+      <!-- Tipo: series×metros o tiempo -->
+      <div style="display:flex;gap:8px;width:100%;margin-bottom:10px;">
+        <button class="manual-modal-tab active" id="mmTypeSeries" style="flex:1;">🔁 Series × metros</button>
+        <button class="manual-modal-tab" id="mmTypeTiempo" style="flex:1;">⏱ Por tiempo</button>
+      </div>
+
+      <!-- Series × metros -->
+      <div id="mmCfgSeries" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;width:100%;">
+        <label>Series:</label>
+        <input type="number" min="1" max="99" value="4" id="mmSeries">
+        <label>×</label>
+        <input type="number" min="50" max="2000" step="50" value="100" id="mmMetros">
+        <label>m</label>
+      </div>
+
+      <!-- Por tiempo -->
+      <div id="mmCfgTiempo" style="display:none;align-items:center;gap:8px;flex-wrap:wrap;width:100%;">
+        <label>Series:</label>
+        <input type="number" min="1" max="99" value="4" id="mmTSeries">
+        <label>×</label>
+        <input type="number" min="10" max="3600" step="10" value="60" id="mmTSegundos">
+        <label>seg</label>
+        <label style="margin-left:8px;">Distancia:</label>
+        <input type="number" min="50" max="2000" step="50" value="100" id="mmTMetros">
+        <label>m</label>
+        <div style="display:flex;align-items:center;gap:8px;width:100%;margin-top:6px;">
+          <label style="color:var(--muted);font-size:13px;">Ritmo:</label>
+          <span id="mmTRitmoLabel" style="color:var(--primary);font-weight:700;font-size:13px;">—</span>
+          <span style="color:var(--muted);font-size:12px;">/100m</span>
+        </div>
+      </div>
+
+      <!-- Intensidad -->
+      <div style="display:flex;align-items:center;gap:10px;width:100%;margin-top:10px;">
+        <label style="white-space:nowrap;">Intensidad:</label>
+        <input type="range" min="0" max="100" step="5" value="70" id="mmIntensidad" style="flex:1;">
+        <span id="mmIntensidadLabel" style="font-size:18px;min-width:36px;text-align:center;">🟡</span>
+        <span id="mmIntensidadPct" style="color:var(--primary);font-weight:700;min-width:36px;">70%</span>
+      </div>
+
+      <button class="manual-modal-confirm" id="mmConfirmBtn" style="width:100%;margin-top:10px;">✓ Añadir ejercicio</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modalTitle">Seleccionar ejercicio</h2>
+      <button class="modal-close" id="modalClose">&times;</button>
+    </div>
+    <div class="modal-search">
+      <input type="text" id="modalSearch" placeholder="Buscar ejercicio por nombre...">
+    </div>
+    <div class="modal-style-filter" id="modalStyleFilter"></div>
+    <div class="modal-exercise-list" id="modalExerciseList"></div>
+    <p style="text-align:center;color:var(--muted);font-size:13px;margin-top:16px;">
+      Ejercicios extraídos de
+      <a href="https://lightswan.github.io/biblioteca-natacion/" target="_blank" style="color:var(--primary)">Biblioteca de la Nataci&oacute;n</a>
+      &mdash; Blythe Lucero
+    </p>
+  </div>
+</div>
+
+<script>
+
+  // ====================================================================
+  // BIBLIOTECA DE EJERCICIOS (extraídos de lightswan.github.io/biblioteca-natacion)
+  // ====================================================================
+
+  // ====================================================================
+  // BIBLIOTECA DINÁMICA — se carga desde lightswan.github.io/biblioteca-natacion
+  // ====================================================================
+
+  const ejerciciosBiblioteca = [
+    {id:"cro1",num:1,style:"Crol",tags:["Crol","Posición"],nombre:"Flotación descendente",desc:"Colócate en posición ventral con los brazos pegados al cuerpo y la cabeza mirando al fondo de la piscina. Baja levemente la barbilla hacia el pecho y dirige la presión hacia el pecho. Las caderas y piernas suben solas.",objetivos:[]},
+    {id:"cro2",num:2,style:"Crol",tags:["Crol","Posición"],nombre:"Rolido",desc:"Impúlsate en posición ventral. Ladéate 90 grados desde la cadera y el hombro. Mantén cinco patadas y regresa al centro. El giro lo inicia la cadera, no el hombro.",objetivos:[]},
+    {id:"cro3",num:3,style:"Crol",tags:["Crol","Posición"],nombre:"Crol lateral con cambio de lado cada doce patadas",desc:"Flota de lado con el brazo inferior extendido. Patada tipo tijera lateral. Cuenta doce patadas y rola para cambiar de lado sin que la cabeza salte.",objetivos:[]},
+    {id:"cro4",num:4,style:"Crol",tags:["Crol","Patada"],nombre:"Ejercicio con los dedos del pie en punta",desc:"Adopta posición ventral con brazos extendidos. Prueba la patada con pies en punta y luego flexionados. Con los pies en punta el cuerpo avanza más: el empeine actúa como pala.",objetivos:[]},
+    {id:"cro5",num:5,style:"Crol",tags:["Crol","Patada"],nombre:"Ejercicio de aleteo con los pies",desc:"Coloca una aleta en un solo pie y nada con brazos extendidos. Siente cómo la aleta se dobla. Alterna el pie con aleta. El objetivo es que sin aleta la sensación sea igual.",objetivos:[]},
+    {id:"cro6",num:6,style:"Crol",tags:["Crol","Patada"],nombre:"Secuencia de patada vertical",desc:"En posición vertical, usa remadas en ocho con las manos para flotar. Inicia la patada alternada con piernas extendidas. Si la cabeza baja, la patada no genera suficiente sustentación.",objetivos:[]},
+    {id:"cro7",num:7,style:"Crol",tags:["Crol","Patada"],nombre:"Patada de crol a una sola pierna",desc:"Apoya la tabla bajo los brazos. Patada solo con la pierna derecha 30 segundos, luego izquierda, luego alterna cada 15 segundos. La patada sale del muslo, no dobla la rodilla en exceso.",objetivos:[]},
+    {id:"cro8",num:8,style:"Crol",tags:["Crol","Brazada"],nombre:"Tirón y empuje en estilo crol",desc:"Una sola brazada con el brazo izquierdo: yemas hacia abajo para agarrar el agua, codo alto y fijo, barre en curva hacia fuera y adentro, acelera en el empuje hasta que el pulgar roza el muslo.",objetivos:[]},
+    {id:"cro9",num:9,style:"Crol",tags:["Crol","Brazada"],nombre:"Tiempo muerto",desc:"Cuando el brazo llega al final del tirón junto a la cadera, detente: relaja la mano, espera un instante y solo entonces eleva el codo para el recobro. La brazada se alarga y el impulso aumenta.",objetivos:[]},
+    {id:"cro10",num:10,style:"Crol",tags:["Crol","Brazada"],nombre:"Ejercicio de apuntar con el pulgar",desc:"Apunta con el pulgar hacia el otro extremo de la piscina al extender el brazo. Esto alinea la brazada frente al hombro en vez de que cruce hacia el centro, evitando que el cuerpo serpentee.",objetivos:[]},
+    {id:"cro11",num:11,style:"Crol",tags:["Crol","Brazada"],nombre:"Remadas",desc:"De pie con el agua a los hombros, barres hacia fuera con palmas inclinadas y luego hacia dentro. Experimenta ángulos distintos. Cuando el agua presiona la palma y el antebrazo, ahí está el agarre.",objetivos:[]},
+    {id:"cro12",num:12,style:"Crol",tags:["Crol","Brazada"],nombre:"Nado a crol con los puños cerrados",desc:"Cierra los puños antes de la primera brazada. El antebrazo actúa como pala si mantienes el codo alto. Al abrir los puños el agarre con la mano abierta se sentirá enormemente mayor.",objetivos:[]},
+    {id:"cro13",num:13,style:"Crol",tags:["Crol","Recobro"],nombre:"Ejercicio de aleteo con las manos",desc:"Ejercicio de tiempo muerto: cuando el brazo llega atrás, sacude la mano un par de veces antes de subir el codo. El aleteo obliga a que la muñeca esté relajada antes del recobro.",objetivos:[]},
+    {id:"cro14",num:14,style:"Crol",tags:["Crol","Recobro"],nombre:"Aleta de tiburón",desc:"Flota de lado. Sube el codo del brazo superior hacia el cielo en ángulo recto como si una cuerda tirara del codo. Aguanta seis patadas. Luego deja caer el brazo en arco hacia delante.",objetivos:[]},
+    {id:"cro15",num:15,style:"Crol",tags:["Crol","Respiración"],nombre:"Brazo de inspiración y brazo de espiración",desc:"Asigna la inspiración a un brazo y la espiración al otro. Inhala exactamente cuando el brazo de inspiración empieza la tracción. Esta asociación crea un ritmo automático.",objetivos:[]},
+    {id:"cro16",num:16,style:"Crol",tags:["Crol","Respiración"],nombre:"El brazo ingrávido",desc:"Congela el movimiento al respirar: el brazo hacia el que giraste debe estar completamente extendido debajo del pecho. Respira sin sacrificar ni un centímetro de longitud.",objetivos:[]},
+    {id:"cro17",num:17,style:"Crol",tags:["Crol","Respiración"],nombre:"Presionar con la sien",desc:"Congela en posición de respirar: la sien debe estar apoyada contra el brazo extendido y la boca apenas roza la superficie. El aire está en la ola de proa, no hay que levantar la cabeza.",objetivos:[]},
+    {id:"cro18",num:18,style:"Crol",tags:["Crol","Respiración"],nombre:"Nado a crol con brazo estático",desc:"Nada con un brazo inmovilizado pegado al cuerpo. Respira hacia el lado del brazo quieto rolando completamente de cadera y hombro. Siente que el cuerpo avanza sobre la mano que tracciona.",objetivos:[]},
+    {id:"cro19",num:19,style:"Crol",tags:["Crol","Palanca"],nombre:"Crol lateral con cambio de lado cada tres brazadas",desc:"Tras la tercera brazada rola para quedar en posición lateral. Seis patadas y otras tres al otro lado. El rolido nace de la cadera que se hunde, no del hombro.",objetivos:[]},
+    {id:"cro20",num:20,style:"Crol",tags:["Crol","Palanca"],nombre:"El efecto de péndulo",desc:"Cuando el brazo aéreo llega al punto más alto, hunde la cadera superior y deja que su peso arrastre el rolido al otro lado. Ese intercambio suave de peso acelera el cambio de costado.",objetivos:[]},
+    {id:"cro21",num:21,style:"Crol",tags:["Crol","Palanca"],nombre:"Patinar sobre las caderas",desc:"En posición lateral, sube el codo hacia el cielo. Desliza la mano desde el codo hacia la cadera contraria como si patinaras sobre el hielo. Ese deslizamiento desencadena el rolido de forma natural.",objetivos:[]},
+    {id:"cro22",num:22,style:"Crol",tags:["Crol","Coordinación"],nombre:"Nado a crol con la cabeza alzada",desc:"Nada con la cabeza fuera del agua mirando al frente, barbilla baja. Para mantenerla necesitarás patada enérgica y codos muy altos. Al bajar la cabeza el patrón de codo alto se intensifica.",objetivos:[]},
+    {id:"cro23",num:23,style:"Crol",tags:["Crol","Coordinación"],nombre:"Progresión horizontal agarrándose a una cuerda tendida",desc:"Agarra la cuerda bajo la superficie. Tira del cuerpo hacia delante hasta que la mano quede junto a la cadera. No es el brazo el que se mueve sino el cuerpo que avanza sobre la mano fija.",objetivos:[]},
+    {id:"cro24",num:24,style:"Crol",tags:["Crol","Coordinación"],nombre:"Nado a crol con delfín",desc:"Da seis a doce patadas de delfín antes de iniciar el crol. Al pasar al crol, sincroniza una patada de delfín con cada brazada. La brazada parece impulsada desde las caderas.",objetivos:[]},
+    {id:"cro25",num:25,style:"Crol",tags:["Crol","Coordinación"],nombre:"Respiración bilateral",desc:"Respira en la tercera brazada hacia un lado y en la sexta hacia el otro alternando. El lado no dominante revela el desequilibrio. El rolido debe sentirse idéntico a ambos lados.",objetivos:[]},
+    {id:"esp26",num:26,style:"Espalda",tags:["Espalda","Posición"],nombre:"Flotar sobre la columna vertebral",desc:"Túmbate boca arriba. Echa la cabeza atrás hasta que los lóbulos de las orejas queden bajo la superficie. Las piernas subirán solas. Activa el abdomen para mantener la columna recta.",objetivos:[]},
+    {id:"esp27",num:27,style:"Espalda",tags:["Espalda","Posición"],nombre:"Ejercicio con la línea de flotación",desc:"Busca que la superficie quede a la altura de los lóbulos de las orejas. Cuando la línea de flotación es correcta, el cuello y los hombros se relajan solos sin ningún esfuerzo.",objetivos:[]},
+    {id:"esp28",num:28,style:"Espalda",tags:["Espalda","Posición"],nombre:"Espalda lateral con cambio de lado cada doce patadas",desc:"Flota en espalda de lado con un brazo extendido sobre la cabeza. Patada y cuenta doce. Rola al otro lado. Busca la posición más larga: oreja alineada con el hombro, brazo en línea con la columna.",objetivos:[]},
+    {id:"esp29",num:29,style:"Espalda",tags:["Espalda","Patada"],nombre:"Ejercicio de batido del agua",desc:"En posición dorsal, patada alternada poniendo más fuerza en el movimiento ascendente. Los pies hacen borbotear la superficie sin que las rodillas la rompan. Gira levemente las puntas hacia dentro.",objetivos:[]},
+    {id:"esp30",num:30,style:"Espalda",tags:["Espalda","Patada"],nombre:"Brazos en punta de flecha, batido de piernas sin levantar las rodillas",desc:"Extiende los brazos sobre la cabeza comprimiendo las orejas entre los codos. Patada a ritmo tal que desde fuera no se distinga qué pie mueve el agua. Rodillas siempre bajo la superficie.",objetivos:[]},
+    {id:"esp31",num:31,style:"Espalda",tags:["Espalda","Patada"],nombre:"Batido de piernas con las puntas de los dedos hacia dentro",desc:"Gira las puntas de los pies hacia dentro antes de la patada. El dedo gordo debe ser lo más cercano a la superficie en cada ascenso. Amplía la superficie del pie y centra la propulsión.",objetivos:[]},
+    {id:"esp32",num:32,style:"Espalda",tags:["Espalda","Patada"],nombre:"Rolido parcial con vaso en la frente",desc:"Coloca un vaso de plástico sobre la frente en posición dorsal. Inicia la patada intentando que el vaso no se mueva. Practica rolidos de 20 grados a cada lado manteniendo el vaso en su sitio.",objetivos:[]},
+    {id:"esp33",num:33,style:"Espalda",tags:["Espalda","Brazada"],nombre:"Tirón y empuje con un brazo",desc:"Un brazo extendido sobre la cabeza, el otro pegado al cuerpo. Una brazada: la cadera del mismo lado se hunde 20 cm, la mano entra profunda y agarra el agua con el codo estable.",objetivos:[]},
+    {id:"esp34",num:34,style:"Espalda",tags:["Espalda","Brazada"],nombre:"Arriba y por encima",desc:"La mano traza un arco arriba y por encima como si siguiera la parte interna de un cuenco. El movimiento es curvo, no recto hacia atrás. En el punto más alto el codo lleva al agua y la mano acelera.",objetivos:[]},
+    {id:"esp35",num:35,style:"Espalda",tags:["Espalda","Brazada"],nombre:"Nadar con los puños cerrados",desc:"Cierra los puños antes de la primera brazada. El antebrazo sustituye a la palma pero solo si el codo está alto. Al abrir los puños el contraste es inmediato: el agarre es mucho mayor.",objetivos:[]},
+    {id:"esp36",num:36,style:"Espalda",tags:["Espalda","Brazada"],nombre:"El sacacorchos",desc:"Una brazada derecha mientras el izquierdo recobra. En ese instante los hombros forman diagonal pronunciada. La trayectoria de cada brazo es curva hacia el cuerpo bajo el agua, describiendo una espiral.",objetivos:[]},
+    {id:"esp37",num:37,style:"Espalda",tags:["Espalda","Recobro"],nombre:"Manecillas del reloj",desc:"El brazo derecho sube hacia las 11 en vez de las 12. El brazo izquierdo hacia la 1. La mano siempre entra ligeramente hacia el exterior del hombro, nunca cruzando la línea central.",objetivos:[]},
+    {id:"esp38",num:38,style:"Espalda",tags:["Espalda","Recobro"],nombre:"Recobro en dos pasos",desc:"Primero el brazo sube recto hacia las 11 o la 1. Luego la mano gira con el meñique hacia abajo y corta la superficie limpiamente. Practica esas dos fases por separado hasta que fluyan.",objetivos:[]},
+    {id:"esp39",num:39,style:"Espalda",tags:["Espalda","Recobro"],nombre:"Ejercicio con el codo extendido",desc:"Bloquea el codo en el recobro como si quisieras tocar el otro extremo de la piscina con las yemas. La diferencia de alcance entre codo doblado y extendido es la longitud de brazada que pierdes.",objetivos:[]},
+    {id:"esp40",num:40,style:"Espalda",tags:["Espalda","Recobro"],nombre:"Rotación externa de las manos en la fase aérea",desc:"Cuando el brazo alcanza su punto más alto, gira la mano hacia fuera de modo que el meñique apunte hacia la superficie. El meñique entra primero y corta el agua limpiamente.",objetivos:[]},
+    {id:"esp41",num:41,style:"Espalda",tags:["Espalda","Respiración"],nombre:"Secuencia con respiración rítmica",desc:"Asigna la inspiración a una brazada y la espiración a la siguiente. Prueba ritmos de una, dos o tres brazadas para ver cuál permite una brazada más relajada y económica.",objetivos:[]},
+    {id:"esp42",num:42,style:"Espalda",tags:["Espalda","Respiración"],nombre:"Crear una bolsa de aire",desc:"Cuando el hombro del brazo que recobra está fuera y el contrario sumergido, se crea un bolsillo de aire junto a la boca. Inhala exactamente cuando aparece ese bolsillo.",objetivos:[]},
+    {id:"esp43",num:43,style:"Espalda",tags:["Espalda","Palanca"],nombre:"Espalda con puesta de lado cada tres brazadas",desc:"Tras tres brazadas, posición lateral. El rolido debe nacer de la cadera que se hunde hacia abajo, no del hombro. Los músculos grandes del tronco se activan y la brazada gana potencia.",objetivos:[]},
+    {id:"esp44",num:44,style:"Espalda",tags:["Espalda","Palanca"],nombre:"Progresión horizontal agarrándose a una cuerda con un brazo",desc:"Flota en posición dorsal y agarra la cuerda. Tira del cuerpo hacia delante hasta que la mano llegue a la cadera. El cuerpo avanza sobre la mano fija sin balanceos.",objetivos:[]},
+    {id:"esp45",num:45,style:"Espalda",tags:["Espalda","Palanca"],nombre:"Imagen congelada con los brazos en oposición",desc:"Congela en el punto donde un brazo está extendido sobre la cabeza y el otro termina el empuje junto a la cadera. Ese es el instante de mayor palanca del ciclo.",objetivos:[]},
+    {id:"esp46",num:46,style:"Espalda",tags:["Espalda","Palanca"],nombre:"Axila por encima del agua",desc:"Nada con un solo brazo. Cuando la axila del brazo activo sale del agua, ese gesto impulsa el rolido automáticamente arrastrando el hombro y la cadera del mismo lado.",objetivos:[]},
+    {id:"esp47",num:47,style:"Espalda",tags:["Espalda","Coordinación"],nombre:"Rolido, tirón, rolido, empuje",desc:"Repite mentalmente: rolido, tirón, rolido, empuje. El primer rolido inicia el tirón. El segundo rolido inicia el empuje final. La cabeza permanece completamente inmóvil.",objetivos:[]},
+    {id:"esp48",num:48,style:"Espalda",tags:["Espalda","Coordinación"],nombre:"Meñique por delante",desc:"Al terminar el empuje la palma ya mira hacia afuera y el meñique corta la superficie primero de forma limpia. Practica durante varios largos hasta que sea automático.",objetivos:[]},
+    {id:"esp49",num:49,style:"Espalda",tags:["Espalda","Coordinación"],nombre:"Ejercicio de equilibrio con vaso en la frente",desc:"Coloca un vaso sobre la frente en posición dorsal. Nada a espalda sin que el vaso caiga. El rolido debe venir exclusivamente de caderas y hombros sin arrastrar la cabeza.",objetivos:[]},
+    {id:"esp50",num:50,style:"Espalda",tags:["Espalda","Coordinación"],nombre:"Solapamiento de la fase de propulsión de los brazos",desc:"Debe haber un breve solapamiento donde ambos brazos traccionan simultáneamente. Eso asegura que nunca haya un momento donde ningún brazo empuje.",objetivos:[]},
+    {id:"bra51",num:51,style:"Braza",tags:["Braza","Posición"],nombre:"La flecha",desc:"Impúlsate en posición X y compara con posición flecha hidrodinámica. Empuja el pecho hacia abajo durante el deslizamiento: esa presión eleva las caderas y el cuerpo se vuelve descendente.",objetivos:[]},
+    {id:"bra52",num:52,style:"Braza",tags:["Braza","Posición"],nombre:"Ejercicio de oscilaciones verticales",desc:"Empuja el pecho 8 cm hacia abajo: las caderas suben (posición descendente). Flexiona rodillas llevando talones hacia nalgas: las caderas bajan y la cabeza sube (posición ascendente). Alterna fluidamente.",objetivos:[]},
+    {id:"bra53",num:53,style:"Braza",tags:["Braza","Patada"],nombre:"Patada de pato",desc:"Talones hacia las nalgas con rodillas más juntas que los pies, pies flexionados hacia fuera. Barre circularmente hacia atrás y afuera hasta extender las piernas. Las rodillas nunca se abren más que los pies.",objetivos:[]},
+    {id:"bra54",num:54,style:"Braza",tags:["Braza","Patada"],nombre:"Patada de braza en posición dorsal",desc:"Boca arriba, talones atrás tocando los dedos de las manos, pies flexionados y girados hacia fuera. Barre en arco circular rápido hasta extender completamente. Al estar boca arriba puedes ver y corregir el movimiento.",objetivos:[]},
+    {id:"bra55",num:55,style:"Braza",tags:["Braza","Patada"],nombre:"Patada de braza vertical",desc:"En posición vertical, talones atrás con rodillas juntas, pies flexionados hacia fuera, barrido circular rápido hasta extender. La patada debe hacer que el cuerpo ascienda perceptiblemente.",objetivos:[]},
+    {id:"bra56",num:56,style:"Braza",tags:["Braza","Patada"],nombre:"Patada de braza con la cabeza alzada",desc:"Impúlsate con brazos en punta de flecha y cabeza mirando al frente. Columna firme y patada de braza con la cabeza siempre fuera. Vista directa de la brazada para corregir aceleración y recobro.",objetivos:[]},
+    {id:"bra57",num:57,style:"Braza",tags:["Braza","Brazada"],nombre:"Acción tridimensional de la brazada",desc:"Barrido hacia fuera formando Y, luego manos convergen bajo la barbilla. La brazada tiene tres dimensiones: anchura en el barrido, profundidad en el agarre, y altura con codos elevados.",objetivos:[]},
+    {id:"bra58",num:58,style:"Braza",tags:["Braza","Brazada"],nombre:"Remadas de braza",desc:"Con brazos ligeramente extendidos, barres en forma de ocho: afuera con palmas inclinadas hacia fuera, hacia dentro con palmas hacia dentro. Los codos altos generan sustentación.",objetivos:[]},
+    {id:"bra59",num:59,style:"Braza",tags:["Braza","Brazada"],nombre:"Brazadas de amplitud media",desc:"Reduce la amplitud hasta que las manos queden dentro de tu campo de visión. El barrido adentro tiene más aceleración y el recobro más inercia con esta amplitud media.",objetivos:[]},
+    {id:"bra60",num:60,style:"Braza",tags:["Braza","Brazada"],nombre:"Ejercicio de las esquinas",desc:"En cada cambio de dirección de las manos la muñeca gira y los pulgares cambian: hacia abajo en la apertura, hacia arriba en el cierre. Las esquinas deben ser rápidas y definidas.",objetivos:[]},
+    {id:"bra61",num:61,style:"Braza",tags:["Braza","Brazada"],nombre:"Ejercicio de velocidad de manos",desc:"Cara al frente, brazada visible. Las muñecas deben estar firmes en las esquinas. Los codos altos. Las manos van más rápido en el barrido adentro que en el afuera.",objetivos:[]},
+    {id:"bra62",num:62,style:"Braza",tags:["Braza","Brazada"],nombre:"Brazada de braza con los puños cerrados",desc:"Cierra los puños. El antebrazo es la única superficie propulsora, solo si los codos están muy altos. Al abrir los puños el contraste es inmediato: el agarre es mucho mayor.",objetivos:[]},
+    {id:"bra63",num:63,style:"Braza",tags:["Braza","Recobro"],nombre:"Elongación del recobro",desc:"Tras el barrido adentro, sumerge los codos bajo el pecho y extiéndelos hacia delante mientras el pecho desciende siguiéndolos. El recobro más largo es el que hace al cuerpo deslizarse.",objetivos:[]},
+    {id:"bra64",num:64,style:"Braza",tags:["Braza","Recobro"],nombre:"Proyección en punta de flecha",desc:"En cuanto las manos convergen bajo la barbilla, proyéctalas de inmediato como por un agujero estrecho. Al mismo tiempo el pecho se hunde y las caderas suben siguiendo a los brazos.",objetivos:[]},
+    {id:"bra65",num:65,style:"Braza",tags:["Braza","Recobro"],nombre:"Codos plegados y encogimiento de hombros",desc:"Al recobrar, encoge los hombros hacia las orejas y pliega los codos ocupando el menor espacio. Ese encogimiento reduce la resistencia frontal y el deslizamiento se alarga.",objetivos:[]},
+    {id:"bra66",num:66,style:"Braza",tags:["Braza","Respiración"],nombre:"Inhalar en el punto más alto",desc:"La boca sale del agua cuando los codos aceleran en las esquinas y el pecho se eleva. La boca sale como consecuencia del movimiento del cuerpo, no por un gesto de la cabeza.",objetivos:[]},
+    {id:"bra67",num:67,style:"Braza",tags:["Braza","Respiración"],nombre:"Ojos fijos en el agua",desc:"Mantén los ojos mirando al fondo durante todo el ciclo incluyendo cuando respiras. Si el cuerpo sube correctamente, la boca sale mientras los ojos siguen viendo el fondo.",objetivos:[]},
+    {id:"bra68",num:68,style:"Braza",tags:["Braza","Respiración"],nombre:"Ejercicio con una pelota de tenis",desc:"Coloca una pelota de tenis bajo la barbilla. Nada a braza: si alzas la barbilla la pelota cae. La respiración debe venir de la elevación generada por el movimiento del cuerpo.",objetivos:[]},
+    {id:"bra69",num:69,style:"Braza",tags:["Braza","Palanca"],nombre:"Nado a braza con delfín",desc:"Nada a braza con patada de delfín. Cuando los brazos se extienden al frente y el pecho presiona hacia abajo, el cuerpo ondula y las piernas dan el latigazo. Exagera el balanceo vertical.",objetivos:[]},
+    {id:"bra70",num:70,style:"Braza",tags:["Braza","Palanca"],nombre:"Nado a braza alternando delfín con patada de braza",desc:"Una brazada con delfín, la siguiente con braza normal alternando. Transfiere el sentido de oscilación vertical del delfín a la braza regular.",objetivos:[]},
+    {id:"bra71",num:71,style:"Braza",tags:["Braza","Palanca"],nombre:"Brazada ascendente para respirar, patada descendente para deslizarse",desc:"La brazada sube el cuerpo y la patada lo impulsa hacia abajo. Cuando las esquinas elevan el pecho, los talones ya están recogidos preparando la patada.",objetivos:[]},
+    {id:"bra72",num:72,style:"Braza",tags:["Braza","Coordinación"],nombre:"Nada de estrellas",desc:"Da la brazada completa y espera: no des la patada hasta que los brazos estén casi totalmente extendidos. Secuencia estricta: brazada primero, patada después.",objetivos:[]},
+    {id:"bra73",num:73,style:"Braza",tags:["Braza","Coordinación"],nombre:"Mantra: brazada, respiración, patada, deslizamiento",desc:"Sincroniza cada palabra con la acción. Ningún elemento se solapa con el siguiente. Si el deslizamiento llega antes de que la patada termine, interrumpes la propulsión.",objetivos:[]},
+    {id:"bra74",num:74,style:"Braza",tags:["Braza","Coordinación"],nombre:"Longitud del deslizamiento, velocidad del deslizamiento",desc:"Mide tu deslizamiento. El momento exacto para la siguiente brazada es cuando la velocidad cae notablemente, ni antes ni después.",objetivos:[]},
+    {id:"bra75",num:75,style:"Braza",tags:["Braza","Coordinación"],nombre:"Enhebra la aguja",desc:"En cada deslizamiento el cuerpo entra por el agujero más pequeño posible. Las manos en punta de flecha abren el agujero y la cabeza, hombros, caderas y pies siguen la misma trayectoria.",objetivos:[]},
+    {id:"mar76",num:76,style:"Mariposa",tags:["Mariposa","Posición"],nombre:"La reverencia",desc:"Activa el abdomen y echa el pecho hacia delante 15 cm sin doblar la columna. En el agua esa reverencia inicia la onda. Si la mariposa te agota, probablemente inicias el movimiento desde las piernas.",objetivos:[]},
+    {id:"mar77",num:77,style:"Mariposa",tags:["Mariposa","Posición"],nombre:"Desplazamiento del peso",desc:"Mantén firme el núcleo y presiona el pecho hacia abajo por debajo del nivel de las caderas. Siente el desplazamiento del peso hacia delante. Antes de cada largo activa ese desplazamiento.",objetivos:[]},
+    {id:"mar78",num:78,style:"Mariposa",tags:["Mariposa","Patada"],nombre:"Ondear una cinta",desc:"Ondea una cinta de arriba a abajo. La ola nace en tu mano y viaja hasta el extremo. En el agua igual: la onda nace en el pecho y viaja hasta los pies. Los pies son solo el extremo de la cinta.",objetivos:[]},
+    {id:"mar79",num:79,style:"Mariposa",tags:["Mariposa","Patada"],nombre:"El delfín profundo a superficial",desc:"Con el agua a las caderas, haz la reverencia y salta. En el punto más alto profundiza la reverencia y al entrar al agua sigue hundiéndola mientras las piernas dan el latigazo descendente.",objetivos:[]},
+    {id:"mar80",num:80,style:"Mariposa",tags:["Mariposa","Patada"],nombre:"Zambullidas de delfín",desc:"Haz la reverencia y salta. En el aire profundiza y al entrar sigue impulsando la cabeza hacia abajo mientras las piernas suben y luego dan el latigazo. Repite varias zambullidas seguidas.",objetivos:[]},
+    {id:"mar81",num:81,style:"Mariposa",tags:["Mariposa","Patada"],nombre:"Delfín vertical",desc:"En posición vertical, inclina el tren superior hacia abajo y luego arriba dejando que las piernas reaccionen. Cuando el tren superior baja los pies suben; cuando sube los pies bajan.",objetivos:[]},
+    {id:"mar82",num:82,style:"Mariposa",tags:["Mariposa","Patada"],nombre:"Delfín de espaldas",desc:"Impúlsate boca arriba y realiza el delfín. La onda empieza en el pecho y viaja hasta los pies. Las rodillas no deben sobresalir de la superficie ni doblarse en exceso.",objetivos:[]},
+    {id:"mar83",num:83,style:"Mariposa",tags:["Mariposa","Brazada"],nombre:"Inclinación de las manos durante el barrido",desc:"Cuando los brazos están extendidos al frente, inclina las yemas hacia abajo para que las palmas miren hacia atrás y hacia afuera, no hacia el fondo.",objetivos:[]},
+    {id:"mar84",num:84,style:"Mariposa",tags:["Mariposa","Brazada"],nombre:"Barridos trazando signos de interrogación",desc:"Desde la posición extendida, los brazos trazan el contorno de un signo de interrogación. Barrido hacia fuera, luego curva hacia adentro acelerando en el empuje.",objetivos:[]},
+    {id:"mar85",num:85,style:"Mariposa",tags:["Mariposa","Brazada"],nombre:"Tirón y empuje en mariposa",desc:"Una sola brazada muy lenta. En el tirón el codo está alto y la mano barre hacia adentro. En el empuje la mano acelera junto a la cadera. El movimiento no es recto sino curvo.",objetivos:[]},
+    {id:"mar86",num:86,style:"Mariposa",tags:["Mariposa","Brazada"],nombre:"Nado con los puños cerrados en mariposa",desc:"Nada a mariposa cerrando los puños. El antebrazo trabaja como pala solo si el codo está muy alto durante todo el recorrido.",objetivos:[]},
+    {id:"mar87",num:87,style:"Mariposa",tags:["Mariposa","Recobro"],nombre:"El recobro de los nudillos",desc:"Al sacar los brazos al final del empuje, sácalos con los nudillos mirando al cielo. Obliga a que los codos salgan altos y los brazos viajen bajos sobre el agua.",objetivos:[]},
+    {id:"mar88",num:88,style:"Mariposa",tags:["Mariposa","Recobro"],nombre:"Brazos bajos en la fase aérea",desc:"Nada a mariposa con los brazos rozando la superficie durante el recobro aéreo. Los hombros se relajan y el recobro se vuelve eficiente.",objetivos:[]},
+    {id:"mar89",num:89,style:"Mariposa",tags:["Mariposa","Respiración"],nombre:"Respirar en el punto más bajo",desc:"Respira en el instante exacto en que el pecho está en su posición más baja antes del segundo latigazo. Ese es el punto donde la cabeza sale del agua de forma natural.",objetivos:[]},
+    {id:"mar90",num:90,style:"Mariposa",tags:["Mariposa","Respiración"],nombre:"Una respiración cada dos ciclos",desc:"Nada a mariposa haciendo dos ciclos completos sin respirar y luego uno respirando. Esa frecuencia más baja permite que la técnica no se rompa al respirar.",objetivos:[]},
+    {id:"mar91",num:91,style:"Mariposa",tags:["Mariposa","Palanca"],nombre:"Mariposa con un solo brazo",desc:"Nada a mariposa solo con un brazo mientras el otro permanece extendido al frente. Exagera el rolido lateral y la transferencia de potencia del núcleo.",objetivos:[]},
+    {id:"mar92",num:92,style:"Mariposa",tags:["Mariposa","Palanca"],nombre:"Mariposa con pausa en la entrada",desc:"Tras la entrada de los brazos al agua, congela la posición un instante antes del tirón. En esa pausa el cuerpo sigue avanzando y el pecho presiona hacia abajo.",objetivos:[]},
+    {id:"mar93",num:93,style:"Mariposa",tags:["Mariposa","Coordinación"],nombre:"Primera patada al entrar, segunda al empujar",desc:"Primera patada cuando los brazos entran al agua. Segunda patada cuando los brazos empujan junto a las caderas. Esas dos patadas son la estructura completa de la mariposa.",objetivos:[]},
+    {id:"mar94",num:94,style:"Mariposa",tags:["Mariposa","Coordinación"],nombre:"Mariposa lenta",desc:"Nada a mariposa lo más despacio posible sin hundir el cuerpo. La mariposa lenta obliga a que cada fase sea técnicamente perfecta porque no hay inercia que tape los errores.",objetivos:[]},
+    {id:"mar95",num:95,style:"Mariposa",tags:["Mariposa","Coordinación"],nombre:"Mariposa sin pausas",desc:"Nada a mariposa sin pausas en ningún punto. La onda debe ser continua. Sin pausas la mariposa fluye con sensación de ingravidez.",objetivos:[]}
+  ];
+
+  // Biblioteca cargada estáticamente (95 ejercicios de lightswan.github.io/biblioteca-natacion)
+  function cargarBiblioteca(){
+    renderStyles();
+  }
+
+  // ====================================================================
+  // DATOS DE ESTILOS (sidebar)
+  // ====================================================================
+
+  const stylesData = {
+    crol:{label:"Crol",percentage:60,active:true,
+      deficiencies:["Entrada cruzada","Codo ca&iacute;do","Respiraci&oacute;n tard&iacute;a","Mala rotaci&oacute;n","Cabeza alta","Patada d&eacute;bil","Desalineaci&oacute;n","Recobro bajo","Falta de agarre"]},
+    espalda:{label:"Espalda",percentage:40,active:true,
+      deficiencies:["Cadera hundida","Rotaci&oacute;n pobre","Entrada abierta","Brazada corta","Patada inestable","Cabeza m&oacute;vil"]},
+    braza:{label:"Braza",percentage:20,active:false,
+      deficiencies:["Tijera abierta","Patada asim&eacute;trica","Recobro lento","Deslizamiento corto","Respiraci&oacute;n tard&iacute;a","Mala coordinaci&oacute;n"]},
+    mariposa:{label:"Mariposa",percentage:20,active:false,
+      deficiencies:["Segunda patada d&eacute;bil","Respiraci&oacute;n alta","Ondulaci&oacute;n rota","Entrada dura","Recobro r&iacute;gido","Poca amplitud"]}
+  };
+
+  // Map styles to library IDs (único, ya declarado arriba)
+  const styleKeyMap = {crol:"Crol",espalda:"Espalda",braza:"Braza",mariposa:"Mariposa"};
+  const reverseStyleMap = {Crol:"crol",Espalda:"espalda",Braza:"braza",Mariposa:"mariposa"};
+
+  // ====================================================================
+  // RENDER ESTILOS
+  // ====================================================================
+
+  const container = document.getElementById("stylesContainer");
+
+  function renderStyles(){
+    container.innerHTML = "";
+    Object.entries(stylesData).forEach(([key,style]) => {
+      const card = document.createElement("div");
+      card.className = "style-card";
+      card.dataset.key = key;
+      card.innerHTML = `
+        <div class="style-top">
+          <div class="style-left">
+            <input class="checkbox" type="checkbox" ${style.active?"checked":""} onchange="toggleStyle('${key}')">
+            <div class="style-name">${style.label}</div>
+          </div>
+          <div class="percentage-input-wrap">
+            <input type="number" min="0" max="100" step="5" value="${style.percentage}" ${!style.active?"disabled":""} oninput="handlePercentageChange('${key}',this.value)">
+            <span>%</span>
+          </div>
+        </div>
+        <input type="range" min="0" max="100" step="5" value="${style.percentage}" ${!style.active?"disabled":""} oninput="handlePercentageChange('${key}',this.value)">
+      `;
+      container.appendChild(card);
+    });
+    renderDeficiencias();
+    bindTags();
+  }
+
+  function renderDeficiencias(){
+    const defsContainer = document.getElementById("stylesDefContainer");
+    if(!defsContainer) return;
+    defsContainer.innerHTML = "";
+    Object.entries(stylesData).forEach(([key,style]) => {
+      if(!style.active) return;
+      const group = document.createElement("div");
+      group.style.marginBottom = "10px";
+      group.innerHTML = `<div style="font-size:11px;color:var(--primary);font-weight:700;margin-bottom:6px;text-transform:uppercase;">${style.label}</div>
+        <div class="deficiencies">${style.deficiencies.map(d => `<div class="tag deficiency" data-key="${key}" data-def="${d}">${d}</div>`).join("")}</div>`;
+      defsContainer.appendChild(group);
+    });
+    bindTags();
+    actualizarCantTecnica();
+  }
+
+  function bindTags(){
+    document.querySelectorAll(".deficiency").forEach(tag => {
+      tag.addEventListener("click", () => {
+        tag.classList.toggle("active");
+        actualizarCantTecnica();
+      });
+    });
+  }
+
+  function toggleStyle(key){
+    const wasActive = stylesData[key].active;
+    stylesData[key].active = !wasActive;
+    const actives = Object.entries(stylesData).filter(([k,s]) => s.active);
+    let total = actives.reduce((sum,[k,s]) => sum + s.percentage, 0);
+
+    if(!wasActive){
+      // Se activó — darle un porcentaje y ajustar otros
+      if(actives.length === 1){
+        stylesData[key].percentage = 100;
+      } else {
+        const pct = Math.min(20, Math.round(100 / actives.length / 5) * 5);
+        stylesData[key].percentage = pct;
+        total += pct;
+      }
+    }
+    // Ajustar a exactamente 100
+    total = actives.reduce((sum,[k,s]) => sum + s.percentage, 0);
+    if(total !== 100 && actives.length > 0){
+      let diff = total - 100;
+      const sorted = [...actives].sort((a,b) => b[1].percentage - a[1].percentage);
+      for(const [k,s] of sorted){
+        if(diff === 0) break;
+        if(diff > 0){
+          const reduction = Math.min(s.percentage, diff);
+          s.percentage -= reduction;
+          diff -= reduction;
+        } else {
+          const add = Math.min(100 - s.percentage, -diff);
+          s.percentage += add;
+          diff += add;
+        }
+      }
+    }
+    if(wasActive) stylesData[key].percentage = 0;
+    renderStyles();
+    renderDeficiencias();
+  }
+
+  function syncAllCardsDisplay(){
+    document.querySelectorAll(".style-card[data-key]").forEach(card => {
+      const k = card.dataset.key;
+      const s = stylesData[k];
+      if(!s) return;
+      const range = card.querySelector("input[type=range]");
+      const numInput = card.querySelector("input[type=number]");
+      const pctSpan = card.querySelector(".percentage-input-wrap span");
+      if(range) range.value = s.percentage;
+      if(numInput) numInput.value = s.percentage;
+      if(pctSpan) pctSpan.textContent = s.percentage + "%";
+    });
+  }
+
+  function handlePercentageChange(key, value){
+    const oldVal = stylesData[key].percentage;
+    const val = Math.max(0, Math.min(100, Math.round(parseInt(value) / 5) * 5 || 0));
+    stylesData[key].percentage = val;
+    const delta = val - oldVal;
+    const actives = Object.entries(stylesData).filter(([k,s]) => s.active && k !== key);
+    const totalOthers = actives.reduce((sum,[k,s]) => sum + s.percentage, 0);
+    if(delta !== 0 && actives.length > 0){
+      // Distribuir el cambio entre los otros estilos activos
+      const toDistribute = -delta;
+      let distributed = 0;
+      // Ordenar de mayor a menor porcentaje
+      const sorted = [...actives].sort((a,b) => b[1].percentage - a[1].percentage);
+      for(const [k,s] of sorted){
+        const remaining = toDistribute - distributed;
+        if(remaining === 0) break;
+        if(totalOthers === 0){
+          s.percentage += remaining;
+          distributed += remaining;
+          break;
+        }
+        const share = Math.round((s.percentage / totalOthers) * toDistribute / 5) * 5;
+        const clamped = Math.max(0, Math.min(100, s.percentage + share));
+        const actual = clamped - s.percentage;
+        s.percentage = clamped;
+        distributed += actual;
+      }
+      // Si sobra por redondeo, asignar al primero
+      const remainder = toDistribute - distributed;
+      if(remainder !== 0 && sorted.length > 0){
+        const first = sorted[0][1];
+        first.percentage = Math.max(0, Math.min(100, first.percentage + remainder));
+      }
+    }
+    syncAllCardsDisplay();
+  }
+
+  // ====================================================================
+  // SLIDERS VOLUMEN
+  // ====================================================================
+
+  const totalMeters = document.getElementById("totalMeters");
+  const totalValue = document.getElementById("totalValue");
+  const seriesCount = document.getElementById("seriesCount");
+  const seriesCountValue = document.getElementById("seriesCountValue");
+  const seriesMeters = document.getElementById("seriesMeters");
+  const seriesValue = document.getElementById("seriesValue");
+
+  let actualizandoVolumen = false;
+  let actualizandoTotal = false;
+  let baseMainVolume = parseInt(totalMeters.value);
+
+  function calcularExtrasVolumen(){
+    return (extrasActivos.hi25 ? parseInt(hi25Cant.value) * 25 : 0)
+      + (extrasActivos.tiempo ? parseInt(tiempoDistSlider.value) * parseInt(tiempoSeries.value) : 0)
+      + (extrasActivos.fondo ? parseInt(fondoSlider.value) : 0);
+  }
+
+  function sincronizarTotalConExtras(){
+    if(actualizandoTotal) return;
+    actualizandoTotal = true;
+    const extrasVol = calcularExtrasVolumen();
+    const total = Math.max(25, Math.min(10000, baseMainVolume + extrasVol));
+    totalMeters.value = total;
+    totalValue.innerHTML = "~" + total + "m";
+    const fondoMax = Math.min(3000, total);
+    fondoSlider.max = fondoMax;
+    if(parseInt(fondoSlider.value) > fondoMax){
+      fondoSlider.value = fondoMax;
+      fondoValue.innerHTML = fondoMax + "m";
+    }
+    actualizandoTotal = false;
+  }
+
+  function getMetrosPorSerieEfectivo(){
+    if(extrasActivos.variarMetros){
+      const min = parseInt(variarMetrosMin.value);
+      const max = parseInt(variarMetrosMax.value);
+      return Math.round((min + max) / 2 / 50) * 50;
+    }
+    return parseInt(seriesMeters.value);
+  }
+
+  function recalcularTotal(){
+    if(actualizandoVolumen) return;
+    actualizandoVolumen = true;
+    const count = parseInt(seriesCount.value);
+    const m = getMetrosPorSerieEfectivo();
+    const base = Math.max(50, Math.min(10000, Math.round(count * m / 50) * 50));
+    baseMainVolume = base;
+    const extrasVol = calcularExtrasVolumen();
+    const total = Math.max(25, Math.min(10000, base + extrasVol));
+    totalMeters.value = total;
+    totalValue.innerHTML = "~" + total + "m";
+    actualizandoVolumen = false;
+  }
+
+  function recalcularSeriesCount(){
+    if(actualizandoVolumen) return;
+    actualizandoVolumen = true;
+    const m = getMetrosPorSerieEfectivo();
+    const count = Math.max(2, Math.min(60, Math.round(baseMainVolume / m)));
+    seriesCount.value = count;
+    seriesCountValue.innerHTML = count;
+    actualizandoVolumen = false;
+  }
+
+  totalMeters.addEventListener("input", () => {
+    if(actualizandoTotal || actualizandoVolumen) return;
+    const raw = parseInt(totalMeters.value);
+    const extrasVol = calcularExtrasVolumen();
+    baseMainVolume = Math.max(25, Math.min(10000, raw - extrasVol));
+    totalValue.innerHTML = "~" + raw + "m";
+    recalcularSeriesCount();
+    const fondoMax = Math.min(3000, raw);
+    fondoSlider.max = fondoMax;
+    if(parseInt(fondoSlider.value) > fondoMax){
+      fondoSlider.value = fondoMax;
+      fondoValue.innerHTML = fondoMax + "m";
+    }
+  });
+
+  seriesCount.addEventListener("input", () => {
+    seriesCountValue.innerHTML = seriesCount.value;
+    recalcularTotal();
+  });
+
+  seriesMeters.addEventListener("input", () => {
+    seriesValue.innerHTML = seriesMeters.value + "m";
+    recalcularTotal();
+  });
+
+  const variarMetrosMin = document.getElementById("variarMetrosMin");
+  const variarMetrosMax = document.getElementById("variarMetrosMax");
+  const variarMetrosValue = document.getElementById("variarMetrosValue");
+
+  function actualizarVariarMetrosDisplay(){
+    const min = parseInt(variarMetrosMin.value);
+    const max = parseInt(variarMetrosMax.value);
+    variarMetrosValue.innerHTML = min + "m &ndash; " + max + "m";
+  }
+
+  variarMetrosMin.addEventListener("input", () => {
+    if(parseInt(variarMetrosMin.value) >= parseInt(variarMetrosMax.value)){
+      variarMetrosMax.value = Math.min(400, parseInt(variarMetrosMin.value) + 50);
+    }
+    actualizarVariarMetrosDisplay();
+    recalcularTotal();
+  });
+  variarMetrosMax.addEventListener("input", () => {
+    if(parseInt(variarMetrosMax.value) <= parseInt(variarMetrosMin.value)){
+      variarMetrosMin.value = Math.max(50, parseInt(variarMetrosMax.value) - 50);
+    }
+    actualizarVariarMetrosDisplay();
+    recalcularTotal();
+  });
+
+  function getSerieMetrosAleatorio(){
+    if(extrasActivos.variarMetros){
+      const min = parseInt(variarMetrosMin.value);
+      const max = parseInt(variarMetrosMax.value);
+      const pasos = (max - min) / 50;
+      return min + (Math.floor(Math.random() * (pasos + 1)) * 50);
+    }
+    return parseInt(seriesMeters.value);
+  }
+
+  const extrasActivos = {};
+  const extraToggles = document.querySelectorAll(".extra-toggle");
+  extraToggles.forEach(btn => {
+    btn.addEventListener("click", () => {
+      const key = btn.dataset.extra;
+      if(extrasActivos[key]){
+        delete extrasActivos[key];
+        btn.classList.remove("active");
+      } else {
+        extrasActivos[key] = true;
+        btn.classList.add("active");
+      }
+      document.getElementById(key + "25Options") && (document.getElementById(key + "25Options").style.display = extrasActivos[key] ? "block" : "none");
+      document.getElementById(key + "Options") && (document.getElementById(key + "Options").style.display = extrasActivos[key] ? "block" : "none");
+      sincronizarTotalConExtras();
+    });
+  });
+
+  // Variar metros: transforma el slider único en dual-range
+  document.getElementById("btnVariarMetros").addEventListener("click", () => {
+    const activo = !!extrasActivos.variarMetros;
+    if(activo){
+      delete extrasActivos.variarMetros;
+    } else {
+      extrasActivos.variarMetros = true;
+    }
+    document.getElementById("btnVariarMetros").classList.toggle("active");
+    document.getElementById("seriesSingleTop").style.display = extrasActivos.variarMetros ? "none" : "";
+    document.getElementById("seriesMeters").style.display = extrasActivos.variarMetros ? "none" : "";
+    document.getElementById("seriesDualRange").style.display = extrasActivos.variarMetros ? "" : "none";
+    recalcularTotal();
+  });
+
+  const hi25Cant = document.getElementById("hi25Cant");
+  const hi25CantValue = document.getElementById("hi25CantValue");
+  hi25Cant.addEventListener("input", () => { hi25CantValue.innerHTML = hi25Cant.value; sincronizarTotalConExtras(); });
+
+  const tiempoOptions = document.getElementById("tiempoOptions");
+  const tiempoSlider = document.getElementById("tiempoSlider");
+  const tiempoValue = document.getElementById("tiempoValue");
+  const tiempoDistSlider = document.getElementById("tiempoDistSlider");
+  const tiempoDistValue = document.getElementById("tiempoDistValue");
+  const tiempoRitmo = document.getElementById("tiempoRitmo");
+  const tiempoSeries = document.getElementById("tiempoSeries");
+  const tiempoSeriesValue = document.getElementById("tiempoSeriesValue");
+  tiempoSeries.addEventListener("input", () => { tiempoSeriesValue.innerHTML = tiempoSeries.value; sincronizarTotalConExtras(); });
+
+  function actualizarTiempoRitmo(){
+    const seg = parseInt(tiempoSlider.value);
+    const m = parseInt(tiempoDistSlider.value);
+    tiempoValue.innerHTML = seg + "s";
+    tiempoDistValue.innerHTML = m + "m";
+    const ritmo100 = Math.round(seg / m * 100);
+    const min = Math.floor(ritmo100 / 60);
+    const s = ritmo100 % 60;
+    tiempoRitmo.innerHTML = min + ":" + String(s).padStart(2,"0");
+  }
+
+  tiempoSlider.addEventListener("input", () => { actualizarTiempoRitmo(); sincronizarTotalConExtras(); });
+  tiempoDistSlider.addEventListener("input", () => { actualizarTiempoRitmo(); sincronizarTotalConExtras(); });
+
+  const fondoOptions = document.getElementById("fondoOptions");
+  const fondoSlider = document.getElementById("fondoSlider");
+  const fondoValue = document.getElementById("fondoValue");
+  fondoSlider.addEventListener("input", () => { fondoValue.innerHTML = fondoSlider.value + "m"; sincronizarTotalConExtras(); });
+
+  // Botón técnica (corrección 4)
+  document.getElementById("btnTecnica").addEventListener("click", function(){
+    const section = document.getElementById("tecnicaSection");
+    const isOpen = section.style.display !== "none";
+    section.style.display = isOpen ? "none" : "block";
+    this.classList.toggle("active", !isOpen);
+    if(!isOpen) renderDeficiencias();
+  });
+
+  const cantTecnica = document.getElementById("cantTecnica");
+  const cantTecnicaValue = document.getElementById("cantTecnicaValue");
+  const tecnicaHint = document.getElementById("tecnicaHint");
+
+  function actualizarCantTecnica(){
+    if(!cantTecnica) return;
+    const deficienciasActivas = document.querySelectorAll(".deficiency.active").length > 0;
+    if(!deficienciasActivas){
+      cantTecnica.value = 0;
+      cantTecnicaValue.innerHTML = `<span style="color:var(--primary)">0%</span> · Rendimiento <span style="color:var(--success)">100%</span>`;
+      cantTecnica.disabled = true;
+      if(tecnicaHint) tecnicaHint.style.display = "block";
+    } else {
+      cantTecnica.disabled = false;
+      if(tecnicaHint) tecnicaHint.style.display = "none";
+    }
+  }
+
+  cantTecnica.addEventListener("input", () => {
+    const pct = parseInt(cantTecnica.value);
+    cantTecnicaValue.innerHTML = `<span style="color:var(--primary)">${pct}%</span> · Rendimiento <span style="color:var(--success)">${100-pct}%</span>`;
+  });
+
+  actualizarCantTecnica();
+
+  const intensidadMin = document.getElementById("intensidadMin");
+  const intensidadMax = document.getElementById("intensidadMax");
+  const intensidadValue = document.getElementById("intensidadValue");
+
+  function actualizarIntensidadDisplay(){
+    const min = parseInt(intensidadMin.value);
+    const max = parseInt(intensidadMax.value);
+    intensidadValue.innerHTML = min + "% &ndash; " + max + "%";
+  }
+
+  intensidadMin.addEventListener("input", () => {
+    if(parseInt(intensidadMin.value) >= parseInt(intensidadMax.value)){
+      intensidadMax.value = Math.min(100, parseInt(intensidadMin.value) + 5);
+    }
+    actualizarIntensidadDisplay();
+  });
+
+  intensidadMax.addEventListener("input", () => {
+    if(parseInt(intensidadMax.value) <= parseInt(intensidadMin.value)){
+      intensidadMax.value = Math.min(100, parseInt(intensidadMin.value) + 5);
+    }
+    actualizarIntensidadDisplay();
+  });
+
+  function getIntensidadAleatoria(){
+    const min = parseInt(intensidadMin.value);
+    const max = parseInt(intensidadMax.value);
+    const step = 5;
+    const steps = Math.floor((max - min) / step);
+    return min + (Math.floor(Math.random() * (steps + 1)) * step);
+  }
+
+  // ====================================================================
+  // IMPLEMENTOS
+  // ====================================================================
+
+  const implementosSeleccionados = new Set();
+  const cantImplementos = document.getElementById("cantImplementos");
+  const cantImplementosValue = document.getElementById("cantImplementosValue");
+  cantImplementos.addEventListener("input", () => { cantImplementosValue.innerHTML = cantImplementos.value; });
+
+  document.querySelectorAll(".implemento").forEach(tag => {
+    tag.addEventListener("click", () => {
+      tag.classList.toggle("active");
+      const impl = tag.dataset.implemento;
+      if(tag.classList.contains("active")){
+        implementosSeleccionados.add(impl);
+      } else {
+        implementosSeleccionados.delete(impl);
+      }
+      if(implementosSeleccionados.size === 0){
+        cantImplementos.value = 0;
+        cantImplementosValue.innerHTML = "0";
+      } else if(parseInt(cantImplementos.value) === 0){
+        cantImplementos.value = Math.min(3, parseInt(cantImplementos.max));
+        cantImplementosValue.innerHTML = cantImplementos.value;
+      }
+    });
+  });
+
+  // ====================================================================
+  // MODAL SYSTEM
+  // ====================================================================
+
+  let modalCallback = null;
+  let modalCurrentStyle = "Crol";
+  let modalIsGenerico = false;
+  let modalGenericoPool = [];
+
+  const modalOverlay = document.getElementById("modalOverlay");
+  const modalTitle = document.getElementById("modalTitle");
+  const modalSearch = document.getElementById("modalSearch");
+  const modalStyleFilter = document.getElementById("modalStyleFilter");
+  const modalExerciseList = document.getElementById("modalExerciseList");
+  const modalClose = document.getElementById("modalClose");
+
+  function openModalGenerico(title, pool, style, callback){
+    modalCallback = callback;
+    modalCurrentStyle = style;
+    modalIsGenerico = true;
+    modalGenericoPool = pool;
+    modalTitle.textContent = title;
+    modalSearch.value = "";
+    renderStyleFilters(style);
+    renderModalGenericos(pool, "");
+    modalOverlay.classList.add("open");
+    modalSearch.focus();
+  }
+
+  function renderModalGenericos(pool, query){
+    const q = query.toLowerCase();
+    const filtered = pool.filter(e => !q || e.nombre.toLowerCase().includes(q));
+    if(filtered.length === 0){
+      modalExerciseList.innerHTML = `<p style="text-align:center;color:var(--muted);padding:30px;">No se encontraron series.</p>`;
+      return;
+    }
+    modalExerciseList.innerHTML = filtered.map(e => `
+      <div class="modal-exercise-item" data-id="${e.id}">
+        <h4>${e.nombre}</h4>
+        <div class="tags">${e.tags.map(t => `<span class="mini-tag">${t}</span>`).join("")}</div>
+      </div>
+    `).join("");
+
+    modalExerciseList.querySelectorAll(".modal-exercise-item").forEach(item => {
+      item.addEventListener("click", () => {
+        const id = item.dataset.id;
+        const entry = pool.find(e => e.id === id);
+        if(entry && modalCallback){
+          modalCallback(entry);
+        }
+        closeModal();
+      });
+    });
+  }
+
+  function openModal(title, style, callback){
+    modalCallback = callback;
+    modalCurrentStyle = style;
+    modalIsGenerico = false;
+    modalTitle.textContent = title;
+    modalSearch.value = "";
+    renderStyleFilters(style);
+    renderModalExercises(style, "");
+    modalOverlay.classList.add("open");
+    modalSearch.focus();
+  }
+
+  function closeModal(){
+    modalOverlay.classList.remove("open");
+    modalCallback = null;
+    modalIsGenerico = false;
+    modalGenericoPool = [];
+  }
+
+  modalClose.addEventListener("click", closeModal);
+  modalOverlay.addEventListener("click", (e) => {
+    if(e.target === modalOverlay) closeModal();
+  });
+
+  modalSearch.addEventListener("input", () => {
+    if(modalIsGenerico){
+      renderModalGenericos(modalGenericoPool, modalSearch.value);
+    } else {
+      const style = document.querySelector(".modal-style-filter .style-tag.active");
+      const activeStyle = style ? style.dataset.style : modalCurrentStyle;
+      renderModalExercises(activeStyle, modalSearch.value);
+    }
+  });
+
+  function renderStyleFilters(activeStyle){
+    const styles = ["Crol","Espalda","Braza","Mariposa"];
+    modalStyleFilter.innerHTML = styles.map(s => `
+      <button class="style-tag ${s === activeStyle ? 'active' : ''}" data-style="${s}">${s}</button>
+    `).join("");
+
+    modalStyleFilter.querySelectorAll(".style-tag").forEach(btn => {
+      btn.addEventListener("click", () => {
+        modalStyleFilter.querySelectorAll(".style-tag").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        if(modalIsGenerico){
+          const pool = seriesGenericas.filter(s => s.style === btn.dataset.style);
+          renderModalGenericos(pool, modalSearch.value);
+        } else {
+          renderModalExercises(btn.dataset.style, modalSearch.value);
+        }
+      });
+    });
+  }
+
+  function renderModalExercises(style, query){
+    const q = query.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    const filtered = ejerciciosBiblioteca.filter(e => {
+      if(e.style !== style) return false;
+      if(!q) return true;
+      const name = e.nombre.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      const desc = e.desc.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      return name.includes(q) || desc.includes(q);
+    });
+
+    if(filtered.length === 0){
+      modalExerciseList.innerHTML = `<p style="text-align:center;color:var(--muted);padding:30px;">No se encontraron ejercicios para "${style}" con esa b&uacute;squeda.</p>`;
+      return;
+    }
+
+    modalExerciseList.innerHTML = filtered.map(e => `
+      <div class="modal-exercise-item" data-id="${e.id}">
+        <h4>${e.num ? `<span style="color:var(--muted);font-weight:400;margin-right:6px;">${e.num}.</span>` : ""}${e.nombre}</h4>
+        <div class="tags">${e.tags.map(t => `<span class="mini-tag">${t}</span>`).join("")}</div>
+        <p>${e.desc}</p>
+        <div class="obj-preview">${e.objetivos&&e.objetivos.length > 0 ? "🎯 " + e.objetivos.slice(0,2).join(" · ") : ""}</div>
+      </div>
+    `).join("");
+
+    modalExerciseList.querySelectorAll(".modal-exercise-item").forEach(item => {
+      item.addEventListener("click", () => {
+        const id = item.dataset.id;
+        const ejercicio = ejerciciosBiblioteca.find(e => e.id === id);
+        if(ejercicio && modalCallback){
+          modalCallback(ejercicio);
+        }
+        closeModal();
+      });
+    });
+  }
+
+  // ====================================================================
+  // SERIES GENERICAS (para calentamiento y cuando no hay deficiencias)
+  // ====================================================================
+
+  const seriesGenericas = [
+    {id:"gen_crol1", style:"Crol", nombre:"Crol", tags:["Crol"]},
+    {id:"gen_crol2", style:"Crol", nombre:"Crol bilateral", tags:["Crol","Respiraci&oacute;n"]},
+    {id:"gen_crol3", style:"Crol", nombre:"Crol con aletas", tags:["Crol","Aletas"]},
+    {id:"gen_crol4", style:"Crol", nombre:"Crol con palas", tags:["Crol","Palas"]},
+    {id:"gen_crol5", style:"Crol", nombre:"Crol patada con tabla", tags:["Crol","Tabla"]},
+    {id:"gen_crol6", style:"Crol", nombre:"Crol con pullboy", tags:["Crol","Pull"]},
+    {id:"gen_esp1", style:"Espalda", nombre:"Espalda", tags:["Espalda"]},
+    {id:"gen_esp2", style:"Espalda", nombre:"Espalda con aletas", tags:["Espalda","Aletas"]},
+    {id:"gen_esp3", style:"Espalda", nombre:"Espalda patada", tags:["Espalda","Tabla"]},
+    {id:"gen_esp4", style:"Espalda", nombre:"Espalda con pullboy", tags:["Espalda","Pull"]},
+    {id:"gen_bra1", style:"Braza", nombre:"Braza", tags:["Braza"]},
+    {id:"gen_bra2", style:"Braza", nombre:"Braza con aletas", tags:["Braza","Aletas"]},
+    {id:"gen_bra3", style:"Braza", nombre:"Braza patada", tags:["Braza","Tabla"]},
+    {id:"gen_bra4", style:"Braza", nombre:"Braza deslizamiento", tags:["Braza","Deslizamiento"]},
+    {id:"gen_mar1", style:"Mariposa", nombre:"Mariposa", tags:["Mariposa"]},
+    {id:"gen_mar2", style:"Mariposa", nombre:"Mariposa con aletas", tags:["Mariposa","Aletas"]},
+    {id:"gen_mar3", style:"Mariposa", nombre:"Mariposa delf&iacute;n", tags:["Mariposa","Delf&iacute;n"]},
+    {id:"gen_mar4", style:"Mariposa", nombre:"Mariposa patada", tags:["Mariposa","Tabla"]}
+  ];
+
+  const implementTags = new Set(["Aletas","Palas","Pull","Tabla"]);
+
+  function getGenericaPorStyle(style){
+    // Excluir siempre ejercicios con implementos (se asignan explícitamente)
+    let pool = seriesGenericas.filter(s => s.style === style && !s.tags.some(t => implementTags.has(t)));
+    if(pool.length === 0){
+      return {id:"gen_"+style, style:style, nombre:style, tags:[style]};
+    }
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+
+  // ====================================================================
+  // GENERAR ENTRENAMIENTO
+  // ====================================================================
+
+  const generateBtn = document.getElementById("generateBtn");
+  const content = document.getElementById("content");
+  let entrenamientoActual = null;
+  let ejercicioCounter = 0;
+
+  function getSelectedDeficiencies(){
+    return Array.from(document.querySelectorAll(".deficiency.active")).map(tag => ({
+      key: tag.dataset.key,
+      def: tag.dataset.def
+    }));
+  }
+
+  function getEjerciciosBibliotecaPorStyle(style, count, excludeIds){
+    const pool = ejerciciosBiblioteca.filter(e => e.style === style && !excludeIds.includes(e.id));
+    const shuffled = [...pool].sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, count);
+  }
+
+  function generarEjercicioDesdeBiblioteca(ejRef, series, metrosSerie, intensidad, ritmoSegundos){
+    const total = series * metrosSerie;
+    const obj = {
+      id: "ej_" + (ejercicioCounter++),
+      refId: ejRef.id,
+      nombre: series + "x" + metrosSerie + " " + ejRef.nombre,
+      distancia: total + "m",
+      desc: ejRef.desc || "",
+      tags: ejRef.tags ? [...ejRef.tags] : [],
+      objetivos: ejRef.objetivos ? [...ejRef.objetivos] : [],
+      style: ejRef.style,
+      pagina: ejRef.pagina,
+      series: series,
+      metrosSerie: metrosSerie,
+      intensidad: intensidad !== undefined ? intensidad : 80,
+      ritmo: ritmoSegundos || 0,
+      bloqueado: false,
+      editing: false,
+      esGenerica: !ejRef.desc
+    };
+    actualizarNombreEjercicio(obj, ejRef);
+    return obj;
+  }
+
+  function actualizarNombreEjercicio(ej, ref){
+    const base = ref ? ref.nombre : (ej.nombre.split(" ").slice(1).join(" ") || ej.style);
+    let nombre = ej.series + "x" + ej.metrosSerie + " " + base;
+    if(ej.ritmo > 0){
+      const m = Math.floor(ej.ritmo / 60);
+      const s = ej.ritmo % 60;
+      nombre += " @" + String(m).padStart(2,"0") + ":" + String(s).padStart(2,"0");
+    }
+    ej.nombre = nombre;
+  }
+
+  function generarEntrenamiento(){
+    content.innerHTML = "";
+    entrenamientoActual = { bloques: [] };
+
+    const totalMts = parseInt(totalMeters.value);
+    const deficienciasSel = getSelectedDeficiencies();
+    // Metros por serie efectivos (respeta variar metros tomando el valor medio)
+    const distSerie = extrasActivos.variarMetros
+      ? Math.round((parseInt(variarMetrosMin.value) + parseInt(variarMetrosMax.value)) / 2 / 50) * 50
+      : parseInt(seriesMeters.value);
+    const hayDeficiencias = deficienciasSel.length > 0;
+
+    const estilosActivos = Object.entries(stylesData).filter(([k,s]) => s.active);
+    if(estilosActivos.length === 0){
+      content.innerHTML = `<div class="empty-state"><div class="empty-state-icon">⚠️</div><h2>No hay estilos activos</h2><p>Activa al menos un estilo en el panel lateral.</p></div>`;
+      return;
+    }
+
+    const totalPorcentaje = estilosActivos.reduce((sum,[k,s]) => sum + s.percentage, 0);
+
+    // ========================================
+    // CALCULAR VOLUMEN DE EXTRAS (antes del reparto)
+    // ========================================
+    const mtsExtras = calcularExtrasVolumen();
+
+    // ========================================
+    // CALENTAMIENTO — 12% del total, redondeado a distSerie
+    // ========================================
+    const calDistTarget = Math.round(totalMts * 0.12 / distSerie) * distSerie;
+    const calSeriesPorEstilo = Math.max(1, Math.round(calDistTarget / estilosActivos.length / distSerie));
+    const calEjercicios = [];
+
+    estilosActivos.forEach(([key]) => {
+      const bibStyle = styleKeyMap[key];
+      const gen = getGenericaPorStyle(bibStyle);
+      const mSerie = Math.min(distSerie, 100); // calentamiento no supera 100m/serie
+      const nSeries = Math.max(2, Math.round(calDistTarget / estilosActivos.length / mSerie));
+      calEjercicios.push({
+        id: "ej_" + (ejercicioCounter++),
+        refId: gen.id,
+        nombre: nSeries + "x" + mSerie + " " + gen.nombre,
+        distancia: (nSeries * mSerie) + "m",
+        desc: "", tags: [...gen.tags], style: bibStyle,
+        series: nSeries, metrosSerie: mSerie,
+        intensidad: getIntensidadAleatoria(), ritmo: 0,
+        bloqueado: false, editing: false, esGenerica: true
+      });
+    });
+
+    if(calEjercicios.length === 0){
+      const mSerie = Math.min(distSerie, 100);
+      const nSeries = Math.max(2, Math.round(calDistTarget / mSerie));
+      calEjercicios.push({
+        id: "ej_" + (ejercicioCounter++), refId: "gen_crol1",
+        nombre: nSeries + "x" + mSerie + " Crol",
+        distancia: (nSeries * mSerie) + "m", desc: "", tags: ["Crol"], style: "Crol",
+        series: nSeries, metrosSerie: mSerie,
+        intensidad: getIntensidadAleatoria(), ritmo: 0,
+        bloqueado: false, editing: false, esGenerica: true
+      });
+    }
+
+    const calReal = calEjercicios.reduce((s,e) => s + e.series * e.metrosSerie, 0);
+    entrenamientoActual.bloques.push({
+      titulo: "Calentamiento", distancia: calReal + "m", ejercicios: calEjercicios
+    });
+
+    // ========================================
+    // BLOQUES PRINCIPALES
+    // metros disponibles = total - cal real - extras
+    // ========================================
+    const mtsPrincipales = Math.max(0, totalMts - calReal - mtsExtras);
+
+    const deficienciasEnEstilo = {};
+    deficienciasSel.forEach(d => {
+      if(!deficienciasEnEstilo[d.key]) deficienciasEnEstilo[d.key] = [];
+      deficienciasEnEstilo[d.key].push(d.def);
+    });
+
+    const hayImplementos = implementosSeleccionados.size > 0 && parseInt(cantImplementos.value) > 0;
+
+    // % técnica del slider (0-100)
+    const pctTecnica = hayDeficiencias ? parseInt(cantTecnica.value) : 0;
+
+    estilosActivos.forEach(([key, style]) => {
+      const bibStyle = styleKeyMap[key];
+      const pct = style.percentage / totalPorcentaje;
+      // metros exactos para este estilo en la parte principal
+      const mts = Math.round(mtsPrincipales * pct / distSerie) * distSerie;
+      if(mts <= 0) return;
+
+      const tieneDeficiencias = hayDeficiencias && deficienciasEnEstilo[key] && deficienciasEnEstilo[key].length > 0;
+      let ejercicios = [];
+      const usedRefIds = new Set();
+
+      // — Ejercicios de TÉCNICA —
+      if(tieneDeficiencias && pctTecnica > 0){
+        const mtsTecnica = Math.round(mts * pctTecnica / 100 / distSerie) * distSerie;
+        const nTecnicaEjs = Math.max(1, Math.round(mtsTecnica / distSerie));
+
+        let poolTecnica = ejerciciosBiblioteca.filter(e => e.style === bibStyle);
+        if(implementosSeleccionados.size > 0){
+          const poolConImpl = poolTecnica.filter(e => e.tags && e.tags.some(t => implementosSeleccionados.has(t)));
+          if(poolConImpl.length > 0) poolTecnica = poolConImpl;
+        }
+        const elegidos = [...poolTecnica].sort(() => Math.random() - 0.5).slice(0, Math.min(nTecnicaEjs, poolTecnica.length));
+        if(elegidos.length === 0){
+          const fb = { id:"gen_"+bibStyle, style:bibStyle, tags:[bibStyle], nombre:"Trabajo t&eacute;cnico", desc:"Trabajo general de t&eacute;cnica.", objetivos:[] };
+          elegidos.push(fb);
+        }
+        // Repartir mtsTecnica entre los elegidos en múltiplos de distSerie
+        const mPorTec = Math.max(distSerie, Math.round(mtsTecnica / elegidos.length / distSerie) * distSerie);
+        elegidos.forEach(ej => {
+          usedRefIds.add(ej.id);
+          const nS = Math.max(1, Math.round(mPorTec / distSerie));
+          ejercicios.push({
+            ...generarEjercicioDesdeBiblioteca(ej, nS, distSerie, getIntensidadAleatoria(), 0)
+          });
+        });
+      }
+
+      // — Ejercicios de RENDIMIENTO / relleno —
+      const mtsOcupados = ejercicios.reduce((s,e) => s + e.series * e.metrosSerie, 0);
+      let mtsRestantes = mts - mtsOcupados;
+
+      while(mtsRestantes >= distSerie){
+        const m = extrasActivos.variarMetros ? getSerieMetrosAleatorio() : distSerie;
+        let disponibles = seriesGenericas.filter(s => s.style === bibStyle && !usedRefIds.has(s.id) && !s.tags.some(t => implementTags.has(t)));
+        if(hayImplementos){
+          const conImpl = seriesGenericas.filter(s => s.style === bibStyle && !usedRefIds.has(s.id) && s.tags.some(t => implementosSeleccionados.has(t)));
+          if(conImpl.length > 0) disponibles = conImpl;
+        }
+        if(disponibles.length === 0){
+          disponibles = seriesGenericas.filter(s => s.style === bibStyle);
+          if(disponibles.length === 0) break;
+        }
+        const gen = disponibles[Math.floor(Math.random() * disponibles.length)];
+        usedRefIds.add(gen.id);
+        // Cuántas series caben con estos metros
+        const nSeriesBloque = Math.max(1, Math.round(mtsRestantes / m));
+        const totalEj = nSeriesBloque * m;
+        ejercicios.push({
+          id: "ej_" + (ejercicioCounter++),
+          refId: gen.id,
+          nombre: nSeriesBloque + "x" + m + " " + gen.nombre,
+          distancia: totalEj + "m",
+          desc: "", tags: [...gen.tags], style: bibStyle,
+          series: nSeriesBloque, metrosSerie: m,
+          intensidad: getIntensidadAleatoria(), ritmo: 0,
+          bloqueado: false, editing: false, esGenerica: true
+        });
+        mtsRestantes -= totalEj;
+        break; // un ejercicio de relleno por iteración, el while gestiona el sobrante
+      }
+
+      const totalReal = ejercicios.reduce((s,e) => s + e.series * e.metrosSerie, 0);
+      entrenamientoActual.bloques.push({
+        titulo: tieneDeficiencias ? (style.label + " - T&eacute;cnica") : style.label,
+        distancia: totalReal + "m",
+        ejercicios: ejercicios
+      });
+    });
+
+    // ========================================
+    // EXTRAS — bloques complementarios
+    // ========================================
+    if(extrasActivos.hi25){
+      const n = parseInt(hi25Cant.value);
+      const hiPool = seriesGenericas.filter(s => {
+        if(s.tags.length === 1) return true;
+        if(/patada/i.test(s.nombre) && implementosSeleccionados.has("Tabla")) return true;
+        return false;
+      });
+      const hiEj = [];
+      for(let i = 0; i < n; i++){
+        const ref = hiPool[Math.floor(Math.random() * hiPool.length)] || seriesGenericas.find(s => s.tags.length === 1);
+        hiEj.push(generarEjercicioDesdeBiblioteca(ref, 1, 25, Math.floor(Math.random() * 6 + 90), 0));
+      }
+      const totalHi = hiEj.reduce((s,e) => s + e.series * e.metrosSerie, 0);
+      entrenamientoActual.bloques.push({
+        titulo:"⚡ Alta intensidad",
+        distancia: totalHi + "m",
+        ejercicios: hiEj
+      });
+    }
+
+    if(extrasActivos.tiempo){
+      const seg = parseInt(tiempoSlider.value);
+      const mSerie = parseInt(tiempoDistSlider.value);
+      const nSeries = parseInt(tiempoSeries.value);
+      const ritmo100 = Math.round(seg / mSerie * 100);
+      const gen = seriesGenericas.filter(s => !s.tags.some(t => ["Aletas","Palas","Pull","Tabla"].includes(t)))[0] || seriesGenericas[0];
+      const serie = generarEjercicioDesdeBiblioteca(gen, nSeries, mSerie, getIntensidadAleatoria(), ritmo100);
+      const totalT = serie.series * serie.metrosSerie;
+      entrenamientoActual.bloques.push({
+        titulo:"⏱ " + nSeries + "x" + mSerie + "m en " + seg + "s",
+        distancia: totalT + "m",
+        ejercicios: [serie]
+      });
+    }
+
+    if(extrasActivos.fondo){
+      const mFondo = parseInt(fondoSlider.value);
+      const gen = seriesGenericas.filter(s => !s.tags.some(t => ["Aletas","Palas","Pull","Tabla"].includes(t)))[0] || seriesGenericas[0];
+      const serie = generarEjercicioDesdeBiblioteca(gen, 1, mFondo, getIntensidadAleatoria(), 0);
+      entrenamientoActual.bloques.push({
+        titulo:"🏊 Serie fondo",
+        distancia: mFondo + "m",
+        ejercicios: [serie]
+      });
+    }
+
+    renderEntrenamiento();
+  }
+
+  // ====================================================================
+  // RENDER ENTRENAMIENTO
+  // ====================================================================
+
+  function renderEntrenamiento(){
+    content.innerHTML = "";
+
+    const totalFinal = entrenamientoActual.bloques.reduce((s, b) => {
+      const m = parseInt(b.distancia);
+      return s + (isNaN(m) ? 0 : m);
+    }, 0);
+
+    // Header con botones de descarga
+    const tituloTotal = document.createElement("div");
+    tituloTotal.className = "entrenamiento-titulo";
+    tituloTotal.style.cssText = "display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;";
+    tituloTotal.innerHTML = `
+      <span>🏊 Entrenamiento &mdash; <strong>${totalFinal}m</strong></span>
+      <div style="display:flex;gap:8px;">
+        <button class="action-btn" id="downloadTxtBtn" title="Copiar al portapapeles" style="font-size:13px;">📋 Copiar</button>
+        <button class="action-btn" id="downloadImgBtn" title="Descargar imagen" style="font-size:13px;">🖼️ Imagen</button>
+      </div>`;
+    content.appendChild(tituloTotal);
+
+    entrenamientoActual.bloques.forEach((bloque, bi) => {
+      const block = document.createElement("div");
+      block.className = "block";
+      block.dataset.blockIndex = bi;
+
+      let ejerciciosHTML = bloque.ejercicios.map((ej, ei) => renderEjercicioHTML(ej, bi, ei)).join("");
+
+      block.innerHTML = `
+        <div class="block-header">
+          <div class="block-title">${bloque.titulo}</div>
+          <div class="block-header-actions">
+            <div class="block-distance">${bloque.distancia}</div>
+          </div>
+        </div>
+        ${ejerciciosHTML}
+      `;
+
+      content.appendChild(block);
+    });
+
+    content.scrollIntoView({ behavior: "smooth", block: "start" });
+    showSummaryToggle(true);
+
+    // Bind download buttons
+    document.getElementById("downloadTxtBtn").addEventListener("click", descargarTexto);
+    document.getElementById("downloadImgBtn").addEventListener("click", descargarImagen);
+  }
+
+  // Decodifica entidades HTML usando el DOM (evita artefactos â€", &eacute;, etc.)
+  function htmlDecode(str){
+    const el = document.createElement("textarea");
+    el.innerHTML = str;
+    return el.value;
+  }
+
+  function buildTextoPlano(){
+    const totalFinal = entrenamientoActual.bloques.reduce((s,b)=>s+(parseInt(b.distancia)||0),0);
+    let txt = "ENTRENAMIENTO — " + totalFinal + "m\n";
+    txt += "=".repeat(40) + "\n\n";
+    entrenamientoActual.bloques.forEach(b => {
+      txt += htmlDecode(b.titulo) + "  (" + b.distancia + ")\n";
+      txt += "-".repeat(36) + "\n";
+      b.ejercicios.forEach(ej => {
+        txt += "  • " + htmlDecode(ej.nombre) + "\n";
+      });
+      txt += "\n";
+    });
+    return txt;
+  }
+
+  function descargarTexto(){
+    const txt = buildTextoPlano();
+    navigator.clipboard.writeText(txt).then(() => {
+      const btn = document.getElementById("downloadTxtBtn");
+      if(!btn) return;
+      const orig = btn.innerHTML;
+      btn.innerHTML = "✅ Copiado";
+      btn.style.color = "var(--success)";
+      setTimeout(() => { btn.innerHTML = orig; btn.style.color = ""; }, 2000);
+    }).catch(() => {
+      // Fallback para navegadores sin permisos
+      const ta = document.createElement("textarea");
+      ta.value = txt;
+      ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+    });
+  }
+
+  function descargarImagen(){
+    const totalFinal = entrenamientoActual.bloques.reduce((s,b)=>s+(parseInt(b.distancia)||0),0);
+
+    // Build lines
+    const lines = [];
+    lines.push({ text:"🏊 ENTRENAMIENTO — " + totalFinal + "m", type:"title" });
+    entrenamientoActual.bloques.forEach(b => {
+      lines.push({ text: htmlDecode(b.titulo) + "  (" + b.distancia + ")", type:"block" });
+      b.ejercicios.forEach(ej => {
+        lines.push({ text: "  • " + htmlDecode(ej.nombre), type:"ej" });
+      });
+    });
+
+    const PAD = 40, FONT = 15, LINE_H = 26, TITLE_H = 42;
+    let canvasH = PAD;
+    lines.forEach(l => { canvasH += l.type==="title" ? TITLE_H : LINE_H; });
+    canvasH += PAD;
+
+    const canvas = document.createElement("canvas");
+    canvas.width = 700;
+    canvas.height = canvasH;
+    const ctx = canvas.getContext("2d");
+
+    // Background
+    ctx.fillStyle = "#0f172a";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    // Lines
+    let y = PAD;
+    lines.forEach(l => {
+      if(l.type==="title"){
+        ctx.fillStyle = "#38bdf8";
+        ctx.font = "bold 22px 'Inter',system-ui,sans-serif";
+        ctx.fillText(l.text, PAD, y + 28);
+        y += TITLE_H;
+      } else if(l.type==="block"){
+        ctx.fillStyle = "#38bdf8";
+        ctx.font = "bold " + FONT + "px 'Inter',system-ui,sans-serif";
+        ctx.fillText(l.text, PAD, y + FONT + 4);
+        // underline
+        ctx.strokeStyle = "#1e3a5f";
+        ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(PAD, y+FONT+8); ctx.lineTo(canvas.width-PAD, y+FONT+8); ctx.stroke();
+        y += LINE_H;
+      } else {
+        ctx.fillStyle = "#e2e8f0";
+        ctx.font = FONT + "px 'Inter',system-ui,sans-serif";
+        ctx.fillText(l.text, PAD, y + FONT + 2);
+        y += LINE_H;
+      }
+    });
+
+    // Logo/footer
+    ctx.fillStyle = "#334155";
+    ctx.font = "12px 'Inter',system-ui,sans-serif";
+    ctx.fillText("Generado con Generador de Sesiones de Natación", PAD, canvasH - 12);
+
+    canvas.toBlob(blob => {
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "entrenamiento.png";
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
+  }
+
+  function previewEdit(bi, ei){
+    const block = content.querySelector(`.block[data-block-index="${bi}"]`);
+    const seriesInput = block.querySelector(`.edit-series[data-bi="${bi}"][data-ei="${ei}"]`);
+    const metrosInput = block.querySelector(`.edit-metros[data-bi="${bi}"][data-ei="${ei}"]`);
+    const rangeInput = block.querySelector(`.edit-metros-range[data-bi="${bi}"][data-ei="${ei}"]`);
+    const totalSpan = block.querySelector(`.edit-preview-total`);
+    if(seriesInput && metrosInput){
+      const total = parseInt(seriesInput.value) * parseInt(metrosInput.value);
+      if(totalSpan) totalSpan.textContent = total || 0;
+      if(rangeInput) rangeInput.value = metrosInput.value;
+    }
+  }
+
+  function previewEditIntensidad(bi, ei, val){
+    const block = content.querySelector(`.block[data-block-index="${bi}"]`);
+    const span = block.querySelector(`.edit-intensidad-val`);
+    if(span) span.textContent = val + "%";
+  }
+
+  function previewEditRitmo(bi, ei){
+    const block = content.querySelector(`.block[data-block-index="${bi}"]`);
+    const minInput = block.querySelector(`.edit-ritmo-min[data-bi="${bi}"][data-ei="${ei}"]`);
+    const segInput = block.querySelector(`.edit-ritmo-seg[data-bi="${bi}"][data-ei="${ei}"]`);
+    if(minInput && segInput){
+      const m = String(parseInt(minInput.value)||0).padStart(2,"0");
+      const s = String(parseInt(segInput.value)||0).padStart(2,"0");
+    }
+  }
+
+  function toggleRitmoEjercicio(bi, ei){
+    const ej = entrenamientoActual.bloques[bi].ejercicios[ei];
+    ej.ritmo = ej.ritmo > 0 ? 0 : 90;
+    const ref = ejerciciosBiblioteca.find(r => r.id === ej.refId);
+    actualizarNombreEjercicio(ej, ref || { nombre: ej.nombre.split(" ").slice(1).join(" ") || ej.style });
+    refreshEjercicio(bi, ei);
+  }
+
+  function syncMetrosFromRange(bi, ei, val){
+    const block = content.querySelector(`.block[data-block-index="${bi}"]`);
+    const metrosInput = block.querySelector(`.edit-metros[data-bi="${bi}"][data-ei="${ei}"]`);
+    if(metrosInput) metrosInput.value = val;
+    previewEdit(bi, ei);
+  }
+
+  function renderEjercicioHTML(ej, bi, ei){
+    const editHTML = ej.editing ? `
+      <div class="edit-inline">
+        <label>Series:</label>
+        <input type="number" min="1" max="99" value="${ej.series}" class="edit-series" data-bi="${bi}" data-ei="${ei}" oninput="previewEdit(${bi},${ei})">
+        <label>x</label>
+        <input type="number" min="50" max="1000" step="50" value="${ej.metrosSerie}" class="edit-metros" data-bi="${bi}" data-ei="${ei}" oninput="previewEdit(${bi},${ei})">
+        <input type="range" min="50" max="400" step="50" value="${ej.metrosSerie}" class="edit-metros-range" data-bi="${bi}" data-ei="${ei}" oninput="syncMetrosFromRange(${bi},${ei},this.value)">
+        <label>m</label>
+        <span style="color:var(--primary);font-weight:700;margin-left:8px;">= <span class="edit-preview-total">${ej.series * ej.metrosSerie}</span>m</span>
+        <br>
+        <label>Intensidad:</label>
+        <input type="range" min="50" max="100" step="5" value="${ej.intensidad}" class="edit-intensidad" data-bi="${bi}" data-ei="${ei}" oninput="previewEditIntensidad(${bi},${ei},this.value)" style="max-width:150px;">
+        <span class="edit-intensidad-val" style="color:var(--primary);font-weight:700;">${ej.intensidad}%</span>
+        <br>
+        <label>Ritmo:</label>
+        <input type="number" min="0" max="59" value="${Math.floor(ej.ritmo/60)}" class="edit-ritmo-min" data-bi="${bi}" data-ei="${ei}" oninput="previewEditRitmo(${bi},${ei})" style="width:45px;">
+        <span style="color:var(--muted);">:</span>
+        <input type="number" min="0" max="59" value="${ej.ritmo%60}" class="edit-ritmo-seg" data-bi="${bi}" data-ei="${ei}" oninput="previewEditRitmo(${bi},${ei})" style="width:45px;">
+        <span style="color:var(--muted);font-size:12px;">/100m</span>
+        <button class="action-btn" onclick="toggleRitmoEjercicio(${bi},${ei})" style="padding:6px 10px;font-size:11px;">${ej.ritmo>0?'✕ Quitar':'+ Ritmo'}</button>
+        <br>
+        <button class="action-btn" onclick="saveEdit(${bi},${ei})">💾 Guardar</button>
+        <button class="action-btn" onclick="cancelEdit(${bi},${ei})">✕ Cancelar</button>
+      </div>
+    ` : "";
+
+    const descHTML = ej.desc ? `<div class="exercise-desc">${ej.desc}</div>` : "";
+    const tagsHTML = !ej.esGenerica ? `<div class="exercise-tags">${ej.tags.map(t => `<div class="mini-tag">${t}</div>`).join("")}</div>` : "";
+    const paginaHTML = ej.pagina ? `<a class="btn btn-pdf" href="https://drive.google.com/file/d/1Xk1ljDGgu5mvXG3CsbF6fA1XN1FpDD-G/view?usp=sharing" target="_blank" title="Ver página ${ej.pagina} en el libro">📄 Libro pág. ${ej.pagina} ↗</a>` : "";
+    const infoHTML = ej.esGenerica ? `<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px;font-size:13px;color:var(--muted);">
+      <span>${ej.intensidad}% intensidad</span>
+      ${ej.ritmo > 0 ? `<span>⏱ @${String(Math.floor(ej.ritmo/60)).padStart(2,"0")}:${String(ej.ritmo%60).padStart(2,"0")}/100m</span>` : ""}
+    </div>` : "";
+
+    return `
+      <div class="exercise" data-bi="${bi}" data-ei="${ei}">
+        <div class="exercise-top">
+          <div class="exercise-name">${ej.nombre}</div>
+          <div class="exercise-distance">${ej.distancia}</div>
+        </div>
+        ${descHTML}
+        ${paginaHTML}
+        ${infoHTML}
+        ${tagsHTML}
+        ${editHTML}
+        <div class="exercise-actions">
+          <button class="action-btn" onclick="cambiarEjercicio(${bi},${ei})">↻ Cambiar</button>
+          <button class="action-btn ${ej.bloqueado?'active':''}" onclick="toggleBloquear(${bi},${ei})">${ej.bloqueado?'🔓 Desbloquear':'🔒 Bloquear'}</button>
+          <button class="action-btn" onclick="editarMetros(${bi},${ei})">✎ Editar metros</button>
+          <button class="action-btn" onclick="duplicarEjercicio(${bi},${ei})">⧉ Duplicar</button>
+          <button class="action-btn danger" onclick="eliminarEjercicio(${bi},${ei})">🗑 Eliminar</button>
+        </div>
+      </div>
+    `;
+  }
+
+  function refreshEjercicio(bi, ei){
+    const block = content.querySelector(`.block[data-block-index="${bi}"]`);
+    if(!block) return;
+    const exerciseEl = block.querySelector(`.exercise[data-bi="${bi}"][data-ei="${ei}"]`);
+    if(!exerciseEl) return;
+    const ej = entrenamientoActual.bloques[bi].ejercicios[ei];
+    exerciseEl.outerHTML = renderEjercicioHTML(ej, bi, ei);
+  }
+
+  function refreshBlock(bi){
+    const block = content.querySelector(`.block[data-block-index="${bi}"]`);
+    if(!block) return;
+    const bloque = entrenamientoActual.bloques[bi];
+    const distanceEl = block.querySelector(".block-distance");
+    if(distanceEl) distanceEl.textContent = bloque.distancia;
+
+    const container = block.querySelector(".block-header + *");
+    // Rebuild exercises
+    let html = bloque.ejercicios.map((ej, ei) => renderEjercicioHTML(ej, bi, ei)).join("");
+    // Find the element after block-header
+    const header = block.querySelector(".block-header");
+    let next = header.nextElementSibling;
+    while(next){
+      const toRemove = next;
+      next = toRemove.nextElementSibling;
+      toRemove.remove();
+    }
+    header.insertAdjacentHTML("afterend", html);
+  }
+
+  // ====================================================================
+  // ACCIONES DE EJERCICIOS
+  // ====================================================================
+
+  function cambiarEjercicio(bi, ei){
+    const ej = entrenamientoActual.bloques[bi].ejercicios[ei];
+    const style = ej.style || "Crol";
+    const styleName = style;
+
+    openModal("Seleccionar ejercicio - " + styleName, styleName, function(nuevoEj){
+      const distSerie = parseInt(seriesMeters.value);
+      const series = Math.max(1, Math.round(ej.series * ej.metrosSerie / distSerie));
+      const nuevo = generarEjercicioDesdeBiblioteca(nuevoEj, series, distSerie, ej.intensidad, ej.ritmo);
+      nuevo.bloqueado = ej.bloqueado;
+      entrenamientoActual.bloques[bi].ejercicios[ei] = nuevo;
+      actualizarTotalesBloque(bi);
+      refreshEjercicio(bi, ei);
+    });
+  }
+
+  function toggleBloquear(bi, ei){
+    const ej = entrenamientoActual.bloques[bi].ejercicios[ei];
+    ej.bloqueado = !ej.bloqueado;
+    refreshEjercicio(bi, ei);
+  }
+
+  function editarMetros(bi, ei){
+    const ej = entrenamientoActual.bloques[bi].ejercicios[ei];
+    ej.editing = !ej.editing;
+    refreshEjercicio(bi, ei);
+  }
+
+  function saveEdit(bi, ei){
+    const block = content.querySelector(`.block[data-block-index="${bi}"]`);
+    const seriesInput = block.querySelector(`.edit-series[data-bi="${bi}"][data-ei="${ei}"]`);
+    const metrosInput = block.querySelector(`.edit-metros[data-bi="${bi}"][data-ei="${ei}"]`);
+    if(!seriesInput || !metrosInput) return;
+    const ej = entrenamientoActual.bloques[bi].ejercicios[ei];
+    ej.series = parseInt(seriesInput.value) || ej.series;
+    ej.metrosSerie = parseInt(metrosInput.value) || ej.metrosSerie;
+    const total = ej.series * ej.metrosSerie;
+    ej.distancia = total + "m";
+
+    const intensidadInput = block.querySelector(`.edit-intensidad[data-bi="${bi}"][data-ei="${ei}"]`);
+    if(intensidadInput) ej.intensidad = parseInt(intensidadInput.value) || ej.intensidad;
+
+    const ritmoMinInput = block.querySelector(`.edit-ritmo-min[data-bi="${bi}"][data-ei="${ei}"]`);
+    const ritmoSegInput = block.querySelector(`.edit-ritmo-seg[data-bi="${bi}"][data-ei="${ei}"]`);
+    if(ritmoMinInput && ritmoSegInput){
+      const rm = parseInt(ritmoMinInput.value) || 0;
+      const rs = parseInt(ritmoSegInput.value) || 0;
+      ej.ritmo = rm * 60 + rs;
+    }
+
+    const ref = ejerciciosBiblioteca.find(r => r.id === ej.refId);
+    actualizarNombreEjercicio(ej, ref || { nombre: ej.nombre.split(" ").slice(1).join(" ") || ej.style });
+    ej.editing = false;
+    actualizarTotalesBloque(bi);
+    refreshEjercicio(bi, ei);
+  }
+
+  function cancelEdit(bi, ei){
+    const ej = entrenamientoActual.bloques[bi].ejercicios[ei];
+    ej.editing = false;
+    refreshEjercicio(bi, ei);
+  }
+
+  function duplicarEjercicio(bi, ei){
+    const ej = entrenamientoActual.bloques[bi].ejercicios[ei];
+    const nuevo = JSON.parse(JSON.stringify(ej));
+    nuevo.id = "ej_" + (ejercicioCounter++);
+    nuevo.bloqueado = false;
+    entrenamientoActual.bloques[bi].ejercicios.splice(ei + 1, 0, nuevo);
+    actualizarTotalesBloque(bi);
+    refreshBlock(bi);
+  }
+
+  function eliminarEjercicio(bi, ei){
+    if(entrenamientoActual.bloques[bi].ejercicios.length <= 1){
+      alert("No puedes eliminar el &uacute;nico ejercicio de un bloque.");
+      return;
+    }
+    entrenamientoActual.bloques[bi].ejercicios.splice(ei, 1);
+    actualizarTotalesBloque(bi);
+    refreshBlock(bi);
+  }
+
+  function actualizarTotalesBloque(bi){
+    const bloque = entrenamientoActual.bloques[bi];
+    const total = bloque.ejercicios.reduce((sum, ej) => {
+      return sum + (ej.series * ej.metrosSerie);
+    }, 0);
+    bloque.distancia = total + "m";
+  }
+
+  // ====================================================================
+  // MODO MANUAL (corrección 4 / 8 — modal grande)
+  // ====================================================================
+
+  const manualData = { cal:[], main:[], cool:[] };
+  let manualIdCounter = 0;
+  let manualActiveBloque = null;
+  let mmSelectedEj = null; // ejercicio seleccionado en la lista
+
+  // todosEjercicios: siempre refleja la biblioteca cargada (dinámica o fallback)
+  function getTodosEjercicios(){
+    return [
+      ...ejerciciosBiblioteca,
+      ...seriesGenericas.map(g => ({...g, num:null, desc: g.desc||"", objetivos:[], pagina:null}))
+    ];
+  }
+
+  const manualModalOverlay = document.getElementById("manualModalOverlay");
+  const manualModalSearch = document.getElementById("manualModalSearch");
+  const manualModalList = document.getElementById("manualModalList");
+  const mmStyleFilter = document.getElementById("mmStyleFilter");
+  let mmActiveStyle = "Todos";
+  let mmActiveTab = "free"; // default: ejercicio libre
+  let mmActiveType = "series"; // "series" | "tiempo"
+
+  function intensidadEmoji(pct){
+    if(pct === 0) return "⬜";
+    if(pct <= 30) return "🟢";
+    if(pct <= 55) return "🟡";
+    if(pct <= 75) return "🟠";
+    if(pct <= 90) return "🔴";
+    return "💀";
+  }
+
+  // Intensity slider live update
+  const mmIntensidadSlider = document.getElementById("mmIntensidad");
+  const mmIntensidadLabel = document.getElementById("mmIntensidadLabel");
+  const mmIntensidadPct = document.getElementById("mmIntensidadPct");
+  mmIntensidadSlider.addEventListener("input",()=>{
+    const v = parseInt(mmIntensidadSlider.value);
+    mmIntensidadLabel.textContent = intensidadEmoji(v);
+    mmIntensidadPct.textContent = v + "%";
+  });
+
+  // Pace auto-calculator: seg/metros → ritmo por 100m
+  function calcularRitmo(){
+    const seg = parseInt(document.getElementById("mmTSegundos").value)||0;
+    const metros = parseInt(document.getElementById("mmTMetros").value)||0;
+    const label = document.getElementById("mmTRitmoLabel");
+    if(!seg || !metros){ label.textContent = "—"; return; }
+    const segPor100 = (seg / metros) * 100;
+    const m = Math.floor(segPor100 / 60);
+    const s = Math.round(segPor100 % 60);
+    label.textContent = `${m}'${String(s).padStart(2,"0")}"`;
+  }
+  document.getElementById("mmTSegundos").addEventListener("input", calcularRitmo);
+  document.getElementById("mmTMetros").addEventListener("input", calcularRitmo);
+  calcularRitmo();
+  document.getElementById("mmTypeSeries").addEventListener("click",()=>{
+    mmActiveType = "series";
+    document.getElementById("mmCfgSeries").style.display = "flex";
+    document.getElementById("mmCfgTiempo").style.display = "none";
+    document.getElementById("mmTypeSeries").classList.add("active");
+    document.getElementById("mmTypeTiempo").classList.remove("active");
+  });
+  document.getElementById("mmTypeTiempo").addEventListener("click",()=>{
+    mmActiveType = "tiempo";
+    document.getElementById("mmCfgSeries").style.display = "none";
+    document.getElementById("mmCfgTiempo").style.display = "flex";
+    document.getElementById("mmTypeTiempo").classList.add("active");
+    document.getElementById("mmTypeSeries").classList.remove("active");
+  });
+
+  function openManualModal(bloque){
+    manualActiveBloque = bloque;
+    mmSelectedEj = null;
+    // Default: ejercicio libre
+    mmActiveTab = "free";
+    document.getElementById("mmBibSection").style.display = "none";
+    document.getElementById("mmFreeSection").classList.add("open");
+    document.getElementById("mmTabFree").classList.add("active");
+    document.getElementById("mmTabBib").classList.remove("active");
+    document.getElementById("manualModalTitle").textContent = "Añadir ejercicio — " + {cal:"Calentamiento",main:"Sesión principal",cool:"Vuelta a la calma"}[bloque];
+    manualModalSearch.value = "";
+    // Reset type to series
+    mmActiveType = "series";
+    document.getElementById("mmCfgSeries").style.display = "flex";
+    document.getElementById("mmCfgTiempo").style.display = "none";
+    document.getElementById("mmTypeSeries").classList.add("active");
+    document.getElementById("mmTypeTiempo").classList.remove("active");
+    // Reset intensity
+    mmIntensidadSlider.value = 70;
+    mmIntensidadLabel.textContent = intensidadEmoji(70);
+    mmIntensidadPct.textContent = "70%";
+    manualEditingUid = null;
+    document.getElementById("mmConfirmBtn").textContent = "✓ Añadir ejercicio";
+    manualModalOverlay.classList.add("open");
+    document.getElementById("mmFreeName").focus();
+  }
+
+  function renderMmStyleFilter(){
+    const styles = ["Todos","Crol","Espalda","Braza","Mariposa"];
+    mmStyleFilter.innerHTML = styles.map(s =>
+      `<button class="manual-modal-tab${s===mmActiveStyle?" active":""}" data-s="${s}">${s}</button>`
+    ).join("");
+    mmStyleFilter.querySelectorAll("button").forEach(btn=>{
+      btn.addEventListener("click",()=>{
+        mmActiveStyle = btn.dataset.s;
+        renderMmStyleFilter();
+        renderManualModalList(manualModalSearch.value, mmActiveStyle);
+      });
+    });
+  }
+
+  function renderManualModalList(query, styleFilter){
+    const q = query.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+    const pool = getTodosEjercicios();
+    const results = pool.filter(e => {
+      const estiloOk = !styleFilter || styleFilter === "Todos" || e.style === styleFilter;
+      if(!estiloOk) return false;
+      if(!q) return true;
+      const n = (e.nombre||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+      const d = (e.desc||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+      return n.includes(q) || d.includes(q);
+    }).slice(0,80);
+
+    if(results.length===0){
+      manualModalList.innerHTML = `<p style="text-align:center;color:var(--muted);padding:30px;">Sin resultados.</p>`;
+      return;
+    }
+    manualModalList.innerHTML = results.map(e=>`
+      <div class="manual-modal-item" data-id="${e.id}">
+        <div>
+          <h4>${e.num ? `<span style="color:var(--muted);font-weight:400;margin-right:6px;">${e.num}.</span>` : ""}${e.nombre}</h4>
+          <p>${(e.desc||"").slice(0,80)}${(e.desc||"").length>80?"…":""}</p>
+        </div>
+        <span class="item-style-badge">${e.style||""}</span>
+      </div>`).join("");
+    // Build id→ej map from same pool for reliable lookup
+    const poolMap = new Map(pool.map(e=>[e.id, e]));
+    manualModalList.querySelectorAll(".manual-modal-item").forEach(item=>{
+      item.addEventListener("click",()=>{
+        manualModalList.querySelectorAll(".manual-modal-item").forEach(i=>i.classList.remove("selected"));
+        item.classList.add("selected");
+        mmSelectedEj = poolMap.get(item.dataset.id) || null;
+      });
+    });
+  }
+
+  manualModalSearch.addEventListener("input",()=> renderManualModalList(manualModalSearch.value, mmActiveStyle));
+
+  document.getElementById("mmTabBib").addEventListener("click",()=>{
+    mmActiveTab = "bib";
+    document.getElementById("mmBibSection").style.display = "";
+    document.getElementById("mmFreeSection").classList.remove("open");
+    document.getElementById("mmTabBib").classList.add("active");
+    document.getElementById("mmTabFree").classList.remove("active");
+    mmActiveStyle = "Todos";
+    renderMmStyleFilter();
+    renderManualModalList("", "Todos");
+    mmSelectedEj = null;
+  });
+  document.getElementById("mmTabFree").addEventListener("click",()=>{
+    mmActiveTab = "free";
+    document.getElementById("mmBibSection").style.display = "none";
+    document.getElementById("mmFreeSection").classList.add("open");
+    document.getElementById("mmTabFree").classList.add("active");
+    document.getElementById("mmTabBib").classList.remove("active");
+    mmSelectedEj = null;
+  });
+
+  document.getElementById("manualModalClose").addEventListener("click",()=>{
+    manualModalOverlay.classList.remove("open");
+  });
+  manualModalOverlay.addEventListener("click",e=>{
+    if(e.target===manualModalOverlay) manualModalOverlay.classList.remove("open");
+  });
+
+  document.getElementById("mmConfirmBtn").addEventListener("click",()=>{
+    const intensidad = parseInt(mmIntensidadSlider.value);
+    const emoji = intensidadEmoji(intensidad);
+    let ej = null;
+    let nombre = "";
+    let metros = 0;
+    let esTiempo = mmActiveType === "tiempo";
+
+    if(mmActiveTab === "bib"){
+      if(!mmSelectedEj){ alert("Selecciona un ejercicio de la lista."); return; }
+      ej = { id: mmSelectedEj.id, nombre: mmSelectedEj.nombre, style: mmSelectedEj.style||"", tags: mmSelectedEj.tags||[] };
+    } else {
+      const rawNombre = document.getElementById("mmFreeName").value.trim();
+      if(!rawNombre){ alert("Escribe el nombre del ejercicio."); return; }
+      ej = { id: "free_"+(manualIdCounter), nombre: rawNombre, style: "", tags: [] };
+    }
+
+    // Build nombre and metros
+    if(esTiempo){
+      const series = parseInt(document.getElementById("mmTSeries").value)||1;
+      const seg = parseInt(document.getElementById("mmTSegundos").value)||60;
+      const tMetros = parseInt(document.getElementById("mmTMetros").value)||100;
+      const ritmoLabel = document.getElementById("mmTRitmoLabel").textContent;
+      const minStr = seg >= 60 ? Math.floor(seg/60)+"'"+(seg%60?String(seg%60).padStart(2,"0")+"\"":"") : seg+"\"";
+      const ritmoStr = (ritmoLabel && ritmoLabel!=="—") ? ` @${ritmoLabel}/100m` : "";
+      nombre = `${emoji} ${series}×${minStr} (${tMetros}m)${ritmoStr} ${ej.nombre}`;
+      metros = tMetros;
+    } else {
+      const series = parseInt(document.getElementById("mmSeries").value)||1;
+      metros = parseInt(document.getElementById("mmMetros").value)||50;
+      nombre = `${emoji} ${series}×${metros}m ${ej.nombre}`;
+    }
+
+    if(manualEditingUid){
+      // Editing: update in place
+      const idx = manualData[manualActiveBloque].findIndex(e=>e.uid===manualEditingUid);
+      if(idx !== -1){
+        manualData[manualActiveBloque][idx] = {
+          ...manualData[manualActiveBloque][idx],
+          nombre, series: esTiempo ? parseInt(document.getElementById("mmTSeries").value)||1 : parseInt(document.getElementById("mmSeries").value)||1,
+          metros, intensidad,
+          ...(esTiempo ? {seg: parseInt(document.getElementById("mmTSegundos").value)||60, esTiempo:true} : {esTiempo:false})
+        };
+      }
+      manualEditingUid = null;
+      document.getElementById("mmConfirmBtn").textContent = "✓ Añadir ejercicio";
+    } else {
+      manualData[manualActiveBloque].push({
+        uid:"m_"+(manualIdCounter++), refId:ej.id,
+        nombre,
+        series: esTiempo ? parseInt(document.getElementById("mmTSeries").value)||1 : parseInt(document.getElementById("mmSeries").value)||1,
+        metros, intensidad,
+        ...(esTiempo ? {seg: parseInt(document.getElementById("mmTSegundos").value)||60, esTiempo:true} : {esTiempo:false}),
+        style:ej.style, tags:ej.tags
+      });
+    }
+
+    renderManualBlock(manualActiveBloque);
+    updateManualTotal();
+    manualModalOverlay.classList.remove("open");
+    document.getElementById("mmFreeName").value = "";
+    document.getElementById("mmFreeDesc").value = "";
+  });
+
+  let manualEditingUid = null; // uid being edited, null = adding new
+
+  function manualEdit(bloque, uid){
+    const item = manualData[bloque].find(e=>e.uid===uid);
+    if(!item) return;
+    manualEditingUid = uid;
+    manualActiveBloque = bloque;
+
+    // Open modal in free tab with pre-filled values
+    mmActiveTab = "free";
+    document.getElementById("mmBibSection").style.display = "none";
+    document.getElementById("mmFreeSection").classList.add("open");
+    document.getElementById("mmTabFree").classList.add("active");
+    document.getElementById("mmTabBib").classList.remove("active");
+    document.getElementById("manualModalTitle").textContent = "Editar ejercicio";
+
+    // Parse nombre back: strip emoji prefix (first char if emoji)
+    // Format: "EMOJI series×metrosm nombre" or "EMOJI series×seg (metros) nombre"
+    const rawNombre = item.nombre.replace(/^[\u{1F300}-\u{1FFFF}⬜🟢🟡🟠🔴💀]\s*/u, "");
+    // Strip series×Xm prefix for free name
+    const nameMatch = rawNombre.match(/^\d+×[\d'"ms ()@/]+\s(.+)$/);
+    document.getElementById("mmFreeName").value = nameMatch ? nameMatch[1] : rawNombre;
+
+    // Restore type
+    if(item.esTiempo){
+      mmActiveType = "tiempo";
+      document.getElementById("mmCfgSeries").style.display = "none";
+      document.getElementById("mmCfgTiempo").style.display = "flex";
+      document.getElementById("mmTypeTiempo").classList.add("active");
+      document.getElementById("mmTypeSeries").classList.remove("active");
+      document.getElementById("mmTSeries").value = item.series;
+      document.getElementById("mmTSegundos").value = item.seg || 60;
+      document.getElementById("mmTMetros").value = item.metros;
+      calcularRitmo();
+    } else {
+      mmActiveType = "series";
+      document.getElementById("mmCfgSeries").style.display = "flex";
+      document.getElementById("mmCfgTiempo").style.display = "none";
+      document.getElementById("mmTypeSeries").classList.add("active");
+      document.getElementById("mmTypeTiempo").classList.remove("active");
+      document.getElementById("mmSeries").value = item.series;
+      document.getElementById("mmMetros").value = item.metros;
+    }
+    // Restore intensity
+    document.getElementById("mmIntensidad").value = item.intensidad || 70;
+    mmIntensidadLabel.textContent = intensidadEmoji(item.intensidad || 70);
+    mmIntensidadPct.textContent = (item.intensidad || 70) + "%";
+
+    document.getElementById("mmConfirmBtn").textContent = "✓ Guardar cambios";
+    manualModalOverlay.classList.add("open");
+    document.getElementById("mmFreeName").focus();
+  }
+
+  function manualRemove(bloque, uid){
+    manualData[bloque] = manualData[bloque].filter(e=>e.uid!==uid);
+    renderManualBlock(bloque);
+    updateManualTotal();
+  }
+
+  function renderManualBlock(bloque){
+    const list = document.getElementById("manualExList_"+bloque);
+    const distEl = document.getElementById("manualDist_"+bloque);
+    const items = manualData[bloque];
+    list.innerHTML = items.map(e=>`
+      <div class="manual-exercise-row">
+        <div class="manual-ex-name">${e.nombre}</div>
+        <div class="manual-ex-dist">${e.series*e.metros}m</div>
+        <button class="manual-ex-remove" style="margin-right:4px;border-color:var(--primary);color:var(--primary);" onclick="manualEdit('${bloque}','${e.uid}')" title="Editar">✎</button>
+        <button class="manual-ex-remove" onclick="manualRemove('${bloque}','${e.uid}')" title="Eliminar">✕</button>
+      </div>`).join("");
+    const total = items.reduce((s,e)=>s+e.series*e.metros,0);
+    distEl.textContent = total+"m";
+  }
+
+  function updateManualTotal(){
+    const total = ["cal","main","cool"].reduce((s,b)=>s+manualData[b].reduce((ss,e)=>ss+e.series*e.metros,0),0);
+    document.getElementById("manualTotalDist").textContent = total+"m";
+  }
+
+  // Mode switcher
+  document.getElementById("modeAutoBtn").addEventListener("click",()=>{
+    document.getElementById("autoLayout").style.display="";
+    document.getElementById("manualLayout").style.display="none";
+    document.getElementById("modeAutoBtn").classList.add("active");
+    document.getElementById("modeManualBtn").classList.remove("active");
+  });
+  document.getElementById("modeManualBtn").addEventListener("click",()=>{
+    document.getElementById("autoLayout").style.display="none";
+    document.getElementById("manualLayout").style.display="";
+    document.getElementById("modeManualBtn").classList.add("active");
+    document.getElementById("modeAutoBtn").classList.remove("active");
+    showSummaryToggle(false);
+  });
+
+  // Manual mode download/summary buttons
+  function buildManualTexto(){
+    const total = ["cal","main","cool"].reduce((s,b)=>s+manualData[b].reduce((ss,e)=>ss+e.series*e.metros,0),0);
+    const labels = {cal:"Calentamiento",main:"Sesión principal",cool:"Vuelta a la calma"};
+    const now = new Date();
+    const fechaStr = now.toLocaleDateString("es-ES",{day:"2-digit",month:"2-digit",year:"numeric"});
+    let txt = `SESIÓN ${fechaStr} — ${total}m\n` + "=".repeat(40) + "\n\n";
+    ["cal","main","cool"].forEach(b=>{
+      const items = manualData[b];
+      if(!items.length) return;
+      const bTotal = items.reduce((s,e)=>s+e.series*e.metros,0);
+      txt += labels[b] + "  (" + (bTotal||"⏱") + (bTotal?"m":"") + ")\n" + "-".repeat(36) + "\n";
+      items.forEach(e=>{ txt += "  • " + htmlDecode(e.nombre) + "\n"; });
+      txt += "\n";
+    });
+    return txt;
+  }
+
+  document.getElementById("manualCopyBtn").addEventListener("click",()=>{
+    const txt = buildManualTexto();
+    navigator.clipboard.writeText(txt).then(()=>{
+      const btn = document.getElementById("manualCopyBtn");
+      const orig = btn.innerHTML;
+      btn.innerHTML = "✅ Copiado";
+      btn.style.color = "var(--success)";
+      setTimeout(()=>{ btn.innerHTML=orig; btn.style.color=""; }, 2000);
+    }).catch(()=>{
+      const ta = document.createElement("textarea");
+      ta.value = txt; ta.style.position="fixed"; ta.style.opacity="0";
+      document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta);
+    });
+  });
+
+  document.getElementById("manualImgBtn").addEventListener("click",()=>{
+    const total = ["cal","main","cool"].reduce((s,b)=>s+manualData[b].reduce((ss,e)=>ss+e.series*e.metros,0),0);
+    const labels = {cal:"Calentamiento",main:"Sesión principal",cool:"Vuelta a la calma"};
+    const now = new Date();
+    const fechaStr = now.toLocaleDateString("es-ES",{day:"2-digit",month:"2-digit",year:"numeric"});
+    const lines = [];
+    lines.push({text:`SESIÓN ${fechaStr} — ${total}m`, type:"title"});
+    ["cal","main","cool"].forEach(b=>{
+      const items = manualData[b];
+      if(!items.length) return;
+      const bTotal = items.reduce((s,e)=>s+e.series*e.metros,0);
+      lines.push({text:labels[b]+"  ("+(bTotal||"⏱")+(bTotal?"m":"")+")", type:"block"});
+      items.forEach(e=>lines.push({text:"  • "+htmlDecode(e.nombre), type:"ej"}));
+    });
+    const PAD=40,FONT=15,LINE_H=26,TITLE_H=42;
+    let canvasH=PAD;
+    lines.forEach(l=>{canvasH+=l.type==="title"?TITLE_H:LINE_H;});
+    canvasH+=PAD;
+    const canvas=document.createElement("canvas");
+    canvas.width=700; canvas.height=canvasH;
+    const ctx=canvas.getContext("2d");
+    ctx.fillStyle="#0f172a"; ctx.fillRect(0,0,700,canvasH);
+    let y=PAD;
+    lines.forEach(l=>{
+      if(l.type==="title"){ctx.fillStyle="#38bdf8";ctx.font="bold 22px 'Inter',system-ui,sans-serif";ctx.fillText(l.text,PAD,y+28);y+=TITLE_H;}
+      else if(l.type==="block"){ctx.fillStyle="#38bdf8";ctx.font="bold "+FONT+"px 'Inter',system-ui,sans-serif";ctx.fillText(l.text,PAD,y+FONT+4);ctx.strokeStyle="#1e3a5f";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(PAD,y+FONT+8);ctx.lineTo(700-PAD,y+FONT+8);ctx.stroke();y+=LINE_H;}
+      else{ctx.fillStyle="#e2e8f0";ctx.font=FONT+"px 'Inter',system-ui,sans-serif";ctx.fillText(l.text,PAD,y+FONT+2);y+=LINE_H;}
+    });
+    ctx.fillStyle="#334155";ctx.font="12px 'Inter',system-ui,sans-serif";ctx.fillText("Generado con Generador de Sesiones de Natación",PAD,canvasH-12);
+    canvas.toBlob(blob=>{const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="entrenamiento_manual.png";a.click();URL.revokeObjectURL(a.href);});
+  });
+
+  document.getElementById("manualSummaryBtn").addEventListener("click",()=>{
+    // Build manual summary
+    const total = ["cal","main","cool"].reduce((s,b)=>s+manualData[b].reduce((ss,e)=>ss+e.series*e.metros,0),0);
+    const labels = {cal:"🌅 Calentamiento",main:"🏊 Sesión principal",cool:"🌊 Vuelta a la calma"};
+    let html = `<div class="summary-section-title">Resumen manual</div>`;
+    html += `<div class="summary-row"><span class="summary-label">Total metros</span><span class="summary-val">${total}m</span></div>`;
+    ["cal","main","cool"].forEach(b=>{
+      const items = manualData[b];
+      if(!items.length) return;
+      html += `<div class="summary-section-title">${labels[b]}</div>`;
+      items.forEach(e=>{
+        html += `<div class="summary-row"><span class="summary-label" style="font-size:12px;">${htmlDecode(e.nombre)}</span></div>`;
+      });
+    });
+    summaryBody.innerHTML = html;
+    summarySidebar.style.display = "flex";
+    summarySidebar.classList.add("open");
+  });
+
+  // ====================================================================
+  // SUMMARY SIDEBAR (corrección 6)
+  // ====================================================================
+
+  const summarySidebar = document.getElementById("summarySidebar");
+  const summaryBody = document.getElementById("summaryBody");
+  const summaryToggleBtn = document.getElementById("summaryToggleBtn");
+  const summaryClose = document.getElementById("summaryClose");
+
+  function showSummaryToggle(show){
+    summaryToggleBtn.style.display = show ? "block" : "none";
+    if(!show){
+      summarySidebar.classList.remove("open");
+    }
+  }
+
+  function buildSummary(){
+    if(!entrenamientoActual) return;
+    const totalMts = parseInt(totalMeters.value);
+    const estilosActivos = Object.entries(stylesData).filter(([k,s]) => s.active);
+    const defActivas = Array.from(document.querySelectorAll(".deficiency.active")).map(t => t.dataset.def);
+    const implSel = Array.from(implementosSeleccionados);
+
+    let html = "";
+
+    // Volumen
+    html += `<div class="summary-section-title">Volumen</div>`;
+    html += `<div class="summary-row"><span class="summary-label">Metros totales</span><span class="summary-val">~${totalMts}m</span></div>`;
+    html += `<div class="summary-row"><span class="summary-label">Series</span><span class="summary-val">${seriesCount.value}</span></div>`;
+    html += `<div class="summary-row"><span class="summary-label">Metros/serie</span><span class="summary-val">${extrasActivos.variarMetros ? variarMetrosMin.value+"–"+variarMetrosMax.value+"m" : seriesMeters.value+"m"}</span></div>`;
+    html += `<div class="summary-row"><span class="summary-label">Intensidad</span><span class="summary-val">${intensidadMin.value}%–${intensidadMax.value}%</span></div>`;
+
+    // Estilos
+    html += `<div class="summary-section-title">Estilos</div>`;
+    estilosActivos.forEach(([k,s]) => {
+      html += `<div class="summary-style-row"><div class="summary-style-dot"></div><span class="summary-label">${s.label}</span><span class="summary-val">${s.percentage}%</span></div>`;
+    });
+
+    // Técnica
+    if(document.getElementById("tecnicaSection").style.display !== "none"){
+      html += `<div class="summary-section-title">Técnica</div>`;
+      const nTec = cantTecnica ? cantTecnica.value : 0;
+      html += `<div class="summary-row"><span class="summary-label">Técnica / Rendimiento</span><span class="summary-val">${nTec}% / ${100-parseInt(nTec)}%</span></div>`;
+      if(defActivas.length > 0){
+        html += `<div class="summary-row" style="flex-direction:column;align-items:flex-start;gap:4px;"><span class="summary-label">Defectos</span><span style="color:var(--primary);font-size:12px;">${defActivas.join(", ")}</span></div>`;
+      }
+    }
+
+    // Implementos
+    if(implSel.length > 0){
+      html += `<div class="summary-section-title">Implementos</div>`;
+      html += `<div class="summary-row"><span class="summary-label">${implSel.join(", ")}</span><span class="summary-val">${cantImplementos.value} ej.</span></div>`;
+    }
+
+    // Extras
+    const extrasKeys = Object.keys(extrasActivos).filter(k => k !== "variarMetros");
+    if(extrasKeys.length > 0){
+      html += `<div class="summary-section-title">Extras</div>`;
+      if(extrasActivos.hi25) html += `<div class="summary-row"><span class="summary-label">⚡ 25m HI</span><span class="summary-val">${hi25Cant.value} series</span></div>`;
+      if(extrasActivos.tiempo) html += `<div class="summary-row"><span class="summary-label">⏱ Por tiempo</span><span class="summary-val">${tiempoSeries.value}x${tiempoDistSlider.value}m / ${tiempoSlider.value}s</span></div>`;
+      if(extrasActivos.fondo) html += `<div class="summary-row"><span class="summary-label">🏊 Fondo</span><span class="summary-val">${fondoSlider.value}m</span></div>`;
+    }
+
+    // Resultado real
+    if(entrenamientoActual.bloques.length > 0){
+      const totalReal = entrenamientoActual.bloques.reduce((s,b) => s + (parseInt(b.distancia)||0), 0);
+      html += `<div class="summary-section-title">Resultado</div>`;
+      html += `<div class="summary-row"><span class="summary-label">Total generado</span><span class="summary-val" style="color:var(--success);">${totalReal}m</span></div>`;
+      entrenamientoActual.bloques.forEach(b => {
+        html += `<div class="summary-row"><span class="summary-label">${b.titulo}</span><span class="summary-val">${b.distancia}</span></div>`;
+      });
+    }
+
+    summaryBody.innerHTML = html;
+  }
+
+  summaryToggleBtn.addEventListener("click", () => {
+    buildSummary();
+    summarySidebar.classList.toggle("open");
+    if(summarySidebar.classList.contains("open")){
+      summarySidebar.style.display = "flex";
+    }
+  });
+
+  summaryClose.addEventListener("click", () => {
+    summarySidebar.classList.remove("open");
+  });
+
+  // ====================================================================
+  // INIT
+  // ====================================================================
+
+  generateBtn.addEventListener("click", generarEntrenamiento);
+
+  cargarBiblioteca();
+
+</script>
+
+</body>
+</html>
+
