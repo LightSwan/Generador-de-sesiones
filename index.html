@@ -1167,7 +1167,18 @@
 <div class="container">
 
   <div class="header">
-    <h1>Generador de sesiones</h1>
+    <div style="margin-bottom:14px;">
+      <a href="https://lightswan.github.io/biblioteca-natacion/" 
+        style="display:inline-flex;align-items:center;gap:6px;color:var(--muted);text-decoration:none;font-size:13px;font-weight:500;padding:6px 12px;border:1px solid var(--border);border-radius:999px;transition:.2s;"
+        onmouseover="this.style.borderColor='var(--primary)';this.style.color='var(--primary)'" 
+        onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">
+        ← Volver a la Biblioteca de Natación
+      </a>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+      <h1>Generador de sesiones</h1>
+      <span style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#000;font-size:11px;font-weight:800;padding:3px 10px;border-radius:999px;letter-spacing:.08em;text-transform:uppercase;vertical-align:middle;">BETA</span>
+    </div>
     <p>Generador de entrenamientos desde la biblioteca de nataci&oacute;n.</p>
     <div class="mode-switcher" style="margin-top:18px;max-width:480px;">
       <button class="mode-btn" id="modeAutoBtn">⚙️ Creador automático</button>
@@ -1185,9 +1196,59 @@
         <div class="slider-group">
           <div class="slider-top">
             <span>Metros totales</span>
-            <strong id="totalValue">~1500m</strong>
+            <div style="display:flex;align-items:center;gap:4px;">
+              <span style="color:var(--muted);font-size:13px;">~</span>
+              <input type="number" id="totalValueInput" min="500" max="10000" step="50" value="1500"
+                style="width:72px;padding:3px 6px;border-radius:8px;border:1px solid var(--border);background:#0f172a;color:var(--text);font-size:14px;font-weight:700;text-align:center;outline:none;font-family:'Inter',sans-serif;">
+              <span style="color:var(--text);font-size:13px;font-weight:700;">m</span>
+            </div>
           </div>
           <input type="range" min="500" max="10000" step="50" value="1500" id="totalMeters" />
+        </div>
+
+        <!-- Distribución de sesión -->
+        <div style="margin-top:10px;">
+          <button class="action-btn extra-toggle" id="btnDistribucion" style="width:100%;justify-content:center;font-size:13px;">📊 Distribución de la sesión</button>
+          <div id="distribucionPanel" style="display:none;margin-top:12px;background:var(--card);border-radius:14px;padding:14px;border:1px solid var(--border);">
+            <div style="font-size:11px;color:var(--muted);margin-bottom:10px;">Los porcentajes deben sumar 100%</div>
+            <div style="display:flex;flex-direction:column;gap:10px;">
+              <div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+                  <span style="font-size:13px;">🌅 Calentamiento</span>
+                  <div style="display:flex;align-items:center;gap:4px;">
+                    <input type="number" id="pctCal" min="0" max="50" value="20" style="width:46px;padding:3px 5px;border-radius:7px;border:1px solid var(--border);background:#0f172a;color:var(--text);font-size:13px;font-weight:700;text-align:center;outline:none;font-family:'Inter',sans-serif;">
+                    <span style="color:var(--muted);font-size:12px;">%</span>
+                    <span id="mCal" style="color:var(--primary);font-size:12px;font-weight:600;min-width:44px;text-align:right;">~300m</span>
+                  </div>
+                </div>
+                <input type="range" min="0" max="50" step="5" value="20" id="sliderCal" />
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+                  <span style="font-size:13px;">🏊 Sesión principal</span>
+                  <div style="display:flex;align-items:center;gap:4px;">
+                    <input type="number" id="pctMain" min="10" max="100" value="70" style="width:46px;padding:3px 5px;border-radius:7px;border:1px solid var(--border);background:#0f172a;color:var(--text);font-size:13px;font-weight:700;text-align:center;outline:none;font-family:'Inter',sans-serif;">
+                    <span style="color:var(--muted);font-size:12px;">%</span>
+                    <span id="mMain" style="color:var(--primary);font-size:12px;font-weight:600;min-width:44px;text-align:right;">~1050m</span>
+                  </div>
+                </div>
+                <input type="range" min="10" max="100" step="5" value="70" id="sliderMain" />
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+                  <span style="font-size:13px;">🌊 Vuelta a la calma</span>
+                  <div style="display:flex;align-items:center;gap:4px;">
+                    <input type="number" id="pctCool" min="0" max="30" value="10" style="width:46px;padding:3px 5px;border-radius:7px;border:1px solid var(--border);background:#0f172a;color:var(--text);font-size:13px;font-weight:700;text-align:center;outline:none;font-family:'Inter',sans-serif;">
+                    <span style="color:var(--muted);font-size:12px;">%</span>
+                    <span id="mCool" style="color:var(--primary);font-size:12px;font-weight:600;min-width:44px;text-align:right;">~150m</span>
+                  </div>
+                </div>
+                <input type="range" min="0" max="30" step="5" value="10" id="sliderCool" />
+              </div>
+            </div>
+            <div id="distribucionTotal" style="text-align:center;margin-top:10px;font-size:12px;color:var(--muted);">Total: <strong style="color:var(--success);">100%</strong></div>
+            <button style="width:100%;margin-top:8px;padding:7px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;" id="resetDistribucion">↺ Restaurar por defecto</button>
+          </div>
         </div>
         <div class="slider-group">
           <div class="slider-top">
@@ -1448,7 +1509,7 @@
       <!-- Series × metros -->
       <div id="mmCfgSeries" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;width:100%;">
         <label>Series:</label>
-        <input type="number" min="1" max="99" value="4" id="mmSeries">
+        <input type="number" min="1" max="99" value="1" id="mmSeries">
         <label>×</label>
         <input type="number" min="50" max="2000" step="50" value="100" id="mmMetros">
         <label>m</label>
@@ -1457,7 +1518,7 @@
       <!-- Por tiempo -->
       <div id="mmCfgTiempo" style="display:none;align-items:center;gap:8px;flex-wrap:wrap;width:100%;">
         <label>Series:</label>
-        <input type="number" min="1" max="99" value="4" id="mmTSeries">
+        <input type="number" min="1" max="99" value="1" id="mmTSeries">
         <label>×</label>
         <input type="number" min="10" max="3600" step="10" value="60" id="mmTSegundos">
         <label>seg</label>
@@ -1590,26 +1651,31 @@
     {id:"bra73",num:73,style:"Braza",tags:["Braza","Coordinación"],nombre:"Mantra: brazada, respiración, patada, deslizamiento",desc:"Sincroniza cada palabra con la acción. Ningún elemento se solapa con el siguiente. Si el deslizamiento llega antes de que la patada termine, interrumpes la propulsión.",objetivos:[]},
     {id:"bra74",num:74,style:"Braza",tags:["Braza","Coordinación"],nombre:"Longitud del deslizamiento, velocidad del deslizamiento",desc:"Mide tu deslizamiento. El momento exacto para la siguiente brazada es cuando la velocidad cae notablemente, ni antes ni después.",objetivos:[]},
     {id:"bra75",num:75,style:"Braza",tags:["Braza","Coordinación"],nombre:"Enhebra la aguja",desc:"En cada deslizamiento el cuerpo entra por el agujero más pequeño posible. Las manos en punta de flecha abren el agujero y la cabeza, hombros, caderas y pies siguen la misma trayectoria.",objetivos:[]},
-    {id:"mar76",num:76,style:"Mariposa",tags:["Mariposa","Posición"],nombre:"La reverencia",desc:"Activa el abdomen y echa el pecho hacia delante 15 cm sin doblar la columna. En el agua esa reverencia inicia la onda. Si la mariposa te agota, probablemente inicias el movimiento desde las piernas.",objetivos:[]},
-    {id:"mar77",num:77,style:"Mariposa",tags:["Mariposa","Posición"],nombre:"Desplazamiento del peso",desc:"Mantén firme el núcleo y presiona el pecho hacia abajo por debajo del nivel de las caderas. Siente el desplazamiento del peso hacia delante. Antes de cada largo activa ese desplazamiento.",objetivos:[]},
-    {id:"mar78",num:78,style:"Mariposa",tags:["Mariposa","Patada"],nombre:"Ondear una cinta",desc:"Ondea una cinta de arriba a abajo. La ola nace en tu mano y viaja hasta el extremo. En el agua igual: la onda nace en el pecho y viaja hasta los pies. Los pies son solo el extremo de la cinta.",objetivos:[]},
-    {id:"mar79",num:79,style:"Mariposa",tags:["Mariposa","Patada"],nombre:"El delfín profundo a superficial",desc:"Con el agua a las caderas, haz la reverencia y salta. En el punto más alto profundiza la reverencia y al entrar al agua sigue hundiéndola mientras las piernas dan el latigazo descendente.",objetivos:[]},
-    {id:"mar80",num:80,style:"Mariposa",tags:["Mariposa","Patada"],nombre:"Zambullidas de delfín",desc:"Haz la reverencia y salta. En el aire profundiza y al entrar sigue impulsando la cabeza hacia abajo mientras las piernas suben y luego dan el latigazo. Repite varias zambullidas seguidas.",objetivos:[]},
-    {id:"mar81",num:81,style:"Mariposa",tags:["Mariposa","Patada"],nombre:"Delfín vertical",desc:"En posición vertical, inclina el tren superior hacia abajo y luego arriba dejando que las piernas reaccionen. Cuando el tren superior baja los pies suben; cuando sube los pies bajan.",objetivos:[]},
-    {id:"mar82",num:82,style:"Mariposa",tags:["Mariposa","Patada"],nombre:"Delfín de espaldas",desc:"Impúlsate boca arriba y realiza el delfín. La onda empieza en el pecho y viaja hasta los pies. Las rodillas no deben sobresalir de la superficie ni doblarse en exceso.",objetivos:[]},
-    {id:"mar83",num:83,style:"Mariposa",tags:["Mariposa","Brazada"],nombre:"Inclinación de las manos durante el barrido",desc:"Cuando los brazos están extendidos al frente, inclina las yemas hacia abajo para que las palmas miren hacia atrás y hacia afuera, no hacia el fondo.",objetivos:[]},
-    {id:"mar84",num:84,style:"Mariposa",tags:["Mariposa","Brazada"],nombre:"Barridos trazando signos de interrogación",desc:"Desde la posición extendida, los brazos trazan el contorno de un signo de interrogación. Barrido hacia fuera, luego curva hacia adentro acelerando en el empuje.",objetivos:[]},
-    {id:"mar85",num:85,style:"Mariposa",tags:["Mariposa","Brazada"],nombre:"Tirón y empuje en mariposa",desc:"Una sola brazada muy lenta. En el tirón el codo está alto y la mano barre hacia adentro. En el empuje la mano acelera junto a la cadera. El movimiento no es recto sino curvo.",objetivos:[]},
-    {id:"mar86",num:86,style:"Mariposa",tags:["Mariposa","Brazada"],nombre:"Nado con los puños cerrados en mariposa",desc:"Nada a mariposa cerrando los puños. El antebrazo trabaja como pala solo si el codo está muy alto durante todo el recorrido.",objetivos:[]},
-    {id:"mar87",num:87,style:"Mariposa",tags:["Mariposa","Recobro"],nombre:"El recobro de los nudillos",desc:"Al sacar los brazos al final del empuje, sácalos con los nudillos mirando al cielo. Obliga a que los codos salgan altos y los brazos viajen bajos sobre el agua.",objetivos:[]},
-    {id:"mar88",num:88,style:"Mariposa",tags:["Mariposa","Recobro"],nombre:"Brazos bajos en la fase aérea",desc:"Nada a mariposa con los brazos rozando la superficie durante el recobro aéreo. Los hombros se relajan y el recobro se vuelve eficiente.",objetivos:[]},
-    {id:"mar89",num:89,style:"Mariposa",tags:["Mariposa","Respiración"],nombre:"Respirar en el punto más bajo",desc:"Respira en el instante exacto en que el pecho está en su posición más baja antes del segundo latigazo. Ese es el punto donde la cabeza sale del agua de forma natural.",objetivos:[]},
-    {id:"mar90",num:90,style:"Mariposa",tags:["Mariposa","Respiración"],nombre:"Una respiración cada dos ciclos",desc:"Nada a mariposa haciendo dos ciclos completos sin respirar y luego uno respirando. Esa frecuencia más baja permite que la técnica no se rompa al respirar.",objetivos:[]},
-    {id:"mar91",num:91,style:"Mariposa",tags:["Mariposa","Palanca"],nombre:"Mariposa con un solo brazo",desc:"Nada a mariposa solo con un brazo mientras el otro permanece extendido al frente. Exagera el rolido lateral y la transferencia de potencia del núcleo.",objetivos:[]},
-    {id:"mar92",num:92,style:"Mariposa",tags:["Mariposa","Palanca"],nombre:"Mariposa con pausa en la entrada",desc:"Tras la entrada de los brazos al agua, congela la posición un instante antes del tirón. En esa pausa el cuerpo sigue avanzando y el pecho presiona hacia abajo.",objetivos:[]},
-    {id:"mar93",num:93,style:"Mariposa",tags:["Mariposa","Coordinación"],nombre:"Primera patada al entrar, segunda al empujar",desc:"Primera patada cuando los brazos entran al agua. Segunda patada cuando los brazos empujan junto a las caderas. Esas dos patadas son la estructura completa de la mariposa.",objetivos:[]},
-    {id:"mar94",num:94,style:"Mariposa",tags:["Mariposa","Coordinación"],nombre:"Mariposa lenta",desc:"Nada a mariposa lo más despacio posible sin hundir el cuerpo. La mariposa lenta obliga a que cada fase sea técnicamente perfecta porque no hay inercia que tape los errores.",objetivos:[]},
-    {id:"mar95",num:95,style:"Mariposa",tags:["Mariposa","Coordinación"],nombre:"Mariposa sin pausas",desc:"Nada a mariposa sin pausas en ningún punto. La onda debe ser continua. Sin pausas la mariposa fluye con sensación de ingravidez.",objetivos:[]}
+    {id:"mar76",num:76,style:"Mariposa",tags:["Mariposa","Posición"],nombre:"La reverencia",desc:"Apóyate de espaldas a la pared y activa el abdomen para eliminar el hueco entre la zona lumbar y la pared. Manteniendo esa tensión abdominal, echa el pecho hacia delante unos 15 cm sin doblar la columna: eso es la reverencia. Repite sin la pared. En el agua, esa reverencia activa",objetivos:[]},
+    {id:"mar77",num:77,style:"Mariposa",tags:["Mariposa","Posición"],nombre:"Desplazamiento del peso",desc:"Apóyate en la pared y siente el hueco entre la zona lumbar y la pared. Activa el abdomen hasta eliminar ese hueco. Ahora echa el pecho hacia delante como una reverencia: el peso se desplaza al tren superior y las caderas suben solas. Esa es la posición descendente en la que el ag",objetivos:[]},
+    {id:"mar78",num:78,style:"Mariposa",tags:["Mariposa","Patada"],nombre:"Ondear una cinta",desc:"Fuera del agua sostén una cinta o cuerda larga y ondéala de arriba a abajo con el brazo. Observa cómo la ola nace en tu mano y hombro y viaja hasta el extremo de la cinta: el extremo no hace nada por sí mismo, solo recibe la energía que le llega. En el agua el delfín funciona exa",objetivos:[]},
+    {id:"mar79",num:79,style:"Mariposa",tags:["Mariposa","Patada"],nombre:"El delfín profundo a superficial",desc:"Con el agua a las caderas, haz una reverencia hacia delante, flexiona las rodillas y salta desde el fondo. En el punto más alto del salto profundiza la reverencia y cuando la cabeza entra al agua sigue hundiéndola hacia abajo mientras las caderas suben y los pies dan un latigazo ",objetivos:[]},
+    {id:"mar80",num:80,style:"Mariposa",tags:["Mariposa","Patada"],nombre:"Zambullidas de delfín",desc:"Con el agua a las caderas, haz la reverencia hacia delante y salta. En el aire profundiza la reverencia y al entrar al agua sigue impulsando la cabeza hacia abajo mientras las piernas suben y luego dan el latigazo descendente. Sin pausa, repite varias zambullidas seguidas. La cla",objetivos:[]},
+    {id:"mar81",num:81,style:"Mariposa",tags:["Mariposa","Patada"],nombre:"Delfín vertical",desc:"En aguas de tu altura, adopta posición vertical con remadas suaves. Inicia un movimiento lento de delfín inclinando el tren superior hacia abajo y luego arriba, dejando que las piernas reaccionen: cuando el tren superior baja, los pies suben; cuando sube, los pies bajan. No hagas",objetivos:[]},
+    {id:"mar82",num:82,style:"Mariposa",tags:["Mariposa","Patada"],nombre:"Delfín de espaldas",desc:"Impúlsate de la pared boca arriba con los brazos junto a los costados y realiza el delfín. La onda debe empezar en el pecho y los hombros y viajar hacia los pies. Al estar boca arriba tus rodillas son completamente visibles: no deben sobresalir de la superficie ni doblarse en exc",objetivos:[]},
+    {id:"mar83",num:83,style:"Mariposa",tags:["Mariposa","Brazada"],nombre:"Inclinación de las manos durante el barrido",desc:"Impúlsate para nadar a mariposa con las caderas en alto. Cuando los brazos están extendidos al frente listos para el tirón, inclina ligeramente las yemas hacia abajo para que las palmas miren hacia atrás y hacia afuera, no hacia el fondo. Mantén esa inclinación durante todo el ba",objetivos:[]},
+    {id:"mar84",num:84,style:"Mariposa",tags:["Mariposa","Brazada"],nombre:"Barridos trazando signos de interrogación",desc:"Impúlsate para nadar a mariposa. Practica el barrido completo prestando atención a su forma: desde la posición extendida al frente, los brazos se abren hacia afuera y alrededor describiendo un arco amplio, luego se cierran hacia el vientre acelerando. Las trayectorias de los dos ",objetivos:[]},
+    {id:"mar85",num:85,style:"Mariposa",tags:["Mariposa","Brazada"],nombre:"Nado a mariposa a un solo brazo",desc:"Impúlsate con el brazo derecho extendido al frente y el izquierdo pegado al cuerpo. Nada a mariposa usando solo el brazo derecho: barre el signo de interrogación, acelera al final, saca el brazo por encima del agua con los meñiques arriba y vuelve a la posición extendida. Respira",objetivos:[]},
+    {id:"mar86",num:86,style:"Mariposa",tags:["Mariposa","Brazada"],nombre:"Brazo izquierdo, brazo derecho, ambos brazos",desc:"Nada a mariposa siguiendo la secuencia: dos brazadas con el brazo izquierdo, dos con el derecho, dos con ambos. Repite ese ciclo completo sin pausa. Al pasar a ambos brazos intenta conservar exactamente la misma trayectoria y la misma aceleración en el barrido final que sentiste ",objetivos:[]},
+    {id:"mar87",num:87,style:"Mariposa",tags:["Mariposa","Brazada"],nombre:"La curva convexa",desc:"Nada a mariposa con un solo brazo y fíjate en el final de cada brazada. Cuando las manos llegan a la altura de la cintura, inclina las palmas hacia fuera y ejerce una última presión rápida hacia atrás y afuera como si trazaras una curva convexa con las manos. Esa curva final lanz",objetivos:[]},
+    {id:"mar88",num:88,style:"Mariposa",tags:["Mariposa","Recobro"],nombre:"Fase aérea con los meñiques arriba",desc:"Frente a un espejo, inclínate hacia delante hasta que el tronco quede horizontal. Con los brazos extendidos al frente, practica la brazada de mariposa en el aire: signo de interrogación con cada brazo, acelerón al final con los meñiques hacia arriba. Cuando los brazos salen del a",objetivos:[]},
+    {id:"mar89",num:89,style:"Mariposa",tags:["Mariposa","Recobro"],nombre:"Batido de brazos",desc:"Impúlsate para nadar a mariposa. Después de varios delfines inicia las brazadas fijándote en el recobro. Cuando los meñiques salen del agua, deja que los brazos vuelen en arco por encima del agua usando la inercia de la presión final, sin forzarlos. El arco debe ser amplio y cómo",objetivos:[]},
+    {id:"mar90",num:90,style:"Mariposa",tags:["Mariposa","Recobro"],nombre:"Extensión de brazos en Y",desc:"Impúlsate para nadar a mariposa. Al final de cada recobro, antes de que las manos entren al agua, abre los codos hacia los lados hasta que los pulgares apunten al otro extremo de la piscina: las manos quedan más separadas que los hombros formando una Y con los brazos y el pecho. ",objetivos:[]},
+    {id:"mar91",num:91,style:"Mariposa",tags:["Mariposa","Respiración"],nombre:"Ejercicio para sincronizar la respiración",desc:"Impúlsate para nadar a mariposa respirando en cada brazada. Fíjate en el momento exacto en que la cara sale del agua: debe ocurrir cuando los brazos terminan el barrido y el tren superior está en su punto más elevado. Justo después de inspirar, la cara debe volver al agua antes q",objetivos:[]},
+    {id:"mar92",num:92,style:"Mariposa",tags:["Mariposa","Respiración"],nombre:"Zambullidas de delfín",desc:"Con el agua a la cintura, haz una reverencia con la cara dentro del agua y los brazos extendidos al frente. Traza el signo de interrogación con los brazos: abre hacia afuera, cierra hacia el vientre y acelera al final. Cuando los meñiques salen del agua, incorpórate para respirar",objetivos:[]},
+    {id:"mar93",num:93,style:"Mariposa",tags:["Mariposa","Respiración"],nombre:"Nado a mariposa con los ojos fijos en el agua",desc:"Nada a mariposa manteniendo los ojos mirando hacia el fondo durante todo el ciclo incluyendo cuando respiras. Al elevar la cara para inspirar, dirige la mirada hacia el agua que tienes justo delante en vez de al horizonte. El agua debe ser visible en todo momento. Esto te obliga ",objetivos:[]},
+    {id:"mar94",num:94,style:"Mariposa",tags:["Mariposa","Respiración"],nombre:"Clavo y martillo",desc:"Impúlsate para nadar a mariposa y respira en cada brazada. Cuando la boca sale del agua para inspirar, la vista mira al frente bajo o al agua: eso es el clavo. Inmediatamente después de inspirar, hunde la cabeza rápidamente hacia delante y abajo como si clavases la cabeza de vuel",objetivos:[]},
+    {id:"mar95",num:95,style:"Mariposa",tags:["Mariposa","Palanca"],nombre:"Mariposa avanzado a un brazo",desc:"Impúlsate con el brazo izquierdo extendido al frente y el derecho pegado al costado. Nada mariposa con el brazo izquierdo solo. Fíjate en las caderas: en la posición descendente las caderas están altas, cuando respiras las caderas bajan. Ese movimiento de caderas arriba y abajo e",objetivos:[]},
+    {id:"mar96",num:96,style:"Mariposa",tags:["Mariposa","Palanca"],nombre:"Nado a mariposa sin patada",desc:"Nada un largo de mariposa completo a ritmo normal. Luego cruza los pies para inmovilizar completamente las piernas y nada otro largo. Aunque seas más lento, el núcleo corporal y los brazos deben ser capaces de generar movimiento hacia delante mediante la onda. Si sin piernas el c",objetivos:[]},
+    {id:"mar97",num:97,style:"Mariposa",tags:["Mariposa","Palanca"],nombre:"Nado a mariposa sin pausas",desc:"Nada mariposa sin hacer ninguna pausa en ningún punto del ciclo: ni en la entrada de las manos, ni en el pico de la respiración, ni en el recobro. La onda debe ser continua e ininterrumpida. Cualquier pausa, aunque sea mínima, corta la inercia y obliga al cuerpo a arrancar de nue",objetivos:[]},
+    {id:"mar98",num:98,style:"Mariposa",tags:["Mariposa","Coordinación"],nombre:"Equilibrio sobre el pecho",desc:"Nada a mariposa y congela el movimiento en el momento en que el tren superior alcanza su posición más elevada. Ese pico es donde muchos nadadores pausan: el avance se detiene en seco. Ahora, sin perder ni un instante, hunde el pecho hacia abajo para recuperar la posición descende",objetivos:[]},
+    {id:"mar99",num:99,style:"Mariposa",tags:["Mariposa","Coordinación"],nombre:"Punto de comprobación de la coordinación",desc:"Nada a mariposa estableciendo tres puntos de comprobación en cada ciclo. Punto uno: cuando las manos entran al agua, los pies dan el primer latigazo. Punto dos: cuando las manos pasan bajo el vientre, los pies dan el segundo latigazo. Punto tres: cuando los meñiques salen del agu",objetivos:[]},
+    {id:"mar100",num:100,style:"Mariposa",tags:["Mariposa","Coordinación"],nombre:"Nado a mariposa silencioso",desc:"Con el agua a la cintura, haz la reverencia, extiende los brazos y da cuatro brazadas completas observando la salpicadura al entrar las manos. Si el agua salpica hacia los lados, las manos están empujando lateralmente en vez de hacia delante. Si salpica hacia atrás, el ángulo de ",objetivos:[]}
   ];
 
   // Biblioteca cargada estáticamente (95 ejercicios de lightswan.github.io/biblioteca-natacion)
@@ -1635,10 +1701,6 @@
   // Map styles to library IDs (único, ya declarado arriba)
   const styleKeyMap = {crol:"Crol",espalda:"Espalda",braza:"Braza",mariposa:"Mariposa"};
   const reverseStyleMap = {Crol:"crol",Espalda:"espalda",Braza:"braza",Mariposa:"mariposa"};
-
-  // ====================================================================
-  // RENDER ESTILOS
-  // ====================================================================
 
   const container = document.getElementById("stylesContainer");
 
@@ -1787,7 +1849,88 @@
   // ====================================================================
 
   const totalMeters = document.getElementById("totalMeters");
-  const totalValue = document.getElementById("totalValue");
+  const totalValueInput = document.getElementById("totalValueInput");
+
+  function setTotalMeters(val){
+    const v = Math.round(Math.max(500, Math.min(10000, val)) / 50) * 50;
+    totalMeters.value = v;
+    totalValueInput.value = v;
+  }
+
+  // Slider → input
+  totalMeters.addEventListener("input", () => {
+    totalValueInput.value = totalMeters.value;
+    recalcularTotales();
+    updateDistribucionUI();
+  });
+
+  // Input → slider
+  totalValueInput.addEventListener("input", () => {
+    const v = Math.round(Math.max(500, Math.min(10000, parseInt(totalValueInput.value)||1500)) / 50) * 50;
+    totalMeters.value = v;
+    recalcularTotales();
+    updateDistribucionUI();
+  });
+  totalValueInput.addEventListener("change", () => {
+    setTotalMeters(parseInt(totalValueInput.value)||1500);
+    recalcularTotales();
+  });
+  totalValueInput.addEventListener("focus", () => totalValueInput.select());
+
+  // ====================================================================
+  // DISTRIBUCIÓN DE SESIÓN
+  // ====================================================================
+
+  document.getElementById("btnDistribucion").addEventListener("click", function(){
+    const panel = document.getElementById("distribucionPanel");
+    const open = panel.style.display !== "none";
+    panel.style.display = open ? "none" : "block";
+    this.classList.toggle("active", !open);
+  });
+
+  const pctCalEl  = document.getElementById("pctCal");
+  const pctMainEl = document.getElementById("pctMain");
+  const pctCoolEl = document.getElementById("pctCool");
+  const sliderCal  = document.getElementById("sliderCal");
+  const sliderMain = document.getElementById("sliderMain");
+  const sliderCool = document.getElementById("sliderCool");
+
+  function getDistribucion(){
+    return {
+      cal:  Math.max(0,  Math.min(50,  parseInt(pctCalEl.value)  || 20)),
+      main: Math.max(10, Math.min(100, parseInt(pctMainEl.value) || 70)),
+      cool: Math.max(0,  Math.min(30,  parseInt(pctCoolEl.value) || 10))
+    };
+  }
+
+  function updateDistribucionUI(){
+    const totalMts = parseInt(totalMeters.value) || 1500;
+    const d = getDistribucion();
+    const sum = d.cal + d.main + d.cool;
+    const sumEl = document.getElementById("distribucionTotal");
+    sumEl.innerHTML = `Total: <strong style="color:${sum===100?'var(--success)':'#ef4444'}">${sum}%</strong>`;
+    document.getElementById("mCal").textContent  = "~" + Math.round(totalMts * d.cal  / 100 / 50) * 50 + "m";
+    document.getElementById("mMain").textContent = "~" + Math.round(totalMts * d.main / 100 / 50) * 50 + "m";
+    document.getElementById("mCool").textContent = "~" + Math.round(totalMts * d.cool / 100 / 50) * 50 + "m";
+    sliderCal.value  = d.cal;
+    sliderMain.value = d.main;
+    sliderCool.value = d.cool;
+  }
+
+  function bindDistribucionInput(inputEl, sliderEl){
+    inputEl.addEventListener("input", () => { sliderEl.value = inputEl.value; updateDistribucionUI(); });
+    sliderEl.addEventListener("input", () => { inputEl.value = sliderEl.value; updateDistribucionUI(); });
+  }
+  bindDistribucionInput(pctCalEl,  sliderCal);
+  bindDistribucionInput(pctMainEl, sliderMain);
+  bindDistribucionInput(pctCoolEl, sliderCool);
+
+  document.getElementById("resetDistribucion").addEventListener("click", () => {
+    pctCalEl.value = 20; pctMainEl.value = 70; pctCoolEl.value = 10;
+    updateDistribucionUI();
+  });
+
+  updateDistribucionUI();
   const seriesCount = document.getElementById("seriesCount");
   const seriesCountValue = document.getElementById("seriesCountValue");
   const seriesMeters = document.getElementById("seriesMeters");
@@ -1807,9 +1950,8 @@
     if(actualizandoTotal) return;
     actualizandoTotal = true;
     const extrasVol = calcularExtrasVolumen();
-    const total = Math.max(25, Math.min(10000, baseMainVolume + extrasVol));
-    totalMeters.value = total;
-    totalValue.innerHTML = "~" + total + "m";
+    const total = Math.max(50, Math.min(10000, baseMainVolume + extrasVol));
+    setTotalMeters(total);
     const fondoMax = Math.min(3000, total);
     fondoSlider.max = fondoMax;
     if(parseInt(fondoSlider.value) > fondoMax){
@@ -1836,9 +1978,8 @@
     const base = Math.max(50, Math.min(10000, Math.round(count * m / 50) * 50));
     baseMainVolume = base;
     const extrasVol = calcularExtrasVolumen();
-    const total = Math.max(25, Math.min(10000, base + extrasVol));
-    totalMeters.value = total;
-    totalValue.innerHTML = "~" + total + "m";
+    const total = Math.max(50, Math.min(10000, base + extrasVol));
+    setTotalMeters(total);
     actualizandoVolumen = false;
   }
 
@@ -1852,20 +1993,17 @@
     actualizandoVolumen = false;
   }
 
-  totalMeters.addEventListener("input", () => {
+  function recalcularTotales(){
     if(actualizandoTotal || actualizandoVolumen) return;
     const raw = parseInt(totalMeters.value);
     const extrasVol = calcularExtrasVolumen();
-    baseMainVolume = Math.max(25, Math.min(10000, raw - extrasVol));
-    totalValue.innerHTML = "~" + raw + "m";
+    baseMainVolume = Math.max(50, Math.min(10000, raw - extrasVol));
     recalcularSeriesCount();
     const fondoMax = Math.min(3000, raw);
-    fondoSlider.max = fondoMax;
-    if(parseInt(fondoSlider.value) > fondoMax){
-      fondoSlider.value = fondoMax;
-      fondoValue.innerHTML = fondoMax + "m";
+    if(fondoSlider){ fondoSlider.max = fondoMax;
+      if(parseInt(fondoSlider.value) > fondoMax){ fondoSlider.value = fondoMax; fondoValue.innerHTML = fondoMax + "m"; }
     }
-  });
+  }
 
   seriesCount.addEventListener("input", () => {
     seriesCountValue.innerHTML = seriesCount.value;
@@ -1984,7 +2122,13 @@
     const isOpen = section.style.display !== "none";
     section.style.display = isOpen ? "none" : "block";
     this.classList.toggle("active", !isOpen);
-    if(!isOpen) renderDeficiencias();
+    if(!isOpen){
+      renderDeficiencias();
+      // Poner el slider a 50% por defecto al activar
+      cantTecnica.value = 50;
+      cantTecnicaValue.innerHTML = `<span style="color:var(--primary)">50%</span> · Rendimiento <span style="color:var(--success)">50%</span>`;
+      cantTecnica.disabled = false;
+    }
   });
 
   const cantTecnica = document.getElementById("cantTecnica");
@@ -2335,53 +2479,59 @@
     // ========================================
     const mtsExtras = calcularExtrasVolumen();
 
+    // Distribución de sesión según panel
+    const dist = getDistribucion();
+    const sumDist = dist.cal + dist.main + dist.cool;
+    const pCalN  = (sumDist > 0 ? dist.cal  / sumDist : 0.20);
+    const pMainN = (sumDist > 0 ? dist.main / sumDist : 0.70);
+    const pCoolN = (sumDist > 0 ? dist.cool / sumDist : 0.10);
+
     // ========================================
-    // CALENTAMIENTO — 12% del total, redondeado a distSerie
+    // CALENTAMIENTO
     // ========================================
-    const calDistTarget = Math.round(totalMts * 0.12 / distSerie) * distSerie;
-    const calSeriesPorEstilo = Math.max(1, Math.round(calDistTarget / estilosActivos.length / distSerie));
+    const calDistTarget = Math.max(0, Math.round(totalMts * pCalN / distSerie) * distSerie);
     const calEjercicios = [];
 
-    estilosActivos.forEach(([key]) => {
-      const bibStyle = styleKeyMap[key];
-      const gen = getGenericaPorStyle(bibStyle);
-      const mSerie = Math.min(distSerie, 100); // calentamiento no supera 100m/serie
-      const nSeries = Math.max(2, Math.round(calDistTarget / estilosActivos.length / mSerie));
-      calEjercicios.push({
-        id: "ej_" + (ejercicioCounter++),
-        refId: gen.id,
-        nombre: nSeries + "x" + mSerie + " " + gen.nombre,
-        distancia: (nSeries * mSerie) + "m",
-        desc: "", tags: [...gen.tags], style: bibStyle,
-        series: nSeries, metrosSerie: mSerie,
-        intensidad: getIntensidadAleatoria(), ritmo: 0,
-        bloqueado: false, editing: false, esGenerica: true
+    if(calDistTarget > 0){
+      estilosActivos.forEach(([key]) => {
+        const bibStyle = styleKeyMap[key];
+        const gen = getGenericaPorStyle(bibStyle);
+        const mSerie = Math.min(distSerie, 100);
+        const nSeries = Math.max(1, Math.round(calDistTarget / estilosActivos.length / mSerie));
+        calEjercicios.push({
+          id: "ej_" + (ejercicioCounter++), refId: gen.id,
+          nombre: nSeries + "x" + mSerie + " " + gen.nombre,
+          distancia: (nSeries * mSerie) + "m",
+          desc: "", tags: [...gen.tags], style: bibStyle,
+          series: nSeries, metrosSerie: mSerie,
+          intensidad: getIntensidadAleatoria(), ritmo: 0,
+          bloqueado: false, editing: false, esGenerica: true
+        });
       });
-    });
-
-    if(calEjercicios.length === 0){
-      const mSerie = Math.min(distSerie, 100);
-      const nSeries = Math.max(2, Math.round(calDistTarget / mSerie));
-      calEjercicios.push({
-        id: "ej_" + (ejercicioCounter++), refId: "gen_crol1",
-        nombre: nSeries + "x" + mSerie + " Crol",
-        distancia: (nSeries * mSerie) + "m", desc: "", tags: ["Crol"], style: "Crol",
-        series: nSeries, metrosSerie: mSerie,
-        intensidad: getIntensidadAleatoria(), ritmo: 0,
-        bloqueado: false, editing: false, esGenerica: true
-      });
+      if(calEjercicios.length === 0){
+        const mSerie = Math.min(distSerie, 100);
+        const nSeries = Math.max(1, Math.round(calDistTarget / mSerie));
+        calEjercicios.push({
+          id: "ej_" + (ejercicioCounter++), refId: "gen_crol1",
+          nombre: nSeries + "x" + mSerie + " Crol",
+          distancia: (nSeries * mSerie) + "m", desc: "", tags: ["Crol"], style: "Crol",
+          series: nSeries, metrosSerie: mSerie,
+          intensidad: getIntensidadAleatoria(), ritmo: 0,
+          bloqueado: false, editing: false, esGenerica: true
+        });
+      }
     }
 
     const calReal = calEjercicios.reduce((s,e) => s + e.series * e.metrosSerie, 0);
-    entrenamientoActual.bloques.push({
-      titulo: "Calentamiento", distancia: calReal + "m", ejercicios: calEjercicios
+    if(calReal > 0) entrenamientoActual.bloques.push({
+      titulo: "🌅 Calentamiento", distancia: calReal + "m", ejercicios: calEjercicios
     });
 
     // ========================================
-    // BLOQUES PRINCIPALES
-    // metros disponibles = total - cal real - extras
+    // SESIÓN PRINCIPAL
     // ========================================
-    const mtsPrincipales = Math.max(0, totalMts - calReal - mtsExtras);
+    const coolDistTarget = Math.max(0, Math.round(totalMts * pCoolN / distSerie) * distSerie);
+    const mtsPrincipales = Math.max(0, totalMts - calReal - coolDistTarget - mtsExtras);
 
     const deficienciasEnEstilo = {};
     deficienciasSel.forEach(d => {
@@ -2519,6 +2669,44 @@
         titulo:"🏊 Serie fondo",
         distancia: mFondo + "m",
         ejercicios: [serie]
+      });
+    }
+
+    // ========================================
+    // VUELTA A LA CALMA
+    // ========================================
+    if(coolDistTarget > 0){
+      const coolEjercicios = [];
+      estilosActivos.forEach(([key]) => {
+        const bibStyle = styleKeyMap[key];
+        const gen = getGenericaPorStyle(bibStyle);
+        const mSerie = Math.min(distSerie, 100);
+        const nSeries = Math.max(1, Math.round(coolDistTarget / estilosActivos.length / mSerie));
+        coolEjercicios.push({
+          id: "ej_" + (ejercicioCounter++), refId: gen.id,
+          nombre: nSeries + "x" + mSerie + " " + gen.nombre,
+          distancia: (nSeries * mSerie) + "m",
+          desc: "", tags: [...gen.tags], style: bibStyle,
+          series: nSeries, metrosSerie: mSerie,
+          intensidad: Math.min(40, getIntensidadAleatoria()), ritmo: 0,
+          bloqueado: false, editing: false, esGenerica: true
+        });
+      });
+      if(coolEjercicios.length === 0){
+        const mSerie = Math.min(distSerie, 100);
+        const nSeries = Math.max(1, Math.round(coolDistTarget / mSerie));
+        coolEjercicios.push({
+          id: "ej_" + (ejercicioCounter++), refId: "gen_crol1",
+          nombre: nSeries + "x" + mSerie + " Crol suave",
+          distancia: (nSeries * mSerie) + "m", desc: "", tags: ["Crol"], style: "Crol",
+          series: nSeries, metrosSerie: mSerie,
+          intensidad: 30, ritmo: 0,
+          bloqueado: false, editing: false, esGenerica: true
+        });
+      }
+      const coolReal = coolEjercicios.reduce((s,e) => s + e.series * e.metrosSerie, 0);
+      entrenamientoActual.bloques.push({
+        titulo: "🌊 Vuelta a la calma", distancia: coolReal + "m", ejercicios: coolEjercicios
       });
     }
 
@@ -3534,6 +3722,22 @@
   cargarBiblioteca();
 
 </script>
+
+  <footer style="text-align:center;padding:40px 24px 32px;border-top:1px solid var(--border);margin-top:48px;">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:12px;max-width:480px;margin:auto;">
+      <div style="font-size:28px;">🏊</div>
+      <div style="font-size:18px;font-weight:700;color:var(--text);">Biblioteca de la Natación</div>
+      <div style="font-size:13px;color:var(--muted);">Centro de Recursos Didácticos y Entrenamiento</div>
+      <div style="width:40px;height:1px;background:var(--border);margin:4px 0;"></div>
+      <div style="font-size:13px;color:var(--muted);">Creado por <a href="https://www.instagram.com/kevinlight.nature/" target="_blank" style="color:var(--text);font-weight:700;text-decoration:none;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--text)'">Kevin</a></div>
+      <a href="https://lightswan.github.io/biblioteca-natacion/" target="_blank"
+        style="display:inline-flex;align-items:center;gap:6px;color:var(--primary);text-decoration:none;font-size:13px;font-weight:600;padding:8px 18px;border:1px solid var(--primary);border-radius:999px;transition:.2s;margin-top:4px;"
+        onmouseover="this.style.background='rgba(56,189,248,.1)'" onmouseout="this.style.background='transparent'">
+        📚 Ir a la Biblioteca de Natación ↗
+      </a>
+      <div style="font-size:11px;color:var(--muted);opacity:.5;margin-top:4px;">Generador de sesiones · Versión beta</div>
+    </div>
+  </footer>
 
 </body>
 </html>
