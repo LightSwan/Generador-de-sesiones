@@ -1347,13 +1347,27 @@
 
       <div id="manualBloque_main" class="manual-block">
         <div class="manual-block-header">
-          <div class="manual-block-title">🏊 Sesión principal</div>
+          <div class="manual-block-title" id="mainBlockTitleDisplay" style="cursor:pointer;display:flex;align-items:center;gap:8px;" title="Haz clic para editar el nombre">
+            🏊 Sesión principal
+            <span style="font-size:12px;color:var(--muted);font-weight:400;opacity:0.7;">✎</span>
+          </div>
+          <input type="text" id="mainBlockTitleInput" value="Sesión principal"
+            style="display:none;background:#0f172a;border:1px solid var(--primary);border-radius:10px;color:var(--text);font-size:16px;font-weight:700;padding:4px 10px;outline:none;flex:1;max-width:260px;">
           <div class="manual-block-dist" id="manualDist_main">0m</div>
         </div>
         <div id="manualExList_main"></div>
         <div class="manual-add-area" style="display:flex;justify-content:center;">
-          <button class="manual-add-btn" style="width:100%;max-width:320px;" onclick="openManualModal('main')">+ Añadir ejercicio a Sesión principal</button>
+          <button class="manual-add-btn" style="width:100%;max-width:320px;" id="manualAddMainBtn">+ Añadir ejercicio a Sesión principal</button>
         </div>
+      </div>
+
+      <!-- Bloques extra dinámicos -->
+      <div id="manualExtraBlocks"></div>
+
+      <div style="display:flex;justify-content:center;margin-top:4px;margin-bottom:4px;">
+        <button class="action-btn" id="addExtraBlockBtn" style="display:flex;align-items:center;gap:8px;padding:12px 24px;border-color:var(--primary);color:var(--primary);">
+          ＋ Añadir bloque
+        </button>
       </div>
 
       <div id="manualBloque_cool" class="manual-block">
@@ -1460,9 +1474,9 @@
       <!-- Intensidad -->
       <div style="display:flex;align-items:center;gap:10px;width:100%;margin-top:10px;">
         <label style="white-space:nowrap;">Intensidad:</label>
-        <input type="range" min="0" max="100" step="5" value="70" id="mmIntensidad" style="flex:1;">
+        <input type="range" min="0" max="100" step="5" value="50" id="mmIntensidad" style="flex:1;">
         <span id="mmIntensidadLabel" style="font-size:18px;min-width:36px;text-align:center;">🟡</span>
-        <span id="mmIntensidadPct" style="color:var(--primary);font-weight:700;min-width:36px;">70%</span>
+        <span id="mmIntensidadPct" style="color:var(--primary);font-weight:700;min-width:36px;">50%</span>
       </div>
 
       <button class="manual-modal-confirm" id="mmConfirmBtn" style="width:100%;margin-top:10px;">✓ Añadir ejercicio</button>
@@ -2906,6 +2920,95 @@
   let manualIdCounter = 0;
   let manualActiveBloque = null;
   let mmSelectedEj = null; // ejercicio seleccionado en la lista
+  let extraBlockCounter = 0; // counter for extra blocks
+
+  // ---- Editable title for "Sesión principal" ----
+  (function(){
+    const display = document.getElementById("mainBlockTitleDisplay");
+    const input = document.getElementById("mainBlockTitleInput");
+    const addBtn = document.getElementById("manualAddMainBtn");
+
+    function showInput(){
+      display.style.display = "none";
+      input.style.display = "";
+      input.focus();
+      input.select();
+    }
+    function applyTitle(){
+      const val = input.value.trim() || "Sesión principal";
+      input.value = val;
+      display.childNodes[0].textContent = "🏊 " + val;
+      addBtn.textContent = "+ Añadir ejercicio a " + val;
+      display.style.display = "";
+      input.style.display = "none";
+    }
+    display.addEventListener("click", showInput);
+    input.addEventListener("blur", applyTitle);
+    input.addEventListener("keydown", e => { if(e.key === "Enter") applyTitle(); if(e.key === "Escape") { input.value = display.childNodes[0].textContent.replace(/^🏊\s*/, ""); applyTitle(); } });
+    addBtn.addEventListener("click", () => openManualModal("main"));
+  })();
+
+  // ---- Extra blocks ----
+  const extraBlocksContainer = document.getElementById("manualExtraBlocks");
+
+  function addExtraBlock(){
+    extraBlockCounter++;
+    const bid = "extra_" + extraBlockCounter;
+    manualData[bid] = [];
+
+    const blockEl = document.createElement("div");
+    blockEl.id = "manualBloque_" + bid;
+    blockEl.className = "manual-block";
+    blockEl.innerHTML = `
+      <div class="manual-block-header">
+        <div class="manual-block-title extra-block-title-display" data-bid="${bid}" style="cursor:pointer;display:flex;align-items:center;gap:8px;" title="Haz clic para editar el nombre">
+          📋 Bloque extra ${extraBlockCounter}
+          <span style="font-size:12px;color:var(--muted);font-weight:400;opacity:0.7;">✎</span>
+        </div>
+        <input type="text" class="extra-block-title-input" data-bid="${bid}" value="Bloque extra ${extraBlockCounter}"
+          style="display:none;background:#0f172a;border:1px solid var(--primary);border-radius:10px;color:var(--text);font-size:16px;font-weight:700;padding:4px 10px;outline:none;flex:1;max-width:260px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="manual-block-dist" id="manualDist_${bid}">0m</div>
+          <button onclick="removeExtraBlock('${bid}')" style="background:transparent;border:1px solid var(--danger);color:var(--danger);border-radius:8px;padding:4px 10px;cursor:pointer;font-size:13px;" title="Eliminar bloque">✕</button>
+        </div>
+      </div>
+      <div id="manualExList_${bid}"></div>
+      <div class="manual-add-area" style="display:flex;justify-content:center;">
+        <button class="manual-add-btn extra-block-add-btn" data-bid="${bid}" style="width:100%;max-width:320px;">+ Añadir ejercicio a Bloque extra ${extraBlockCounter}</button>
+      </div>
+    `;
+    extraBlocksContainer.appendChild(blockEl);
+
+    // Bind add button
+    blockEl.querySelector(".extra-block-add-btn").addEventListener("click", function(){
+      openManualModal(this.dataset.bid);
+    });
+
+    // Editable title
+    const disp = blockEl.querySelector(".extra-block-title-display");
+    const inp = blockEl.querySelector(".extra-block-title-input");
+    const addB = blockEl.querySelector(".extra-block-add-btn");
+    function showExtraInput(){ disp.style.display="none"; inp.style.display=""; inp.focus(); inp.select(); }
+    function applyExtraTitle(){
+      const val = inp.value.trim() || ("Bloque extra " + extraBlockCounter);
+      inp.value = val;
+      disp.childNodes[0].textContent = "📋 " + val;
+      addB.textContent = "+ Añadir ejercicio a " + val;
+      disp.style.display=""; inp.style.display="none";
+    }
+    disp.addEventListener("click", showExtraInput);
+    inp.addEventListener("blur", applyExtraTitle);
+    inp.addEventListener("keydown", e => { if(e.key==="Enter") applyExtraTitle(); if(e.key==="Escape"){ inp.value=disp.childNodes[0].textContent.replace(/^📋\s*/,""); applyExtraTitle(); } });
+  }
+
+  function removeExtraBlock(bid){
+    delete manualData[bid];
+    const el = document.getElementById("manualBloque_" + bid);
+    if(el) el.remove();
+    updateManualTotal();
+  }
+
+  document.getElementById("addExtraBlockBtn").addEventListener("click", addExtraBlock);
 
   // todosEjercicios: siempre refleja la biblioteca cargada (dinámica o fallback)
   function getTodosEjercicios(){
@@ -2989,9 +3092,9 @@
     document.getElementById("mmTypeSeries").classList.add("active");
     document.getElementById("mmTypeTiempo").classList.remove("active");
     // Reset intensity
-    mmIntensidadSlider.value = 70;
-    mmIntensidadLabel.textContent = intensidadEmoji(70);
-    mmIntensidadPct.textContent = "70%";
+    mmIntensidadSlider.value = 50;
+    mmIntensidadLabel.textContent = intensidadEmoji(50);
+    mmIntensidadPct.textContent = "50%";
     manualEditingUid = null;
     document.getElementById("mmConfirmBtn").textContent = "✓ Añadir ejercicio";
     manualModalOverlay.classList.add("open");
@@ -3184,9 +3287,9 @@
       document.getElementById("mmMetros").value = item.metros;
     }
     // Restore intensity
-    document.getElementById("mmIntensidad").value = item.intensidad || 70;
-    mmIntensidadLabel.textContent = intensidadEmoji(item.intensidad || 70);
-    mmIntensidadPct.textContent = (item.intensidad || 70) + "%";
+    document.getElementById("mmIntensidad").value = item.intensidad || 50;
+    mmIntensidadLabel.textContent = intensidadEmoji(item.intensidad || 50);
+    mmIntensidadPct.textContent = (item.intensidad || 50) + "%";
 
     document.getElementById("mmConfirmBtn").textContent = "✓ Guardar cambios";
     manualModalOverlay.classList.add("open");
@@ -3215,7 +3318,7 @@
   }
 
   function updateManualTotal(){
-    const total = ["cal","main","cool"].reduce((s,b)=>s+manualData[b].reduce((ss,e)=>ss+e.series*e.metros,0),0);
+    const total = Object.keys(manualData).reduce((s,b)=>s+manualData[b].reduce((ss,e)=>ss+e.series*e.metros,0),0);
     document.getElementById("manualTotalDist").textContent = total+"m";
   }
 
@@ -3236,16 +3339,22 @@
 
   // Manual mode download/summary buttons
   function buildManualTexto(){
-    const total = ["cal","main","cool"].reduce((s,b)=>s+manualData[b].reduce((ss,e)=>ss+e.series*e.metros,0),0);
-    const labels = {cal:"Calentamiento",main:"Sesión principal",cool:"Vuelta a la calma"};
+    const total = Object.keys(manualData).reduce((s,b)=>s+manualData[b].reduce((ss,e)=>ss+e.series*e.metros,0),0);
+    const fixedLabels = {cal:"Calentamiento",main:"Sesión principal",cool:"Vuelta a la calma"};
     const now = new Date();
     const fechaStr = now.toLocaleDateString("es-ES",{day:"2-digit",month:"2-digit",year:"numeric"});
     let txt = `SESIÓN ${fechaStr} — ${total}m\n` + "=".repeat(40) + "\n\n";
-    ["cal","main","cool"].forEach(b=>{
+    Object.keys(manualData).forEach(b=>{
       const items = manualData[b];
       if(!items.length) return;
+      // Get display label: for extra blocks, use the rendered title
+      let label = fixedLabels[b];
+      if(!label){
+        const titleEl = document.querySelector(`.extra-block-title-display[data-bid="${b}"]`);
+        label = titleEl ? titleEl.childNodes[0].textContent.replace(/^📋\s*/,"") : b;
+      }
       const bTotal = items.reduce((s,e)=>s+e.series*e.metros,0);
-      txt += labels[b] + "  (" + (bTotal||"⏱") + (bTotal?"m":"") + ")\n" + "-".repeat(36) + "\n";
+      txt += label + "  (" + (bTotal||"⏱") + (bTotal?"m":"") + ")\n" + "-".repeat(36) + "\n";
       items.forEach(e=>{ txt += "  • " + htmlDecode(e.nombre) + "\n"; });
       txt += "\n";
     });
@@ -3268,17 +3377,22 @@
   });
 
   document.getElementById("manualImgBtn").addEventListener("click",()=>{
-    const total = ["cal","main","cool"].reduce((s,b)=>s+manualData[b].reduce((ss,e)=>ss+e.series*e.metros,0),0);
-    const labels = {cal:"Calentamiento",main:"Sesión principal",cool:"Vuelta a la calma"};
+    const total = Object.keys(manualData).reduce((s,b)=>s+manualData[b].reduce((ss,e)=>ss+e.series*e.metros,0),0);
+    const fixedLabels = {cal:"Calentamiento",main:"Sesión principal",cool:"Vuelta a la calma"};
     const now = new Date();
     const fechaStr = now.toLocaleDateString("es-ES",{day:"2-digit",month:"2-digit",year:"numeric"});
     const lines = [];
     lines.push({text:`SESIÓN ${fechaStr} — ${total}m`, type:"title"});
-    ["cal","main","cool"].forEach(b=>{
+    Object.keys(manualData).forEach(b=>{
       const items = manualData[b];
       if(!items.length) return;
+      let label = fixedLabels[b];
+      if(!label){
+        const titleEl = document.querySelector(`.extra-block-title-display[data-bid="${b}"]`);
+        label = titleEl ? titleEl.childNodes[0].textContent.replace(/^📋\s*/,"") : b;
+      }
       const bTotal = items.reduce((s,e)=>s+e.series*e.metros,0);
-      lines.push({text:labels[b]+"  ("+(bTotal||"⏱")+(bTotal?"m":"")+")", type:"block"});
+      lines.push({text:label+"  ("+(bTotal||"⏱")+(bTotal?"m":"")+")", type:"block"});
       items.forEach(e=>lines.push({text:"  • "+htmlDecode(e.nombre), type:"ej"}));
     });
     const PAD=40,FONT=15,LINE_H=26,TITLE_H=42;
@@ -3301,14 +3415,19 @@
 
   document.getElementById("manualSummaryBtn").addEventListener("click",()=>{
     // Build manual summary
-    const total = ["cal","main","cool"].reduce((s,b)=>s+manualData[b].reduce((ss,e)=>ss+e.series*e.metros,0),0);
-    const labels = {cal:"🌅 Calentamiento",main:"🏊 Sesión principal",cool:"🌊 Vuelta a la calma"};
+    const total = Object.keys(manualData).reduce((s,b)=>s+manualData[b].reduce((ss,e)=>ss+e.series*e.metros,0),0);
+    const fixedLabels = {cal:"🌅 Calentamiento",main:"🏊 Sesión principal",cool:"🌊 Vuelta a la calma"};
     let html = `<div class="summary-section-title">Resumen manual</div>`;
     html += `<div class="summary-row"><span class="summary-label">Total metros</span><span class="summary-val">${total}m</span></div>`;
-    ["cal","main","cool"].forEach(b=>{
+    Object.keys(manualData).forEach(b=>{
       const items = manualData[b];
       if(!items.length) return;
-      html += `<div class="summary-section-title">${labels[b]}</div>`;
+      let label = fixedLabels[b];
+      if(!label){
+        const titleEl = document.querySelector(`.extra-block-title-display[data-bid="${b}"]`);
+        label = "📋 " + (titleEl ? titleEl.childNodes[0].textContent.replace(/^📋\s*/,"") : b);
+      }
+      html += `<div class="summary-section-title">${label}</div>`;
       items.forEach(e=>{
         html += `<div class="summary-row"><span class="summary-label" style="font-size:12px;">${htmlDecode(e.nombre)}</span></div>`;
       });
