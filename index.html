@@ -4155,7 +4155,7 @@
       theme_color: "#0f172a",
       orientation: "portrait",
       icons: [
-        { src:"logo.png", sizes:"512x512", type:"image/png", purpose:"any maskable" }
+        { src:"https://lightswan.github.io/Generador-de-sesiones/logo.png", sizes:"512x512", type:"image/png", purpose:"any maskable" }
       ]
     };
     const blob = new Blob([JSON.stringify(manifest)], {type:"application/json"});
@@ -4182,6 +4182,9 @@
 
   if(!isInStandalone){ showInstallBtns(); }
 
+  // Ocultar botón si ya está instalada como app
+  if(isInStandalone){ hideInstallBtns(); }
+
   function handleInstallClick() {
     if(deferredPrompt){
       deferredPrompt.prompt();
@@ -4207,20 +4210,9 @@
       document.body.appendChild(overlay);
       overlay.addEventListener("click", e => { if(e.target===overlay) overlay.remove(); });
     } else {
-      const overlay = document.createElement("div");
-      overlay.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;";
-      overlay.innerHTML = `
-        <div style="background:#1e293b;border:1px solid #334155;border-radius:20px;padding:24px;max-width:360px;width:100%;text-align:center;">
-          <div style="font-size:36px;margin-bottom:12px;">📲</div>
-          <div style="font-size:17px;font-weight:700;color:#f8fafc;margin-bottom:10px;">Añadir a la pantalla de inicio</div>
-          <div style="font-size:14px;color:#94a3b8;line-height:1.6;margin-bottom:16px;">
-            En <strong style="color:#38bdf8;">Chrome</strong>: pulsa el menú ⋮ y selecciona<br><strong style="color:#38bdf8;">"Añadir a pantalla de inicio"</strong><br><br>
-            En <strong style="color:#38bdf8;">Firefox</strong>: pulsa el menú ⋮ y busca<br><strong style="color:#38bdf8;">"Instalar"</strong>
-          </div>
-          <button onclick="this.closest('div[style*=\\"inset:0\\"]').remove()" style="width:100%;padding:12px;border-radius:12px;border:none;background:#38bdf8;color:#001018;font-weight:700;font-size:15px;cursor:pointer;">Entendido</button>
-        </div>`;
-      document.body.appendChild(overlay);
-      overlay.addEventListener("click", e => { if(e.target===overlay) overlay.remove(); });
+      // deferredPrompt es null: Chrome ya usó el prompt o no está disponible.
+      // Ocultamos el botón porque no hay nada útil que hacer.
+      hideInstallBtns();
     }
   }
 
