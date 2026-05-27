@@ -4155,7 +4155,8 @@
       theme_color: "#0f172a",
       orientation: "portrait",
       icons: [
-        { src:"https://lightswan.github.io/Generador-de-sesiones/logo.png", sizes:"512x512", type:"image/png", purpose:"any maskable" }
+        { src:"https://lightswan.github.io/Generador-de-sesiones/logo.png", sizes:"512x512", type:"image/png", purpose:"any" },
+        { src:"https://lightswan.github.io/Generador-de-sesiones/logo.png", sizes:"512x512", type:"image/png", purpose:"maskable" }
       ]
     };
     const blob = new Blob([JSON.stringify(manifest)], {type:"application/json"});
@@ -4163,6 +4164,19 @@
     const link = document.createElement("link");
     link.rel = "manifest"; link.href = url;
     document.head.appendChild(link);
+
+    // Service Worker mínimo registrado como blob para cumplir el criterio de instalabilidad de Chrome
+    if("serviceWorker" in navigator){
+      const swCode = `
+        self.addEventListener("install", e => self.skipWaiting());
+        self.addEventListener("activate", e => e.waitUntil(clients.claim()));
+        self.addEventListener("fetch", e => e.respondWith(fetch(e.request).catch(() => new Response(""))));
+      `;
+      const swBlob = new Blob([swCode], {type:"application/javascript"});
+      const swUrl = URL.createObjectURL(swBlob);
+      navigator.serviceWorker.register(swUrl, {scope: "./"})
+        .catch(err => console.warn("SW no registrado:", err));
+    }
   })();
 
   // Install prompt
