@@ -4172,28 +4172,33 @@
   // Install prompt
   let deferredPrompt = null;
   const installBtn = document.getElementById("pwaInstallBtn");
-  const installBtnBottom = document.getElementById("pwaInstallBtnBottom");
 
   const isInStandalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone;
   const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
 
-  function showBtns()  { installBtn.style.display = "flex"; installBtnBottom.style.display = "inline-flex"; }
-  function hideBtns()  { installBtn.style.display = "none"; installBtnBottom.style.display = "none"; }
-
   // Mostrar siempre si no está ya instalada como app
-  if(!isInStandalone){ showBtns(); }
+  if(!isInStandalone){
+    installBtn.style.display = "flex";
+  }
 
-  // Lógica de click compartida
-  function handleInstallClick() {
-    if(deferredPrompt){
+  // Capturar el prompt de instalación nativa (Android/Chrome/Edge)
+  window.addEventListener("beforeinstallprompt", e => {
+    e.preventDefault();
+    deferredPrompt = e;
+    // Sobreescribir el click handler para usar el prompt nativo
+    installBtn.onclick = async () => {
       deferredPrompt.prompt();
-      deferredPrompt.userChoice.then(({ outcome }) => {
-        if(outcome === "accepted") hideBtns();
-        deferredPrompt = null;
-      });
-      return;
-    }
+      const { outcome } = await deferredPrompt.userChoice;
+      if(outcome === "accepted") installBtn.style.display = "none";
+      deferredPrompt = null;
+    };
+  });
+
+  // Click por defecto: instrucciones según plataforma
+  installBtn.addEventListener("click", () => {
+    if(deferredPrompt) return; // ya manejado arriba
     if(isIOS){
+      // iOS Safari
       const overlay = document.createElement("div");
       overlay.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;display:flex;align-items:flex-end;justify-content:center;padding:20px;";
       overlay.innerHTML = `
@@ -4209,6 +4214,7 @@
       document.body.appendChild(overlay);
       overlay.addEventListener("click", e => { if(e.target===overlay) overlay.remove(); });
     } else {
+      // Android u otro navegador sin beforeinstallprompt
       const overlay = document.createElement("div");
       overlay.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;";
       overlay.innerHTML = `
@@ -4224,32 +4230,16 @@
       document.body.appendChild(overlay);
       overlay.addEventListener("click", e => { if(e.target===overlay) overlay.remove(); });
     }
-  }
-
-  installBtn.addEventListener("click", handleInstallClick);
-  installBtnBottom.addEventListener("click", handleInstallClick);
-
-  // Capturar el prompt nativo (Android/Chrome/Edge)
-  window.addEventListener("beforeinstallprompt", e => {
-    e.preventDefault();
-    deferredPrompt = e;
-    if(!isInStandalone) showBtns();
   });
 
   window.addEventListener("appinstalled", () => {
-    hideBtns();
+    installBtn.style.display = "none";
     deferredPrompt = null;
   });
 
   cargarBiblioteca();
 
 </script>
-
-  <div style="text-align:center;padding:48px 24px 0;">
-    <button id="pwaInstallBtnBottom" style="display:none;align-items:center;gap:10px;padding:15px 36px;border-radius:999px;border:none;background:linear-gradient(135deg,#1a6fcf 0%,#38bdf8 100%);color:#fff;font-size:1rem;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;box-shadow:0 4px 20px rgba(56,189,248,0.35);transition:transform .2s,box-shadow .2s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 28px rgba(56,189,248,0.5)'" onmouseout="this.style.transform='';this.style.boxShadow='0 4px 20px rgba(56,189,248,0.35)'">
-      📲 Añadir a pantalla de inicio
-    </button>
-  </div>
 
   <footer style="text-align:center;padding:40px 24px 32px;border-top:1px solid var(--border);margin-top:48px;">
     <div style="display:flex;flex-direction:column;align-items:center;gap:12px;max-width:480px;margin:auto;">
