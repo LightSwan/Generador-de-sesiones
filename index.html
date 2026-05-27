@@ -3,6 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="theme-color" content="#0f172a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Sesiones Natación">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230f172a'/><text y='.9em' font-size='80' x='10'>🏊</text></svg>">
   <title>Generador de sesiones</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1043,7 +1048,54 @@
     }
     .manual-total-bar span{ color:var(--muted); font-size:14px; font-weight:400; }
 
-    /* SUMMARY SIDEBAR */
+    /* EXPERT / SIMPLE MODE SWITCHER */
+    .complexity-switcher{
+      display:flex;
+      gap:6px;
+      margin-bottom:16px;
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:5px;
+    }
+    .complexity-btn{
+      flex:1;
+      padding:9px 10px;
+      border-radius:10px;
+      border:none;
+      background:transparent;
+      color:var(--muted);
+      font-size:13px;
+      font-weight:600;
+      cursor:pointer;
+      transition:.2s;
+      font-family:'Inter',sans-serif;
+    }
+    .complexity-btn.active{
+      background:var(--card2);
+      color:var(--text);
+      box-shadow:0 2px 8px rgba(0,0,0,.3);
+    }
+    .difficulty-grid{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:8px;
+      margin-top:12px;
+    }
+    .difficulty-card{
+      padding:12px 8px;
+      border-radius:14px;
+      border:2px solid var(--border);
+      background:var(--card);
+      cursor:pointer;
+      text-align:center;
+      transition:.2s;
+    }
+    .difficulty-card:hover{ border-color:var(--primary); }
+    .difficulty-card.active{ border-color:var(--primary); background:rgba(56,189,248,.1); }
+    .difficulty-card .diff-icon{ font-size:22px; margin-bottom:4px; }
+    .difficulty-card .diff-label{ font-size:12px; font-weight:700; color:var(--text); }
+    .difficulty-card .diff-sub{ font-size:10px; color:var(--muted); margin-top:2px; }
     .summary-sidebar{
       position:fixed;
       right:0;
@@ -1180,9 +1232,14 @@
       <span style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#000;font-size:11px;font-weight:800;padding:3px 10px;border-radius:999px;letter-spacing:.08em;text-transform:uppercase;vertical-align:middle;">BETA</span>
     </div>
     <p>Generador de entrenamientos desde la biblioteca de nataci&oacute;n.</p>
-    <div class="mode-switcher" style="margin-top:18px;max-width:480px;">
-      <button class="mode-btn" id="modeAutoBtn">⚙️ Creador automático</button>
-      <button class="mode-btn active" id="modeManualBtn">✏️ Creación manual</button>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;align-items:center;">
+      <div class="mode-switcher" style="max-width:480px;margin:0;">
+        <button class="mode-btn" id="modeAutoBtn">⚙️ Creador automático</button>
+        <button class="mode-btn active" id="modeManualBtn">✏️ Creación manual</button>
+      </div>
+      <button id="pwaInstallBtn" style="display:none;align-items:center;gap:6px;padding:9px 16px;border-radius:999px;border:1px solid var(--primary);background:rgba(56,189,248,.07);color:var(--primary);font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:.2s;" onmouseover="this.style.background='rgba(56,189,248,.18)'" onmouseout="this.style.background='rgba(56,189,248,.07)'">
+        📲 Añadir a inicio
+      </button>
     </div>
   </div>
 
@@ -1192,6 +1249,65 @@
     <aside class="panel">
 
       <div class="section">
+        <!-- Modo experto / sencillo -->
+        <div class="complexity-switcher">
+          <button class="complexity-btn active" id="btnModoSencillo">🟢 Sencillo</button>
+          <button class="complexity-btn" id="btnModoExperto">⚙️ Experto</button>
+        </div>
+
+        <!-- MODO SENCILLO -->
+        <div id="panelSencillo">
+          <div class="section-title" style="margin-top:4px;">Metros de la sesión</div>
+          <div class="slider-group">
+            <div class="slider-top">
+              <span>Metros totales</span>
+              <div style="display:flex;align-items:center;gap:4px;">
+                <span style="color:var(--muted);font-size:13px;">~</span>
+                <input type="number" id="totalValueInputS" min="500" max="10000" step="50" value="1500"
+                  style="width:72px;padding:3px 6px;border-radius:8px;border:1px solid var(--border);background:#0f172a;color:var(--text);font-size:14px;font-weight:700;text-align:center;outline:none;font-family:'Inter',sans-serif;">
+                <span style="color:var(--text);font-size:13px;font-weight:700;">m</span>
+              </div>
+            </div>
+            <input type="range" min="500" max="10000" step="50" value="1500" id="totalMetersS" />
+          </div>
+
+          <div class="section-title" style="margin-top:14px;">Estilos</div>
+          <div id="stylesContainerS"></div>
+
+          <div class="section-title" style="margin-top:14px;">Técnica</div>
+          <div class="slider-group">
+            <div class="slider-top">
+              <span>Técnica</span>
+              <strong id="tecnicaValueS"><span style="color:var(--primary)">0%</span> · Rendimiento <span style="color:var(--success)">100%</span></strong>
+            </div>
+            <input type="range" min="0" max="100" step="5" value="0" id="tecnicaSliderS" />
+            <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:4px;">
+              <span>0% técnica</span><span>50/50</span><span>100% técnica</span>
+            </div>
+          </div>
+
+          <div class="section-title" style="margin-top:14px;">Dificultad</div>
+          <div class="difficulty-grid">
+            <div class="difficulty-card active" data-diff="facil" id="diffFacil">
+              <div class="diff-icon">🟢</div>
+              <div class="diff-label">Fácil</div>
+              <div class="diff-sub">Principiante<br>≤100m/serie</div>
+            </div>
+            <div class="difficulty-card" data-diff="intermedio" id="diffIntermedio">
+              <div class="diff-icon">🟡</div>
+              <div class="diff-label">Intermedio</div>
+              <div class="diff-sub">50–70% int.<br>≤200m/serie</div>
+            </div>
+            <div class="difficulty-card" data-diff="dificil" id="diffDificil">
+              <div class="diff-icon">🔴</div>
+              <div class="diff-label">Difícil</div>
+              <div class="diff-sub">Alta intensidad<br>Fondo+explosivo</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- MODO EXPERTO (oculto por defecto) -->
+        <div id="panelExperto" style="display:none;">
         <div class="section-title">Volumen</div>
         <div class="slider-group">
           <div class="slider-top">
@@ -1338,7 +1454,7 @@
 
         <!-- Corrección 4: Botón para activar técnica + defectos -->
         <div style="margin-top:14px;">
-          <button class="action-btn extra-toggle" id="btnTecnica" style="width:100%;justify-content:center;">🎯 Quiero ejercicios de técnica</button>
+          <button class="action-btn extra-toggle" id="btnTecnica" style="width:100%;justify-content:center;">🎯 Corregir un defecto</button>
         </div>
         <div id="tecnicaSection" style="display:none;margin-top:14px;">
           <div class="slider-group">
@@ -1373,6 +1489,7 @@
           <input type="range" min="0" max="10" step="1" value="0" id="cantImplementos" />
         </div>
       </div>
+      </div><!-- /panelExperto -->
 
       <button class="generate-btn" id="generateBtn">Generar entrenamiento</button>
     </aside>
@@ -1681,6 +1798,7 @@
   // Biblioteca cargada estáticamente (95 ejercicios de lightswan.github.io/biblioteca-natacion)
   function cargarBiblioteca(){
     renderStyles();
+    renderStylesS();
   }
 
   // ====================================================================
@@ -1931,6 +2049,204 @@
   });
 
   updateDistribucionUI();
+
+  // ====================================================================
+  // MODO SENCILLO / EXPERTO
+  // ====================================================================
+
+  let modoActual = "sencillo";
+  let dificultadActual = "facil";
+
+  document.getElementById("btnModoSencillo").addEventListener("click", () => {
+    modoActual = "sencillo";
+    document.getElementById("btnModoSencillo").classList.add("active");
+    document.getElementById("btnModoExperto").classList.remove("active");
+    document.getElementById("panelSencillo").style.display = "";
+    document.getElementById("panelExperto").style.display = "none";
+  });
+  document.getElementById("btnModoExperto").addEventListener("click", () => {
+    modoActual = "experto";
+    document.getElementById("btnModoExperto").classList.add("active");
+    document.getElementById("btnModoSencillo").classList.remove("active");
+    document.getElementById("panelSencillo").style.display = "none";
+    document.getElementById("panelExperto").style.display = "";
+  });
+
+  // Sync simple meters with expert
+  const totalMetersS = document.getElementById("totalMetersS");
+  const totalValueInputS = document.getElementById("totalValueInputS");
+  totalMetersS.addEventListener("input", () => {
+    totalValueInputS.value = totalMetersS.value;
+    totalMeters.value = totalMetersS.value;
+    totalValueInput.value = totalMetersS.value;
+  });
+  totalValueInputS.addEventListener("input", () => {
+    const v = Math.round(Math.max(500,Math.min(10000,parseInt(totalValueInputS.value)||1500))/50)*50;
+    totalMetersS.value=v; totalMeters.value=v; totalValueInput.value=v;
+  });
+  totalValueInputS.addEventListener("focus", () => totalValueInputS.select());
+
+  // Simple styles panel mirrors stylesData
+  const stylesContainerS = document.getElementById("stylesContainerS");
+  function renderStylesS(){
+    if(!stylesContainerS) return;
+    stylesContainerS.innerHTML = "";
+    Object.entries(stylesData).forEach(([key,style]) => {
+      const card = document.createElement("div");
+      card.className = "style-card";
+      card.innerHTML = `
+        <div class="style-top">
+          <div class="style-left">
+            <input class="checkbox" type="checkbox" ${style.active?"checked":""} onchange="toggleStyleBoth('${key}')">
+            <div class="style-name">${style.label}</div>
+          </div>
+          <div class="percentage-input-wrap">
+            <input type="number" min="0" max="100" step="5" value="${style.percentage}" ${!style.active?"disabled":""} oninput="handlePercentageChange('${key}',this.value);renderStylesS()">
+            <span>%</span>
+          </div>
+        </div>
+        <input type="range" min="0" max="100" step="5" value="${style.percentage}" ${!style.active?"disabled":""} oninput="handlePercentageChange('${key}',this.value);renderStylesS()">`;
+      stylesContainerS.appendChild(card);
+    });
+  }
+  function toggleStyleBoth(key){ toggleStyle(key); renderStylesS(); }
+
+  // Simple técnica slider
+  const tecnicaSliderS = document.getElementById("tecnicaSliderS");
+  const tecnicaValueS  = document.getElementById("tecnicaValueS");
+  tecnicaSliderS.addEventListener("input", () => {
+    const pct = parseInt(tecnicaSliderS.value);
+    tecnicaValueS.innerHTML = `<span style="color:var(--primary)">${pct}%</span> · Rendimiento <span style="color:var(--success)">${100-pct}%</span>`;
+  });
+
+  // Difficulty cards
+  document.querySelectorAll(".difficulty-card").forEach(card => {
+    card.addEventListener("click", () => {
+      document.querySelectorAll(".difficulty-card").forEach(c=>c.classList.remove("active"));
+      card.classList.add("active");
+      dificultadActual = card.dataset.diff;
+    });
+  });
+
+  // ====================================================================
+  // GENERADOR MODO SENCILLO
+  // ====================================================================
+  function generarSencillo(){
+    entrenamientoActual = { bloques:[] };
+    const totalMts = parseInt(totalMeters.value)||1500;
+    const estilosActivos = Object.entries(stylesData).filter(([k,s])=>s.active);
+    if(!estilosActivos.length){
+      document.getElementById("content").innerHTML=`<div class="empty-state"><div class="empty-state-icon">⚠️</div><h2>No hay estilos activos</h2><p>Activa al menos un estilo.</p></div>`;
+      return;
+    }
+    const totalPct = estilosActivos.reduce((s,[k,st])=>s+st.percentage,0);
+    const pctTec   = parseInt(tecnicaSliderS.value)||0;
+    const dist = getDistribucion();
+    const sumD = dist.cal+dist.main+dist.cool||1;
+    const pCal=dist.cal/sumD, pMain=dist.main/sumD, pCool=dist.cool/sumD;
+
+    const DC = {
+      facil:      {maxSerie:100, minInt:30, maxInt:55},
+      intermedio: {maxSerie:200, minInt:50, maxInt:70},
+      dificil:    {maxSerie:400, minInt:70, maxInt:95}
+    }[dificultadActual];
+
+    function mS(){ return dificultadActual==="facil"?[50,50,100][Math.random()*3|0]:dificultadActual==="intermedio"?[50,100,100,150,200][Math.random()*5|0]:[100,150,200,200,400][Math.random()*5|0]; }
+    function intS(){ return DC.minInt+Math.round(Math.random()*(DC.maxInt-DC.minInt)/5)*5; }
+    function poolEj(bibStyle){
+      let p=ejerciciosBiblioteca.filter(e=>e.style===bibStyle);
+      if(dificultadActual==="facil")      p=p.slice(0,Math.ceil(p.length*.4));
+      else if(dificultadActual==="intermedio") p=p.slice(0,Math.ceil(p.length*.65));
+      return p;
+    }
+    function mkEj(id,nombre,bibStyle,nS,mSerie,intens,refId,tags,esGen){
+      return {id:"ej_"+(ejercicioCounter++),refId:refId||id,nombre:`${nS}x${mSerie} ${nombre}`,distancia:`${nS*mSerie}m`,desc:"",tags:tags||[bibStyle],style:bibStyle,series:nS,metrosSerie:mSerie,intensidad:intens,ritmo:0,bloqueado:false,editing:false,esGenerica:!!esGen};
+    }
+
+    // CALENTAMIENTO
+    const calT=Math.max(0,Math.round(totalMts*pCal/50)*50);
+    const calEjs=[];
+    estilosActivos.forEach(([key])=>{
+      const bs=styleKeyMap[key]; const gen=getGenericaPorStyle(bs);
+      const ms=dificultadActual==="facil"?50:100;
+      const ns=Math.max(1,Math.round(calT/estilosActivos.length/ms));
+      calEjs.push(mkEj(gen.id,gen.nombre,bs,ns,ms,35,gen.id,gen.tags,true));
+    });
+    if(calEjs.length){
+      const calR=calEjs.reduce((s,e)=>s+e.series*e.metrosSerie,0);
+      entrenamientoActual.bloques.push({titulo:"🌅 Calentamiento",distancia:calR+"m",ejercicios:calEjs});
+    }
+
+    // PRINCIPAL
+    const calR=calEjs.reduce((s,e)=>s+e.series*e.metrosSerie,0);
+    const coolT=Math.max(0,Math.round(totalMts*pCool/50)*50);
+    const mainT=Math.max(0,totalMts-calR-coolT);
+
+    estilosActivos.forEach(([key,style])=>{
+      const bs=styleKeyMap[key];
+      let mtsE=Math.round(mainT*(style.percentage/totalPct)/50)*50;
+      if(mtsE<=0) return;
+      const ejs=[]; const used=new Set();
+
+      // Técnica
+      const mtsTec=pctTec>0?Math.round(mtsE*pctTec/100/50)*50:0;
+      if(mtsTec>0){
+        const pool=poolEj(bs);
+        const ms=Math.min(mS(),DC.maxSerie);
+        const nEjs=Math.max(1,Math.round(mtsTec/ms));
+        [...pool].sort(()=>Math.random()-.5).slice(0,nEjs).forEach(ej=>{
+          used.add(ej.id);
+          const ns=Math.max(1,Math.round(ms/ms));
+          ejs.push({id:"ej_"+(ejercicioCounter++),refId:ej.id,nombre:`${ns}x${ms} ${ej.nombre}`,distancia:`${ns*ms}m`,desc:ej.desc||"",tags:ej.tags,style:bs,series:ns,metrosSerie:ms,intensidad:Math.round(intS()*.75),ritmo:0,bloqueado:false,editing:false,esGenerica:false});
+        });
+      }
+
+      let mtsR=mtsE-ejs.reduce((s,e)=>s+e.series*e.metrosSerie,0);
+
+      // Fondo + explosivo (solo difícil)
+      if(dificultadActual==="dificil"&&pctTec<80&&mtsR>=400){
+        const fondoMts=Math.min(Math.round(mtsR*0.4/100)*100,Math.round(mtsR*0.5/100)*100);
+        if(fondoMts>=300){
+          const gen=getGenericaPorStyle(bs);
+          const ns=Math.round(fondoMts/100);
+          ejs.push(mkEj(gen.id,gen.nombre+" (fondo)",bs,ns,100,80,gen.id,gen.tags,true));
+          mtsR-=ns*100;
+          if(mtsR>=100){
+            const nsHI=Math.min(Math.round(mtsR/50),6);
+            ejs.push(mkEj("hi_"+bs,"sprint "+bs,bs,nsHI,50,95,"gen_hi25",[bs],true));
+            mtsR-=nsHI*50;
+          }
+        }
+      }
+
+      // Relleno con genéricas
+      if(mtsR>=50){
+        const gens=seriesGenericas.filter(g=>g.style===bs&&!used.has(g.id));
+        const gen=gens.length?gens[Math.floor(Math.random()*gens.length)]:getGenericaPorStyle(bs);
+        const ms=Math.min(mS(),DC.maxSerie);
+        const ns=Math.max(1,Math.round(mtsR/ms));
+        ejs.push(mkEj(gen.id,gen.nombre,bs,ns,ms,intS(),gen.id,gen.tags,true));
+      }
+
+      const tR=ejs.reduce((s,e)=>s+e.series*e.metrosSerie,0);
+      entrenamientoActual.bloques.push({titulo:`🏊 ${style.label}`,distancia:tR+"m",ejercicios:ejs});
+    });
+
+    // VUELTA A LA CALMA
+    if(coolT>0){
+      const coolEjs=[];
+      estilosActivos.forEach(([key])=>{
+        const bs=styleKeyMap[key]; const gen=getGenericaPorStyle(bs);
+        const ns=Math.max(1,Math.round(coolT/estilosActivos.length/50));
+        coolEjs.push(mkEj(gen.id,gen.nombre+" suave",bs,ns,50,30,gen.id,gen.tags,true));
+      });
+      const cR=coolEjs.reduce((s,e)=>s+e.series*e.metrosSerie,0);
+      entrenamientoActual.bloques.push({titulo:"🌊 Vuelta a la calma",distancia:cR+"m",ejercicios:coolEjs});
+    }
+
+    renderEntrenamiento();
+  }
+
   const seriesCount = document.getElementById("seriesCount");
   const seriesCountValue = document.getElementById("seriesCountValue");
   const seriesMeters = document.getElementById("seriesMeters");
@@ -2367,7 +2683,8 @@
 
   const seriesGenericas = [
     {id:"gen_crol1", style:"Crol", nombre:"Crol", tags:["Crol"]},
-    {id:"gen_crol2", style:"Crol", nombre:"Crol bilateral", tags:["Crol","Respiraci&oacute;n"]},
+    {id:"gen_crol2", style:"Crol", nombre:"Crol bilateral", tags:["Crol","Respiraci&oacute;n"], basicoPlus:true},
+    {id:"gen_crol7", style:"Crol", nombre:"Patada de crol", tags:["Crol","Patada"], basicoPlus:true},
     {id:"gen_crol3", style:"Crol", nombre:"Crol con aletas", tags:["Crol","Aletas"]},
     {id:"gen_crol4", style:"Crol", nombre:"Crol con palas", tags:["Crol","Palas"]},
     {id:"gen_crol5", style:"Crol", nombre:"Crol patada con tabla", tags:["Crol","Tabla"]},
@@ -2382,7 +2699,7 @@
     {id:"gen_bra4", style:"Braza", nombre:"Braza deslizamiento", tags:["Braza","Deslizamiento"]},
     {id:"gen_mar1", style:"Mariposa", nombre:"Mariposa", tags:["Mariposa"]},
     {id:"gen_mar2", style:"Mariposa", nombre:"Mariposa con aletas", tags:["Mariposa","Aletas"]},
-    {id:"gen_mar3", style:"Mariposa", nombre:"Mariposa delf&iacute;n", tags:["Mariposa","Delf&iacute;n"]},
+    {id:"gen_mar3", style:"Mariposa", nombre:"Mariposa delf&iacute;n", tags:["Mariposa","Delf&iacute;n"], basicoPlus:true},
     {id:"gen_mar4", style:"Mariposa", nombre:"Mariposa patada", tags:["Mariposa","Tabla"]}
   ];
 
@@ -2781,6 +3098,7 @@
       txt += "-".repeat(36) + "\n";
       b.ejercicios.forEach(ej => {
         txt += "  • " + htmlDecode(ej.nombre) + "\n";
+        if(ej.desc) txt += "    " + htmlDecode(ej.desc) + "\n";
       });
       txt += "\n";
     });
@@ -2797,7 +3115,6 @@
       btn.style.color = "var(--success)";
       setTimeout(() => { btn.innerHTML = orig; btn.style.color = ""; }, 2000);
     }).catch(() => {
-      // Fallback para navegadores sin permisos
       const ta = document.createElement("textarea");
       ta.value = txt;
       ta.style.position = "fixed"; ta.style.opacity = "0";
@@ -2806,6 +3123,23 @@
       document.execCommand("copy");
       document.body.removeChild(ta);
     });
+  }
+
+  function wrapText(ctx, text, maxWidth){
+    const words = text.split(" ");
+    const lines = [];
+    let line = "";
+    for(const word of words){
+      const test = line ? line + " " + word : word;
+      if(ctx.measureText(test).width > maxWidth && line){
+        lines.push(line);
+        line = word;
+      } else {
+        line = test;
+      }
+    }
+    if(line) lines.push(line);
+    return lines;
   }
 
   function descargarImagen(){
@@ -2818,12 +3152,28 @@
       lines.push({ text: htmlDecode(b.titulo) + "  (" + b.distancia + ")", type:"block" });
       b.ejercicios.forEach(ej => {
         lines.push({ text: "  • " + htmlDecode(ej.nombre), type:"ej" });
+        if(ej.desc) lines.push({ text: htmlDecode(ej.desc), type:"desc" });
       });
     });
 
-    const PAD = 40, FONT = 15, LINE_H = 26, TITLE_H = 42;
+    const PAD = 40, FONT = 15, LINE_H = 26, TITLE_H = 42, DESC_FONT = 12, DESC_LINE_H = 18;
+    const MAX_TEXT_W = 700 - PAD * 2;
+
+    // First pass: expand desc lines into wrapped sub-lines to measure height
+    const ctx0 = document.createElement("canvas").getContext("2d");
+    ctx0.font = DESC_FONT + "px 'Inter',system-ui,sans-serif";
+    const expanded = [];
+    lines.forEach(l => {
+      if(l.type === "desc"){
+        const wrapped = wrapText(ctx0, "    " + l.text, MAX_TEXT_W);
+        wrapped.forEach(w => expanded.push({ text: w, type:"desc" }));
+      } else {
+        expanded.push(l);
+      }
+    });
+
     let canvasH = PAD;
-    lines.forEach(l => { canvasH += l.type==="title" ? TITLE_H : LINE_H; });
+    expanded.forEach(l => { canvasH += l.type==="title" ? TITLE_H : l.type==="desc" ? DESC_LINE_H : LINE_H; });
     canvasH += PAD;
 
     const canvas = document.createElement("canvas");
@@ -2831,13 +3181,11 @@
     canvas.height = canvasH;
     const ctx = canvas.getContext("2d");
 
-    // Background
     ctx.fillStyle = "#0f172a";
     ctx.fillRect(0,0,canvas.width,canvas.height);
 
-    // Lines
     let y = PAD;
-    lines.forEach(l => {
+    expanded.forEach(l => {
       if(l.type==="title"){
         ctx.fillStyle = "#38bdf8";
         ctx.font = "bold 22px 'Inter',system-ui,sans-serif";
@@ -2847,11 +3195,15 @@
         ctx.fillStyle = "#38bdf8";
         ctx.font = "bold " + FONT + "px 'Inter',system-ui,sans-serif";
         ctx.fillText(l.text, PAD, y + FONT + 4);
-        // underline
         ctx.strokeStyle = "#1e3a5f";
         ctx.lineWidth = 1;
         ctx.beginPath(); ctx.moveTo(PAD, y+FONT+8); ctx.lineTo(canvas.width-PAD, y+FONT+8); ctx.stroke();
         y += LINE_H;
+      } else if(l.type==="desc"){
+        ctx.fillStyle = "#64748b";
+        ctx.font = DESC_FONT + "px 'Inter',system-ui,sans-serif";
+        ctx.fillText(l.text, PAD, y + DESC_FONT + 2);
+        y += DESC_LINE_H;
       } else {
         ctx.fillStyle = "#e2e8f0";
         ctx.font = FONT + "px 'Inter',system-ui,sans-serif";
@@ -2860,7 +3212,6 @@
       }
     });
 
-    // Logo/footer
     ctx.fillStyle = "#334155";
     ctx.font = "12px 'Inter',system-ui,sans-serif";
     ctx.fillText("Generado con Generador de Sesiones de Natación", PAD, canvasH - 12);
@@ -3305,30 +3656,76 @@
 
   function renderManualModalList(query, styleFilter){
     const q = query.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
-    const pool = getTodosEjercicios();
-    const results = pool.filter(e => {
+    const allPool = getTodosEjercicios();
+
+    // Separar en tres grupos para ordenarlos
+    const implementTags2 = new Set(["Aletas","Palas","Pull","Tabla","Delfín","Deslizamiento"]);
+
+    // Grupo 1: básicos sin descripción (seriesGenericas sin implementos y sin basicoPlus) — orden: Crol, Espalda, Braza, Mariposa
+    const styleOrder = ["Crol","Espalda","Braza","Mariposa"];
+    const basicosNoImpl = allPool.filter(e =>
+      !e.desc && !e.num && !e.tags.some(t => implementTags2.has(t)) && !e.basicoPlus
+    ).sort((a,b) => styleOrder.indexOf(a.style) - styleOrder.indexOf(b.style));
+
+    // Grupo 2: con implementos o marcados como basicoPlus, mismo orden de estilo
+    const basicosImpl = allPool.filter(e =>
+      !e.desc && !e.num && (e.tags.some(t => implementTags2.has(t)) || e.basicoPlus)
+    ).sort((a,b) => styleOrder.indexOf(a.style) - styleOrder.indexOf(b.style));
+
+    // Grupo 3: ejercicios de técnica numerados, en orden numérico
+    const tecnicos = allPool.filter(e => e.num).sort((a,b) => a.num - b.num);
+
+    const ordered = [...basicosNoImpl, ...basicosImpl, ...tecnicos];
+
+    const results = ordered.filter(e => {
       const estiloOk = !styleFilter || styleFilter === "Todos" || e.style === styleFilter;
       if(!estiloOk) return false;
       if(!q) return true;
       const n = (e.nombre||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
       const d = (e.desc||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
       return n.includes(q) || d.includes(q);
-    }).slice(0,80);
+    }).slice(0, 300);
 
     if(results.length===0){
       manualModalList.innerHTML = `<p style="text-align:center;color:var(--muted);padding:30px;">Sin resultados.</p>`;
       return;
     }
-    manualModalList.innerHTML = results.map(e=>`
-      <div class="manual-modal-item" data-id="${e.id}">
-        <div>
-          <h4>${e.num ? `<span style="color:var(--muted);font-weight:400;margin-right:6px;">${e.num}.</span>` : ""}${e.nombre}</h4>
-          <p>${(e.desc||"").slice(0,80)}${(e.desc||"").length>80?"…":""}</p>
-        </div>
-        <span class="item-style-badge">${e.style||""}</span>
-      </div>`).join("");
+
+    // Renderizar con separadores de grupo cuando no hay búsqueda activa
+    let html = "";
+    if(!q || q.trim() === ""){
+      const groups = [
+        { label: "🏊 Básicos", items: basicosNoImpl.filter(e => !styleFilter || styleFilter==="Todos" || e.style===styleFilter) },
+        { label: "🏊 Básicos➕", items: basicosImpl.filter(e => !styleFilter || styleFilter==="Todos" || e.style===styleFilter) },
+        { label: "🎯 Ejercicios de técnica", items: tecnicos.filter(e => !styleFilter || styleFilter==="Todos" || e.style===styleFilter) },
+      ];
+      groups.forEach(g => {
+        if(!g.items.length) return;
+        html += `<div style="padding:8px 12px 4px;font-size:11px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.08em;background:var(--card);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:1;">${g.label}</div>`;
+        html += g.items.map(e=>`
+          <div class="manual-modal-item" data-id="${e.id}">
+            <div>
+              <h4>${e.num ? `<span style="color:var(--muted);font-weight:400;margin-right:6px;">${e.num}.</span>` : ""}${e.nombre}</h4>
+              <p>${(e.desc||"").slice(0,80)}${(e.desc||"").length>80?"…":""}</p>
+            </div>
+            <span class="item-style-badge">${e.style||""}</span>
+          </div>`).join("");
+      });
+    } else {
+      html = results.map(e=>`
+        <div class="manual-modal-item" data-id="${e.id}">
+          <div>
+            <h4>${e.num ? `<span style="color:var(--muted);font-weight:400;margin-right:6px;">${e.num}.</span>` : ""}${e.nombre}</h4>
+            <p>${(e.desc||"").slice(0,80)}${(e.desc||"").length>80?"…":""}</p>
+          </div>
+          <span class="item-style-badge">${e.style||""}</span>
+        </div>`).join("");
+    }
+
+    manualModalList.innerHTML = html;
+
     // Build id→ej map from same pool for reliable lookup
-    const poolMap = new Map(pool.map(e=>[e.id, e]));
+    const poolMap = new Map(allPool.map(e=>[e.id, e]));
     manualModalList.querySelectorAll(".manual-modal-item").forEach(item=>{
       item.addEventListener("click",()=>{
         manualModalList.querySelectorAll(".manual-modal-item").forEach(i=>i.classList.remove("selected"));
@@ -3406,7 +3803,8 @@
       if(idx !== -1){
         manualData[manualActiveBloque][idx] = {
           ...manualData[manualActiveBloque][idx],
-          nombre, series: esTiempo ? parseInt(document.getElementById("mmTSeries").value)||1 : parseInt(document.getElementById("mmSeries").value)||1,
+          nombre,
+          desc: document.getElementById("mmFreeDesc").value.trim() || manualData[manualActiveBloque][idx].desc || "", series: esTiempo ? parseInt(document.getElementById("mmTSeries").value)||1 : parseInt(document.getElementById("mmSeries").value)||1,
           metros, intensidad,
           ...(esTiempo ? {seg: parseInt(document.getElementById("mmTSegundos").value)||60, esTiempo:true} : {esTiempo:false})
         };
@@ -3417,6 +3815,7 @@
       manualData[manualActiveBloque].push({
         uid:"m_"+(manualIdCounter++), refId:ej.id,
         nombre,
+        desc: mmActiveTab === "free" ? (document.getElementById("mmFreeDesc").value.trim() || "") : (ej.desc||""),
         series: esTiempo ? parseInt(document.getElementById("mmTSeries").value)||1 : parseInt(document.getElementById("mmSeries").value)||1,
         metros, intensidad,
         ...(esTiempo ? {seg: parseInt(document.getElementById("mmTSegundos").value)||60, esTiempo:true} : {esTiempo:false}),
@@ -3453,6 +3852,7 @@
     // Strip series×Xm prefix for free name
     const nameMatch = rawNombre.match(/^\d+×[\d'"ms ()@/]+\s(.+)$/);
     document.getElementById("mmFreeName").value = nameMatch ? nameMatch[1] : rawNombre;
+    document.getElementById("mmFreeDesc").value = item.desc || "";
 
     // Restore type
     if(item.esTiempo){
@@ -3495,11 +3895,14 @@
     const distEl = document.getElementById("manualDist_"+bloque);
     const items = manualData[bloque];
     list.innerHTML = items.map(e=>`
-      <div class="manual-exercise-row">
-        <div class="manual-ex-name">${e.nombre}</div>
-        <div class="manual-ex-dist">${e.series*e.metros}m</div>
-        <button class="manual-ex-remove" style="margin-right:4px;border-color:var(--primary);color:var(--primary);" onclick="manualEdit('${bloque}','${e.uid}')" title="Editar">✎</button>
-        <button class="manual-ex-remove" onclick="manualRemove('${bloque}','${e.uid}')" title="Eliminar">✕</button>
+      <div class="manual-exercise-row" style="flex-direction:column;align-items:flex-start;gap:2px;">
+        <div style="display:flex;align-items:center;gap:8px;width:100%;">
+          <div class="manual-ex-name">${e.nombre}</div>
+          <div class="manual-ex-dist" style="margin-left:auto;">${e.series*e.metros}m</div>
+          <button class="manual-ex-remove" style="margin-right:4px;border-color:var(--primary);color:var(--primary);flex-shrink:0;" onclick="manualEdit('${bloque}','${e.uid}')" title="Editar">✎</button>
+          <button class="manual-ex-remove" style="flex-shrink:0;" onclick="manualRemove('${bloque}','${e.uid}')" title="Eliminar">✕</button>
+        </div>
+        ${e.desc ? `<div style="font-size:11px;color:var(--muted);padding-left:2px;padding-bottom:4px;">${e.desc}</div>` : ""}
       </div>`).join("");
     const total = items.reduce((s,e)=>s+e.series*e.metros,0);
     distEl.textContent = total+"m";
@@ -3543,7 +3946,10 @@
       }
       const bTotal = items.reduce((s,e)=>s+e.series*e.metros,0);
       txt += label + "  (" + (bTotal||"⏱") + (bTotal?"m":"") + ")\n" + "-".repeat(36) + "\n";
-      items.forEach(e=>{ txt += "  • " + htmlDecode(e.nombre) + "\n"; });
+      items.forEach(e=>{
+        txt += "  • " + htmlDecode(e.nombre) + "\n";
+        if(e.desc) txt += "    " + htmlDecode(e.desc) + "\n";
+      });
       txt += "\n";
     });
     return txt;
@@ -3581,20 +3987,34 @@
       }
       const bTotal = items.reduce((s,e)=>s+e.series*e.metros,0);
       lines.push({text:label+"  ("+(bTotal||"⏱")+(bTotal?"m":"")+")", type:"block"});
-      items.forEach(e=>lines.push({text:"  • "+htmlDecode(e.nombre), type:"ej"}));
+      items.forEach(e=>{
+        lines.push({text:"  • "+htmlDecode(e.nombre), type:"ej"});
+        const nota = e.desc || "";
+        if(nota) lines.push({text:"    "+htmlDecode(nota), type:"desc"});
+      });
     });
-    const PAD=40,FONT=15,LINE_H=26,TITLE_H=42;
+    const PAD=40,FONT=15,LINE_H=26,TITLE_H=42,DESC_FONT=12,DESC_LINE_H=18;
+    const MAX_TEXT_W=700-PAD*2;
+    const ctx0=document.createElement("canvas").getContext("2d");
+    ctx0.font=DESC_FONT+"px 'Inter',system-ui,sans-serif";
+    const expanded=[];
+    lines.forEach(l=>{
+      if(l.type==="desc"){
+        wrapText(ctx0,"    "+l.text,MAX_TEXT_W).forEach(w=>expanded.push({text:w,type:"desc"}));
+      } else { expanded.push(l); }
+    });
     let canvasH=PAD;
-    lines.forEach(l=>{canvasH+=l.type==="title"?TITLE_H:LINE_H;});
+    expanded.forEach(l=>{canvasH+=l.type==="title"?TITLE_H:l.type==="desc"?DESC_LINE_H:LINE_H;});
     canvasH+=PAD;
     const canvas=document.createElement("canvas");
     canvas.width=700; canvas.height=canvasH;
     const ctx=canvas.getContext("2d");
     ctx.fillStyle="#0f172a"; ctx.fillRect(0,0,700,canvasH);
     let y=PAD;
-    lines.forEach(l=>{
+    expanded.forEach(l=>{
       if(l.type==="title"){ctx.fillStyle="#38bdf8";ctx.font="bold 22px 'Inter',system-ui,sans-serif";ctx.fillText(l.text,PAD,y+28);y+=TITLE_H;}
       else if(l.type==="block"){ctx.fillStyle="#38bdf8";ctx.font="bold "+FONT+"px 'Inter',system-ui,sans-serif";ctx.fillText(l.text,PAD,y+FONT+4);ctx.strokeStyle="#1e3a5f";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(PAD,y+FONT+8);ctx.lineTo(700-PAD,y+FONT+8);ctx.stroke();y+=LINE_H;}
+      else if(l.type==="desc"){ctx.fillStyle="#64748b";ctx.font=DESC_FONT+"px 'Inter',system-ui,sans-serif";ctx.fillText(l.text,PAD,y+DESC_FONT+2);y+=DESC_LINE_H;}
       else{ctx.fillStyle="#e2e8f0";ctx.font=FONT+"px 'Inter',system-ui,sans-serif";ctx.fillText(l.text,PAD,y+FONT+2);y+=LINE_H;}
     });
     ctx.fillStyle="#334155";ctx.font="12px 'Inter',system-ui,sans-serif";ctx.fillText("Generado con Generador de Sesiones de Natación",PAD,canvasH-12);
@@ -3717,7 +4137,105 @@
   // INIT
   // ====================================================================
 
-  generateBtn.addEventListener("click", generarEntrenamiento);
+  generateBtn.addEventListener("click", () => {
+    if(modoActual === "sencillo") generarSencillo();
+    else generarEntrenamiento();
+  });
+
+  // ====================================================================
+  // PWA — Instalar en pantalla de inicio
+  // ====================================================================
+
+  // Inject manifest dynamically (works with local HTML files too)
+  (function(){
+    const manifest = {
+      name: "Generador de Sesiones de Natación",
+      short_name: "Sesiones Natación",
+      description: "Crea y gestiona entrenamientos de natación",
+      start_url: "./",
+      display: "standalone",
+      background_color: "#0f172a",
+      theme_color: "#0f172a",
+      orientation: "portrait",
+      icons: [
+        { src:"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='38' fill='%230f172a'/><text y='.85em' font-size='150' x='18'>🏊</text></svg>", sizes:"192x192", type:"image/svg+xml" },
+        { src:"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='100' fill='%230f172a'/><text y='.85em' font-size='400' x='50'>🏊</text></svg>", sizes:"512x512", type:"image/svg+xml" }
+      ]
+    };
+    const blob = new Blob([JSON.stringify(manifest)], {type:"application/json"});
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("link");
+    link.rel = "manifest"; link.href = url;
+    document.head.appendChild(link);
+  })();
+
+  // Install prompt
+  let deferredPrompt = null;
+  const installBtn = document.getElementById("pwaInstallBtn");
+
+  const isInStandalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone;
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+
+  // Mostrar siempre si no está ya instalada como app
+  if(!isInStandalone){
+    installBtn.style.display = "flex";
+  }
+
+  // Capturar el prompt de instalación nativa (Android/Chrome/Edge)
+  window.addEventListener("beforeinstallprompt", e => {
+    e.preventDefault();
+    deferredPrompt = e;
+    // Sobreescribir el click handler para usar el prompt nativo
+    installBtn.onclick = async () => {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if(outcome === "accepted") installBtn.style.display = "none";
+      deferredPrompt = null;
+    };
+  });
+
+  // Click por defecto: instrucciones según plataforma
+  installBtn.addEventListener("click", () => {
+    if(deferredPrompt) return; // ya manejado arriba
+    if(isIOS){
+      // iOS Safari
+      const overlay = document.createElement("div");
+      overlay.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;display:flex;align-items:flex-end;justify-content:center;padding:20px;";
+      overlay.innerHTML = `
+        <div style="background:#1e293b;border:1px solid #334155;border-radius:20px;padding:24px;max-width:360px;width:100%;text-align:center;margin-bottom:16px;">
+          <div style="font-size:36px;margin-bottom:12px;">📲</div>
+          <div style="font-size:17px;font-weight:700;color:#f8fafc;margin-bottom:10px;">Añadir a la pantalla de inicio</div>
+          <div style="font-size:14px;color:#94a3b8;line-height:1.6;margin-bottom:16px;">
+            1. Pulsa el botón <strong style="color:#38bdf8;">Compartir</strong> <span style="font-size:18px;">⎙</span> en la barra de Safari<br>
+            2. Desplázate y toca <strong style="color:#38bdf8;">"Añadir a pantalla de inicio"</strong>
+          </div>
+          <button onclick="this.closest('div[style*=\"inset:0\"]').remove()" style="width:100%;padding:12px;border-radius:12px;border:none;background:#38bdf8;color:#001018;font-weight:700;font-size:15px;cursor:pointer;">Entendido</button>
+        </div>`;
+      document.body.appendChild(overlay);
+      overlay.addEventListener("click", e => { if(e.target===overlay) overlay.remove(); });
+    } else {
+      // Android u otro navegador sin beforeinstallprompt
+      const overlay = document.createElement("div");
+      overlay.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;";
+      overlay.innerHTML = `
+        <div style="background:#1e293b;border:1px solid #334155;border-radius:20px;padding:24px;max-width:360px;width:100%;text-align:center;">
+          <div style="font-size:36px;margin-bottom:12px;">📲</div>
+          <div style="font-size:17px;font-weight:700;color:#f8fafc;margin-bottom:10px;">Añadir a la pantalla de inicio</div>
+          <div style="font-size:14px;color:#94a3b8;line-height:1.6;margin-bottom:16px;">
+            En <strong style="color:#38bdf8;">Chrome</strong>: pulsa el menú ⋮ y selecciona<br><strong style="color:#38bdf8;">"Añadir a pantalla de inicio"</strong><br><br>
+            En <strong style="color:#38bdf8;">Firefox</strong>: pulsa el menú ⋮ y busca<br><strong style="color:#38bdf8;">"Instalar"</strong>
+          </div>
+          <button onclick="this.closest('div[style*=\"inset:0\"]').remove()" style="width:100%;padding:12px;border-radius:12px;border:none;background:#38bdf8;color:#001018;font-weight:700;font-size:15px;cursor:pointer;">Entendido</button>
+        </div>`;
+      document.body.appendChild(overlay);
+      overlay.addEventListener("click", e => { if(e.target===overlay) overlay.remove(); });
+    }
+  });
+
+  window.addEventListener("appinstalled", () => {
+    installBtn.style.display = "none";
+    deferredPrompt = null;
+  });
 
   cargarBiblioteca();
 
