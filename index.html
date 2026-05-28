@@ -1053,7 +1053,45 @@
       display:flex;
       justify-content:space-between;
       align-items:center;
+      gap:16px;
       font-weight:700;
+    }
+    .manual-total-bar .total-info{
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+    }
+    .manual-total-bar .total-label{
+      color:var(--muted);
+      font-size:12px;
+      font-weight:500;
+      letter-spacing:.04em;
+      text-transform:uppercase;
+    }
+    .manual-total-bar .total-value{
+      color:var(--primary);
+      font-size:26px;
+      font-weight:800;
+      line-height:1;
+    }
+    .manual-total-bar .bar-actions{
+      display:flex;
+      gap:8px;
+    }
+    .manual-total-bar .bar-actions .action-btn{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:4px;
+      padding:10px 16px;
+      font-size:11px;
+      font-weight:600;
+      letter-spacing:.02em;
+      min-width:64px;
+    }
+    .manual-total-bar .bar-actions .action-btn .btn-icon{
+      font-size:18px;
+      line-height:1;
     }
     .manual-total-bar span{ color:var(--muted); font-size:14px; font-weight:400; }
 
@@ -1508,7 +1546,8 @@
             <span>Ejercicios con implementos</span>
             <strong id="cantImplementosValue">0</strong>
           </div>
-          <input type="range" min="0" max="10" step="1" value="0" id="cantImplementos" />
+          <input type="range" min="0" max="12" step="1" value="0" id="cantImplementos" />
+          <div id="implMetrosEstimados" style="display:none;margin-top:6px;font-size:12px;color:var(--primary);background:rgba(14,165,233,.08);border:1px solid rgba(14,165,233,.2);border-radius:8px;padding:5px 10px;text-align:center;"></div>
         </div>
       </div>
       </div><!-- /panelExperto -->
@@ -1588,12 +1627,20 @@
       </div>
 
       <div class="manual-total-bar">
-        <span>Total de la sesión</span>
-        <strong id="manualTotalDist" style="color:var(--primary);font-size:20px;">0m</strong>
-        <div style="display:flex;gap:8px;">
-          <button class="action-btn" id="manualCopyBtn" title="Copiar al portapapeles" style="font-size:13px;">📋 Copiar</button>
-          <button class="action-btn" id="manualImgBtn" title="Descargar imagen" style="font-size:13px;">🖼️ Imagen</button>
-          <button class="action-btn" id="manualSummaryBtn" title="Ver resumen" style="font-size:13px;">≡ Resumen</button>
+        <div class="total-info">
+          <span class="total-label">Total de la sesión</span>
+          <span class="total-value" id="manualTotalDist">0m</span>
+        </div>
+        <div class="bar-actions">
+          <button class="action-btn" id="manualCopyBtn" title="Copiar al portapapeles">
+            <span class="btn-icon">📋</span>Copiar
+          </button>
+          <button class="action-btn" id="manualImgBtn" title="Descargar imagen">
+            <span class="btn-icon">🖼️</span>Imagen
+          </button>
+          <button class="action-btn" id="manualSummaryBtn" title="Ver resumen">
+            <span class="btn-icon">≡</span>Resumen
+          </button>
         </div>
       </div>
 
@@ -2232,6 +2279,7 @@
       document.querySelectorAll(".difficulty-card").forEach(c=>c.classList.remove("active"));
       card.classList.add("active");
       dificultadActual = card.dataset.diff;
+      calcularMetrosImpl();
     });
   });
 
@@ -2300,16 +2348,18 @@
       if(mtsE<=0) return;
       const ejs=[]; const used=new Set();
 
-      // Técnica
+      // Técnica — series siempre cortas (máx 100m), se multiplican las series
       const mtsTec=pctTec>0?Math.round(mtsE*pctTec/100/50)*50:0;
       if(mtsTec>0){
         const pool=poolEj(bs);
-        const ms=Math.min(mS(),DC.maxSerie);
-        const nEjs=Math.max(1,Math.round(mtsTec/ms));
+        // Metros por serie de técnica: siempre cortos independientemente de la dificultad
+        const msTec = dificultadActual==="facil" ? 50 : 100;
+        const nEjs=Math.max(1,Math.min(pool.length||1, Math.round(mtsTec/(msTec*2))||1));
+        const mPorEj = Math.max(msTec, Math.round(mtsTec/nEjs/msTec)*msTec);
         [...pool].sort(()=>Math.random()-.5).slice(0,nEjs).forEach(ej=>{
           used.add(ej.id);
-          const ns=Math.max(1,Math.round(ms/ms));
-          ejs.push({id:"ej_"+(ejercicioCounter++),refId:ej.id,nombre:`${ns}x${ms} ${ej.nombre}`,distancia:`${ns*ms}m`,desc:ej.desc||"",tags:ej.tags,style:bs,series:ns,metrosSerie:ms,intensidad:Math.round(intS()*.75),ritmo:0,bloqueado:false,editing:false,esGenerica:false});
+          const ns=Math.max(1,Math.round(mPorEj/msTec));
+          ejs.push({id:"ej_"+(ejercicioCounter++),refId:ej.id,nombre:`${ns}x${msTec} ${ej.nombre}`,distancia:`${ns*msTec}m`,desc:ej.desc||"",tags:ej.tags,style:bs,series:ns,metrosSerie:msTec,intensidad:Math.round(intS()*.75),ritmo:0,bloqueado:false,editing:false,esGenerica:false});
         });
       }
 
@@ -2333,11 +2383,33 @@
 
       // Relleno con genéricas
       if(mtsR>=50){
-        const gens=seriesGenericas.filter(g=>g.style===bs&&!used.has(g.id));
+        const gens=seriesGenericas.filter(g=>g.style===bs&&!used.has(g.id)&&!g.tags.some(t=>implementTags.has(t)));
         const gen=gens.length?gens[Math.floor(Math.random()*gens.length)]:getGenericaPorStyle(bs);
         const ms=Math.min(mS(),DC.maxSerie);
         const ns=Math.max(1,Math.round(mtsR/ms));
         ejs.push(mkEj(gen.id,gen.nombre,bs,ns,ms,intS(),gen.id,gen.tags,true));
+      }
+
+      // — Implementos: repartidos cíclicamente entre bloques de estilo —
+      if(implementosSeleccionados.size > 0 && parseInt(cantImplementos.value) > 0){
+        const implArray = Array.from(implementosSeleccionados);
+        const cantImpl = parseInt(cantImplementos.value);
+        const estilosIdx = estilosActivos.findIndex(([k]) => k === key);
+        const cfg = dificultadActual==="facil" ? {s:1,m:50} : dificultadActual==="dificil" ? {s:3,m:100} : {s:1,m:100};
+        // Plan completo de implementos repartido entre estilos
+        const implPlan = [...implArray];
+        while(implPlan.length < cantImpl) implPlan.push(implArray[Math.floor(Math.random()*implArray.length)]);
+        implPlan.sort(()=>Math.random()-.5);
+        // Cada estilo toma los que le corresponden por índice cíclico
+        implPlan.forEach((impl, i) => {
+          if(i % estilosActivos.length !== estilosIdx) return;
+          let pool = seriesGenericas.filter(s=>s.style===bs&&s.tags.includes(impl));
+          if(!pool.length) pool = seriesGenericas.filter(s=>s.tags.includes(impl));
+          if(!pool.length) pool = seriesGenericas.filter(s=>s.style===bs);
+          if(!pool.length) return;
+          const ref = pool[Math.floor(Math.random()*pool.length)];
+          ejs.push(mkEj(ref.id,ref.nombre,bs,cfg.s,cfg.m,intS(),ref.id,ref.tags,true));
+        });
       }
 
       const tR=ejs.reduce((s,e)=>s+e.series*e.metrosSerie,0);
@@ -2347,9 +2419,11 @@
     // VUELTA A LA CALMA
     if(coolT>0){
       const coolEjs=[];
-      estilosActivos.forEach(([key])=>{
+      const estilosCool = estilosActivos.filter(([key]) => styleKeyMap[key] !== "Mariposa");
+      const poolCool = estilosCool.length > 0 ? estilosCool : estilosActivos;
+      poolCool.forEach(([key])=>{
         const bs=styleKeyMap[key]; const gen=getGenericaPorStyle(bs);
-        const ns=Math.max(1,Math.round(coolT/estilosActivos.length/50));
+        const ns=Math.max(1,Math.round(coolT/poolCool.length/50));
         coolEjs.push(mkEj(gen.id,gen.nombre+" suave",bs,ns,50,30,gen.id,gen.tags,true));
       });
       const cR=coolEjs.reduce((s,e)=>s+e.series*e.metrosSerie,0);
@@ -2603,7 +2677,7 @@
   function actualizarIntensidadDisplay(){
     const min = parseInt(intensidadMin.value);
     const max = parseInt(intensidadMax.value);
-    intensidadValue.innerHTML = min + "% &ndash; " + max + "%";
+    intensidadValue.innerHTML = `<span style="color:${intensidadColor(min)};font-weight:700;">${min}%</span> &ndash; <span style="color:${intensidadColor(max)};font-weight:700;">${max}%</span>`;
   }
 
   intensidadMin.addEventListener("input", () => {
@@ -2639,7 +2713,28 @@
   const implementosSeleccionados = new Set();
   const cantImplementos = document.getElementById("cantImplementos");
   const cantImplementosValue = document.getElementById("cantImplementosValue");
-  cantImplementos.addEventListener("input", () => { cantImplementosValue.innerHTML = cantImplementos.value; });
+  const implMetrosEstimados = document.getElementById("implMetrosEstimados");
+
+  function calcularMetrosImpl(){
+    const n = parseInt(cantImplementos.value);
+    if(n === 0 || implementosSeleccionados.size === 0){
+      implMetrosEstimados.style.display = "none";
+      return;
+    }
+    // Metros por ejercicio según dificultad activa
+    // facil: 1×50=50m, intermedio: 1×100=100m, dificil: 3×100=300m
+    const diff = typeof dificultadActual !== "undefined" ? dificultadActual : "intermedio";
+    const mPorEj = diff === "facil" ? 50 : diff === "dificil" ? 300 : 100;
+    const total = n * mPorEj;
+    const label = diff === "facil" ? "1×50m" : diff === "dificil" ? "3×100m" : "1×100m";
+    implMetrosEstimados.style.display = "block";
+    implMetrosEstimados.innerHTML = `🥽 ~<strong>${total}m</strong> extra · ${n} ej. de <em>${label}</em> c/u`;
+  }
+
+  cantImplementos.addEventListener("input", () => {
+    cantImplementosValue.innerHTML = cantImplementos.value;
+    calcularMetrosImpl();
+  });
 
   document.querySelectorAll(".implemento").forEach(tag => {
     tag.addEventListener("click", () => {
@@ -2650,12 +2745,19 @@
       } else {
         implementosSeleccionados.delete(impl);
       }
-      if(implementosSeleccionados.size === 0){
+      const nImpl = implementosSeleccionados.size;
+      if(nImpl === 0){
         cantImplementos.value = 0;
+        cantImplementos.min = 0;
         cantImplementosValue.innerHTML = "0";
-      } else if(parseInt(cantImplementos.value) === 0){
-        cantImplementos.value = Math.min(3, parseInt(cantImplementos.max));
+        implMetrosEstimados.style.display = "none";
+      } else {
+        cantImplementos.min = nImpl;
+        if(parseInt(cantImplementos.value) < nImpl){
+          cantImplementos.value = nImpl;
+        }
         cantImplementosValue.innerHTML = cantImplementos.value;
+        calcularMetrosImpl();
       }
     });
   });
@@ -3015,10 +3117,13 @@
       let ejercicios = [];
       const usedRefIds = new Set();
 
-      // — Ejercicios de TÉCNICA —
+      // — Ejercicios de TÉCNICA — series siempre cortas (máx 100m)
       if(tieneDeficiencias && pctTecnica > 0){
-        const mtsTecnica = Math.round(mts * pctTecnica / 100 / distSerie) * distSerie;
-        const nTecnicaEjs = Math.max(1, Math.round(mtsTecnica / distSerie));
+        const mtsTecnica = Math.round(mts * pctTecnica / 100 / 50) * 50;
+        // Metros por serie de técnica: fijos y cortos independientemente de distSerie
+        const msTec = 100;
+        // Nº de ejercicios distintos: entre 1 y 4 según volumen de técnica
+        const nTecnicaEjs = Math.max(1, Math.min(4, Math.round(mtsTecnica / (msTec * 2))));
 
         let poolTecnica = ejerciciosBiblioteca.filter(e => e.style === bibStyle && !e.fueraDePiscina);
         if(implementosSeleccionados.size > 0){
@@ -3030,35 +3135,29 @@
           const fb = { id:"gen_"+bibStyle, style:bibStyle, tags:[bibStyle], nombre:"Trabajo t&eacute;cnico", desc:"Trabajo general de t&eacute;cnica.", objetivos:[] };
           elegidos.push(fb);
         }
-        // Repartir mtsTecnica entre los elegidos en múltiplos de distSerie
-        const mPorTec = Math.max(distSerie, Math.round(mtsTecnica / elegidos.length / distSerie) * distSerie);
+        // Repartir mtsTecnica entre los ejercicios en series de msTec metros
+        const mPorEj = Math.max(msTec, Math.round(mtsTecnica / elegidos.length / msTec) * msTec);
         elegidos.forEach(ej => {
           usedRefIds.add(ej.id);
-          const nS = Math.max(1, Math.round(mPorTec / distSerie));
-          ejercicios.push({
-            ...generarEjercicioDesdeBiblioteca(ej, nS, distSerie, getIntensidadAleatoria(), 0)
-          });
+          const nS = Math.max(1, Math.round(mPorEj / msTec));
+          ejercicios.push({ ...generarEjercicioDesdeBiblioteca(ej, nS, msTec, getIntensidadAleatoria(), 0) });
         });
       }
 
-      // — Ejercicios de RENDIMIENTO / relleno —
+      // — Relleno sin implementos —
       const mtsOcupados = ejercicios.reduce((s,e) => s + e.series * e.metrosSerie, 0);
       let mtsRestantes = mts - mtsOcupados;
 
+      // Relleno final sin implementos
       while(mtsRestantes >= distSerie){
         const m = extrasActivos.variarMetros ? getSerieMetrosAleatorio() : distSerie;
         let disponibles = seriesGenericas.filter(s => s.style === bibStyle && !usedRefIds.has(s.id) && !s.tags.some(t => implementTags.has(t)));
-        if(hayImplementos){
-          const conImpl = seriesGenericas.filter(s => s.style === bibStyle && !usedRefIds.has(s.id) && s.tags.some(t => implementosSeleccionados.has(t)));
-          if(conImpl.length > 0) disponibles = conImpl;
-        }
         if(disponibles.length === 0){
           disponibles = seriesGenericas.filter(s => s.style === bibStyle);
           if(disponibles.length === 0) break;
         }
         const gen = disponibles[Math.floor(Math.random() * disponibles.length)];
         usedRefIds.add(gen.id);
-        // Cuántas series caben con estos metros
         const nSeriesBloque = Math.max(1, Math.round(mtsRestantes / m));
         const totalEj = nSeriesBloque * m;
         ejercicios.push({
@@ -3072,13 +3171,47 @@
           bloqueado: false, editing: false, esGenerica: true
         });
         mtsRestantes -= totalEj;
-        break; // un ejercicio de relleno por iteración, el while gestiona el sobrante
+        break;
       }
 
       const totalReal = ejercicios.reduce((s,e) => s + e.series * e.metrosSerie, 0);
+
+      // — Implementos: repartidos cíclicamente entre bloques de estilo —
+      if(hayImplementos){
+        const implArray = Array.from(implementosSeleccionados);
+        const cantImpl = parseInt(cantImplementos.value);
+        const estilosIdx = estilosActivos.findIndex(([k]) => k === key);
+        const cfg = typeof dificultadActual !== "undefined" && dificultadActual === "facil"
+          ? {s:1, m:50}
+          : typeof dificultadActual !== "undefined" && dificultadActual === "dificil"
+          ? {s:3, m:100}
+          : {s:1, m:100};
+        const implPlan = [...implArray];
+        while(implPlan.length < cantImpl) implPlan.push(implArray[Math.floor(Math.random()*implArray.length)]);
+        implPlan.sort(() => Math.random() - 0.5);
+        implPlan.forEach((impl, i) => {
+          if(i % estilosActivos.length !== estilosIdx) return;
+          let pool = seriesGenericas.filter(s => s.style === bibStyle && s.tags.includes(impl));
+          if(!pool.length) pool = seriesGenericas.filter(s => s.tags.includes(impl));
+          if(!pool.length) pool = seriesGenericas.filter(s => s.style === bibStyle);
+          if(!pool.length) return;
+          const ref = pool[Math.floor(Math.random() * pool.length)];
+          ejercicios.push({
+            id: "ej_" + (ejercicioCounter++), refId: ref.id,
+            nombre: cfg.s + "x" + cfg.m + " " + ref.nombre,
+            distancia: (cfg.s * cfg.m) + "m",
+            desc: "", tags: [...ref.tags], style: bibStyle,
+            series: cfg.s, metrosSerie: cfg.m,
+            intensidad: getIntensidadAleatoria(), ritmo: 0,
+            bloqueado: false, editing: false, esGenerica: true
+          });
+        });
+      }
+
+      const totalConImpl = ejercicios.reduce((s,e) => s + e.series * e.metrosSerie, 0);
       entrenamientoActual.bloques.push({
         titulo: tieneDeficiencias ? (style.label + " - T&eacute;cnica") : style.label,
-        distancia: totalReal + "m",
+        distancia: totalConImpl + "m",
         ejercicios: ejercicios
       });
     });
@@ -3137,11 +3270,13 @@
     // ========================================
     if(coolDistTarget > 0){
       const coolEjercicios = [];
-      estilosActivos.forEach(([key]) => {
+      const estilosCool = estilosActivos.filter(([key]) => styleKeyMap[key] !== "Mariposa");
+      const poolCool = estilosCool.length > 0 ? estilosCool : estilosActivos;
+      poolCool.forEach(([key]) => {
         const bibStyle = styleKeyMap[key];
         const gen = getGenericaPorStyle(bibStyle);
         const mSerie = Math.min(distSerie, 100);
-        const nSeries = Math.max(1, Math.round(coolDistTarget / estilosActivos.length / mSerie));
+        const nSeries = Math.max(1, Math.round(coolDistTarget / poolCool.length / mSerie));
         coolEjercicios.push({
           id: "ej_" + (ejercicioCounter++), refId: gen.id,
           nombre: nSeries + "x" + mSerie + " " + gen.nombre,
@@ -3169,6 +3304,8 @@
         titulo: "🌊 Vuelta a la calma", distancia: coolReal + "m", ejercicios: coolEjercicios
       });
     }
+
+    // — Bloque de implementos ya insertado dentro de cada bloque de estilo —
 
     renderEntrenamiento();
   }
@@ -3389,7 +3526,10 @@
   function previewEditIntensidad(bi, ei, val){
     const block = content.querySelector(`.block[data-block-index="${bi}"]`);
     const span = block.querySelector(`.edit-intensidad-val`);
-    if(span) span.textContent = val + "%";
+    if(span){
+      span.textContent = val + "%";
+      span.style.color = intensidadColor(parseInt(val));
+    }
   }
 
   function previewEditRitmo(bi, ei){
@@ -3430,7 +3570,7 @@
         <br>
         <label>Intensidad:</label>
         <input type="range" min="50" max="100" step="5" value="${ej.intensidad}" class="edit-intensidad" data-bi="${bi}" data-ei="${ei}" oninput="previewEditIntensidad(${bi},${ei},this.value)" style="max-width:150px;">
-        <span class="edit-intensidad-val" style="color:var(--primary);font-weight:700;">${ej.intensidad}%</span>
+        <span class="edit-intensidad-val" style="color:${intensidadColor(ej.intensidad)};font-weight:700;">${ej.intensidad}%</span>
         <br>
         <label>Ritmo:</label>
         <input type="number" min="0" max="59" value="${Math.floor(ej.ritmo/60)}" class="edit-ritmo-min" data-bi="${bi}" data-ei="${ei}" oninput="previewEditRitmo(${bi},${ei})" style="width:45px;">
@@ -3446,11 +3586,12 @@
 
     const descHTML = ej.desc ? `<div class="exercise-desc">${ej.desc}</div>` : "";
     const tagsHTML = !ej.esGenerica ? `<div class="exercise-tags">${ej.tags.map(t => `<div class="mini-tag">${t}</div>`).join("")}</div>` : "";
-    const paginaHTML = ej.pagina ? `<a class="btn btn-pdf" href="https://drive.google.com/file/d/1Xk1ljDGgu5mvXG3CsbF6fA1XN1FpDD-G/view?usp=sharing" target="_blank" title="Ver página ${ej.pagina} en el libro">📄 Libro pág. ${ej.pagina} ↗</a>` : "";
-    const infoHTML = ej.esGenerica ? `<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px;font-size:13px;color:var(--muted);">
-      <span>${ej.intensidad}% intensidad</span>
+    const paginaHTML = ej.pagina ? `<a href="https://drive.google.com/file/d/1Xk1ljDGgu5mvXG3CsbF6fA1XN1FpDD-G/view?usp=sharing" target="_blank" style="color:var(--primary);font-size:13px;font-weight:600;text-decoration:none;" title="Ver página ${ej.pagina} en el libro">📄 Libro pág. ${ej.pagina} ↗</a>` : "";
+    const infoHTML = `<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px;font-size:13px;color:var(--muted);align-items:center;">
+      <span style="color:${intensidadColor(ej.intensidad)};font-weight:600;">${ej.intensidad}% intensidad</span>
       ${ej.ritmo > 0 ? `<span>⏱ @${String(Math.floor(ej.ritmo/60)).padStart(2,"0")}:${String(ej.ritmo%60).padStart(2,"0")}/100m</span>` : ""}
-    </div>` : "";
+      ${paginaHTML}
+    </div>`;
 
     return `
       <div class="exercise" data-bi="${bi}" data-ei="${ei}">
@@ -3459,7 +3600,6 @@
           <div class="exercise-distance">${ej.distancia}</div>
         </div>
         ${descHTML}
-        ${paginaHTML}
         ${infoHTML}
         ${tagsHTML}
         ${editHTML}
@@ -3730,6 +3870,28 @@
     if(pct <= 75) return "🟠";
     if(pct <= 90) return "🔴";
     return "💀";
+  }
+
+  function intensidadColor(pct){
+    // Interpolación verde(30%) → amarillo(60%) → rojo(90%)
+    const p = Math.max(0, Math.min(100, pct));
+    if(p <= 30) return "#4ade80";   // verde
+    if(p >= 90) return "#f87171";   // rojo
+    if(p <= 60){
+      // verde → amarillo (30–60)
+      const t = (p - 30) / 30;
+      const r = Math.round(74  + t * (250 - 74));
+      const g = Math.round(222 + t * (204 - 222));
+      const b = Math.round(128 + t * (20  - 128));
+      return `rgb(${r},${g},${b})`;
+    } else {
+      // amarillo → rojo (60–90)
+      const t = (p - 60) / 30;
+      const r = Math.round(250 + t * (248 - 250));
+      const g = Math.round(204 + t * (113 - 204));
+      const b = Math.round(20  + t * (113 - 20));
+      return `rgb(${r},${g},${b})`;
+    }
   }
 
   // Intensity slider live update
@@ -4470,6 +4632,7 @@
     </div>
   </footer>
 
+<!-- © Kevin · https://github.com/LightSwan -->
 </body>
 </html>
 
