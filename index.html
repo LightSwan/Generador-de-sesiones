@@ -942,9 +942,56 @@
       display:flex;
       align-items:center;
       gap:12px;
+      transition: background .15s, opacity .15s;
+      cursor: default;
     }
     .manual-exercise-row:last-of-type{
       border-bottom:none;
+    }
+    .manual-exercise-row.dragging{
+      opacity:.4;
+      background:rgba(14,165,233,.08);
+    }
+    .manual-exercise-row.drag-over{
+      background:rgba(14,165,233,.14);
+      border-top:2px solid var(--primary);
+    }
+    .manual-drag-handle{
+      cursor:grab;
+      font-size:16px;
+      color:var(--muted);
+      flex-shrink:0;
+      padding:2px 4px;
+      border-radius:4px;
+      user-select:none;
+      touch-action:none;
+    }
+    .manual-drag-handle:active{ cursor:grabbing; }
+    .manual-reorder-btns{
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+      flex-shrink:0;
+    }
+    .manual-reorder-btn{
+      background:none;
+      border:1px solid var(--border);
+      border-radius:4px;
+      color:var(--muted);
+      font-size:10px;
+      width:20px;
+      height:18px;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:0;
+      line-height:1;
+      transition:color .15s, border-color .15s;
+    }
+    .manual-reorder-btn:hover{
+      color:var(--primary);
+      border-color:var(--primary);
     }
     .manual-ex-name{
       flex:1;
@@ -1520,13 +1567,12 @@
           <div class="slider-group">
             <div class="slider-top">
               <span>T&eacute;cnica</span>
-              <strong id="cantTecnicaValue"><span style="color:var(--primary)">0%</span> · Rendimiento <span style="color:var(--success)">100%</span></strong>
+              <strong id="cantTecnicaValue"><span style="color:var(--primary)">50%</span> · Rendimiento <span style="color:var(--success)">50%</span></strong>
             </div>
-            <input type="range" min="0" max="100" step="5" value="0" id="cantTecnica" />
+            <input type="range" min="0" max="100" step="5" value="50" id="cantTecnica" />
             <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:4px;">
               <span>0% técnica</span><span>50/50</span><span>100% técnica</span>
             </div>
-            <div style="font-size:11px;color:var(--muted);margin-top:6px;" id="tecnicaHint">Selecciona defectos a corregir abajo para activar</div>
           </div>
           <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">Defectos a corregir:</div>
           <div id="stylesDefContainer"></div>
@@ -1776,112 +1822,135 @@
   // ====================================================================
   // 📚 BIBLIOTECA DE EJERCICIOS
   // Array con los 100 ejercicios técnicos de la biblioteca de natación.
-  // Cada ejercicio tiene: id, número, estilo, etiquetas, nombre y descripción.
+  // Cada ejercicio tiene: id, número, estilo, etiquetas, nombre, descripción
+  // y página del libro.
   // fueraDePiscina:true → excluido del generador automático
   // (requieren material especial o realizarse fuera del agua).
-  // ====================================================================
+  //
+  // ──────────────────────────────────────────────────────────────────────
+  // 🤖 INSTRUCCIONES PARA ACTUALIZACIÓN AUTOMÁTICA (IA)
+  // Si el usuario pide actualizar los ejercicios, haz web_fetch a:
+  //   https://lightswan.github.io/biblioteca-natacion/
+  // y extrae los datos con este mapeo:
+  //
+  //   num      ← número en <h3>N. Nombre</h3>
+  //   nombre   ← texto del <h3> sin el número
+  //   style    ← inferido del bloque de categoría (<h2> o cabecera padre)
+  //   tags     ← cada <span class="tag"> que NO sea tag-static ni tag-impl
+  //   desc     ← texto de .exercise-description (versión corta, 1-2 frases)
+  //   objetivos← cada <li> dentro de .objectives-list
+  //   pagina   ← número en title="Ver página X en el libro"
+  //   fueraDePiscina ← true si el ejercicio requiere estar fuera del agua,
+  //              usar cuerdas, pelotas, espejos u otro material especial
+  //
+  //   id: estilo abreviado + num  →  cro1, esp26, bra51, mar76
+  //       Crol=cro | Espalda=esp | Braza=bra | Mariposa=mar
+  //
+  // Mantén fueraDePiscina:true en los ejercicios que ya lo tengan.
+  // No toques ningún otro campo ni función del archivo.
+  // ──────────────────────────────────────────────────────────────────────
 
   const ejerciciosBiblioteca = [
-    {id:"cro1",num:1,style:"Crol",tags:["Crol","Posición"],nombre:"Flotación descendente",desc:"Colócate en posición ventral con los brazos pegados al cuerpo y la cabeza mirando al fondo de la piscina. Baja levemente la barbilla hacia el pecho y dirige la presión hacia el pecho. Las caderas y piernas suben solas.",objetivos:[]},
-    {id:"cro2",num:2,style:"Crol",tags:["Crol","Posición"],nombre:"Rolido",desc:"Impúlsate en posición ventral. Ladéate 90 grados desde la cadera y el hombro. Mantén cinco patadas y regresa al centro. El giro lo inicia la cadera, no el hombro.",objetivos:[]},
-    {id:"cro3",num:3,style:"Crol",tags:["Crol","Posición"],nombre:"Crol lateral con cambio de lado cada doce patadas",desc:"Flota de lado con el brazo inferior extendido. Patada tipo tijera lateral. Cuenta doce patadas y rola para cambiar de lado sin que la cabeza salte.",objetivos:[]},
-    {id:"cro4",num:4,style:"Crol",tags:["Crol","Patada"],nombre:"Ejercicio con los dedos del pie en punta",desc:"Adopta posición ventral con brazos extendidos. Prueba la patada con pies en punta y luego flexionados. Con los pies en punta el cuerpo avanza más: el empeine actúa como pala.",objetivos:[]},
-    {id:"cro5",num:5,style:"Crol",tags:["Crol","Patada"],nombre:"Ejercicio de aleteo con los pies",desc:"Coloca una aleta en un solo pie y nada con brazos extendidos. Siente cómo la aleta se dobla. Alterna el pie con aleta. El objetivo es que sin aleta la sensación sea igual.",objetivos:[]},
-    {id:"cro6",num:6,style:"Crol",tags:["Crol","Patada"],nombre:"Secuencia de patada vertical",desc:"En posición vertical, usa remadas en ocho con las manos para flotar. Inicia la patada alternada con piernas extendidas. Si la cabeza baja, la patada no genera suficiente sustentación.",objetivos:[]},
-    {id:"cro7",num:7,style:"Crol",tags:["Crol","Patada"],nombre:"Patada de crol a una sola pierna",desc:"Apoya la tabla bajo los brazos. Patada solo con la pierna derecha 30 segundos, luego izquierda, luego alterna cada 15 segundos. La patada sale del muslo, no dobla la rodilla en exceso.",objetivos:[]},
-    {id:"cro8",num:8,style:"Crol",tags:["Crol","Brazada"],nombre:"Tirón y empuje en estilo crol",desc:"Una sola brazada con el brazo izquierdo: yemas hacia abajo para agarrar el agua, codo alto y fijo, barre en curva hacia fuera y adentro, acelera en el empuje hasta que el pulgar roza el muslo.",objetivos:[]},
-    {id:"cro9",num:9,style:"Crol",tags:["Crol","Brazada"],nombre:"Tiempo muerto",desc:"Cuando el brazo llega al final del tirón junto a la cadera, detente: relaja la mano, espera un instante y solo entonces eleva el codo para el recobro. La brazada se alarga y el impulso aumenta.",objetivos:[]},
-    {id:"cro10",num:10,style:"Crol",tags:["Crol","Brazada"],nombre:"Ejercicio de apuntar con el pulgar",desc:"Apunta con el pulgar hacia el otro extremo de la piscina al extender el brazo. Esto alinea la brazada frente al hombro en vez de que cruce hacia el centro, evitando que el cuerpo serpentee.",objetivos:[]},
-    {id:"cro11",num:11,style:"Crol",tags:["Crol","Brazada"],fueraDePiscina:true,nombre:"Remadas",desc:"De pie con el agua a los hombros, barres hacia fuera con palmas inclinadas y luego hacia dentro. Experimenta ángulos distintos. Cuando el agua presiona la palma y el antebrazo, ahí está el agarre.",objetivos:[]},
-    {id:"cro12",num:12,style:"Crol",tags:["Crol","Brazada"],nombre:"Nado a crol con los puños cerrados",desc:"Cierra los puños antes de la primera brazada. El antebrazo actúa como pala si mantienes el codo alto. Al abrir los puños el agarre con la mano abierta se sentirá enormemente mayor.",objetivos:[]},
-    {id:"cro13",num:13,style:"Crol",tags:["Crol","Recobro"],nombre:"Ejercicio de aleteo con las manos",desc:"Ejercicio de tiempo muerto: cuando el brazo llega atrás, sacude la mano un par de veces antes de subir el codo. El aleteo obliga a que la muñeca esté relajada antes del recobro.",objetivos:[]},
-    {id:"cro14",num:14,style:"Crol",tags:["Crol","Recobro"],nombre:"Aleta de tiburón",desc:"Flota de lado. Sube el codo del brazo superior hacia el cielo en ángulo recto como si una cuerda tirara del codo. Aguanta seis patadas. Luego deja caer el brazo en arco hacia delante.",objetivos:[]},
-    {id:"cro15",num:15,style:"Crol",tags:["Crol","Respiración"],nombre:"Brazo de inspiración y brazo de espiración",desc:"Asigna la inspiración a un brazo y la espiración al otro. Inhala exactamente cuando el brazo de inspiración empieza la tracción. Esta asociación crea un ritmo automático.",objetivos:[]},
-    {id:"cro16",num:16,style:"Crol",tags:["Crol","Respiración"],nombre:"El brazo ingrávido",desc:"Congela el movimiento al respirar: el brazo hacia el que giraste debe estar completamente extendido debajo del pecho. Respira sin sacrificar ni un centímetro de longitud.",objetivos:[]},
-    {id:"cro17",num:17,style:"Crol",tags:["Crol","Respiración"],nombre:"Presionar con la sien",desc:"Congela en posición de respirar: la sien debe estar apoyada contra el brazo extendido y la boca apenas roza la superficie. El aire está en la ola de proa, no hay que levantar la cabeza.",objetivos:[]},
-    {id:"cro18",num:18,style:"Crol",tags:["Crol","Respiración"],nombre:"Nado a crol con brazo estático",desc:"Nada con un brazo inmovilizado pegado al cuerpo. Respira hacia el lado del brazo quieto rolando completamente de cadera y hombro. Siente que el cuerpo avanza sobre la mano que tracciona.",objetivos:[]},
-    {id:"cro19",num:19,style:"Crol",tags:["Crol","Palanca"],nombre:"Crol lateral con cambio de lado cada tres brazadas",desc:"Tras la tercera brazada rola para quedar en posición lateral. Seis patadas y otras tres al otro lado. El rolido nace de la cadera que se hunde, no del hombro.",objetivos:[]},
-    {id:"cro20",num:20,style:"Crol",tags:["Crol","Palanca"],nombre:"El efecto de péndulo",desc:"Cuando el brazo aéreo llega al punto más alto, hunde la cadera superior y deja que su peso arrastre el rolido al otro lado. Ese intercambio suave de peso acelera el cambio de costado.",objetivos:[]},
-    {id:"cro21",num:21,style:"Crol",tags:["Crol","Palanca"],nombre:"Patinar sobre las caderas",desc:"En posición lateral, sube el codo hacia el cielo. Desliza la mano desde el codo hacia la cadera contraria como si patinaras sobre el hielo. Ese deslizamiento desencadena el rolido de forma natural.",objetivos:[]},
-    {id:"cro22",num:22,style:"Crol",tags:["Crol","Coordinación"],nombre:"Nado a crol con la cabeza alzada",desc:"Nada con la cabeza fuera del agua mirando al frente, barbilla baja. Para mantenerla necesitarás patada enérgica y codos muy altos. Al bajar la cabeza el patrón de codo alto se intensifica.",objetivos:[]},
-    {id:"cro23",num:23,style:"Crol",tags:["Crol","Coordinación"],fueraDePiscina:true,nombre:"Progresión horizontal agarrándose a una cuerda tendida",desc:"Agarra la cuerda bajo la superficie. Tira del cuerpo hacia delante hasta que la mano quede junto a la cadera. No es el brazo el que se mueve sino el cuerpo que avanza sobre la mano fija.",objetivos:[]},
-    {id:"cro24",num:24,style:"Crol",tags:["Crol","Coordinación"],nombre:"Nado a crol con delfín",desc:"Da seis a doce patadas de delfín antes de iniciar el crol. Al pasar al crol, sincroniza una patada de delfín con cada brazada. La brazada parece impulsada desde las caderas.",objetivos:[]},
-    {id:"cro25",num:25,style:"Crol",tags:["Crol","Coordinación"],nombre:"Respiración bilateral",desc:"Respira en la tercera brazada hacia un lado y en la sexta hacia el otro alternando. El lado no dominante revela el desequilibrio. El rolido debe sentirse idéntico a ambos lados.",objetivos:[]},
-    {id:"esp26",num:26,style:"Espalda",tags:["Espalda","Posición"],nombre:"Flotar sobre la columna vertebral",desc:"Túmbate boca arriba. Echa la cabeza atrás hasta que los lóbulos de las orejas queden bajo la superficie. Las piernas subirán solas. Activa el abdomen para mantener la columna recta.",objetivos:[]},
-    {id:"esp27",num:27,style:"Espalda",tags:["Espalda","Posición"],nombre:"Ejercicio con la línea de flotación",desc:"Busca que la superficie quede a la altura de los lóbulos de las orejas. Cuando la línea de flotación es correcta, el cuello y los hombros se relajan solos sin ningún esfuerzo.",objetivos:[]},
-    {id:"esp28",num:28,style:"Espalda",tags:["Espalda","Posición"],nombre:"Espalda lateral con cambio de lado cada doce patadas",desc:"Flota en espalda de lado con un brazo extendido sobre la cabeza. Patada y cuenta doce. Rola al otro lado. Busca la posición más larga: oreja alineada con el hombro, brazo en línea con la columna.",objetivos:[]},
-    {id:"esp29",num:29,style:"Espalda",tags:["Espalda","Patada"],nombre:"Ejercicio de batido del agua",desc:"En posición dorsal, patada alternada poniendo más fuerza en el movimiento ascendente. Los pies hacen borbotear la superficie sin que las rodillas la rompan. Gira levemente las puntas hacia dentro.",objetivos:[]},
-    {id:"esp30",num:30,style:"Espalda",tags:["Espalda","Patada"],nombre:"Brazos en punta de flecha, batido de piernas sin levantar las rodillas",desc:"Extiende los brazos sobre la cabeza comprimiendo las orejas entre los codos. Patada a ritmo tal que desde fuera no se distinga qué pie mueve el agua. Rodillas siempre bajo la superficie.",objetivos:[]},
-    {id:"esp31",num:31,style:"Espalda",tags:["Espalda","Patada"],nombre:"Batido de piernas con las puntas de los dedos hacia dentro",desc:"Gira las puntas de los pies hacia dentro antes de la patada. El dedo gordo debe ser lo más cercano a la superficie en cada ascenso. Amplía la superficie del pie y centra la propulsión.",objetivos:[]},
-    {id:"esp32",num:32,style:"Espalda",tags:["Espalda","Patada"],nombre:"Rolido parcial con vaso en la frente",desc:"Coloca un vaso de plástico sobre la frente en posición dorsal. Inicia la patada intentando que el vaso no se mueva. Practica rolidos de 20 grados a cada lado manteniendo el vaso en su sitio.",objetivos:[]},
-    {id:"esp33",num:33,style:"Espalda",tags:["Espalda","Brazada"],nombre:"Tirón y empuje con un brazo",desc:"Un brazo extendido sobre la cabeza, el otro pegado al cuerpo. Una brazada: la cadera del mismo lado se hunde 20 cm, la mano entra profunda y agarra el agua con el codo estable.",objetivos:[]},
-    {id:"esp34",num:34,style:"Espalda",tags:["Espalda","Brazada"],nombre:"Arriba y por encima",desc:"La mano traza un arco arriba y por encima como si siguiera la parte interna de un cuenco. El movimiento es curvo, no recto hacia atrás. En el punto más alto el codo lleva al agua y la mano acelera.",objetivos:[]},
-    {id:"esp35",num:35,style:"Espalda",tags:["Espalda","Brazada"],nombre:"Nadar con los puños cerrados",desc:"Cierra los puños antes de la primera brazada. El antebrazo sustituye a la palma pero solo si el codo está alto. Al abrir los puños el contraste es inmediato: el agarre es mucho mayor.",objetivos:[]},
-    {id:"esp36",num:36,style:"Espalda",tags:["Espalda","Brazada"],nombre:"El sacacorchos",desc:"Una brazada derecha mientras el izquierdo recobra. En ese instante los hombros forman diagonal pronunciada. La trayectoria de cada brazo es curva hacia el cuerpo bajo el agua, describiendo una espiral.",objetivos:[]},
-    {id:"esp37",num:37,style:"Espalda",tags:["Espalda","Recobro"],nombre:"Manecillas del reloj",desc:"El brazo derecho sube hacia las 11 en vez de las 12. El brazo izquierdo hacia la 1. La mano siempre entra ligeramente hacia el exterior del hombro, nunca cruzando la línea central.",objetivos:[]},
-    {id:"esp38",num:38,style:"Espalda",tags:["Espalda","Recobro"],nombre:"Recobro en dos pasos",desc:"Primero el brazo sube recto hacia las 11 o la 1. Luego la mano gira con el meñique hacia abajo y corta la superficie limpiamente. Practica esas dos fases por separado hasta que fluyan.",objetivos:[]},
-    {id:"esp39",num:39,style:"Espalda",tags:["Espalda","Recobro"],nombre:"Ejercicio con el codo extendido",desc:"Bloquea el codo en el recobro como si quisieras tocar el otro extremo de la piscina con las yemas. La diferencia de alcance entre codo doblado y extendido es la longitud de brazada que pierdes.",objetivos:[]},
-    {id:"esp40",num:40,style:"Espalda",tags:["Espalda","Recobro"],nombre:"Rotación externa de las manos en la fase aérea",desc:"Cuando el brazo alcanza su punto más alto, gira la mano hacia fuera de modo que el meñique apunte hacia la superficie. El meñique entra primero y corta el agua limpiamente.",objetivos:[]},
-    {id:"esp41",num:41,style:"Espalda",tags:["Espalda","Respiración"],nombre:"Secuencia con respiración rítmica",desc:"Asigna la inspiración a una brazada y la espiración a la siguiente. Prueba ritmos de una, dos o tres brazadas para ver cuál permite una brazada más relajada y económica.",objetivos:[]},
-    {id:"esp42",num:42,style:"Espalda",tags:["Espalda","Respiración"],nombre:"Crear una bolsa de aire",desc:"Cuando el hombro del brazo que recobra está fuera y el contrario sumergido, se crea un bolsillo de aire junto a la boca. Inhala exactamente cuando aparece ese bolsillo.",objetivos:[]},
-    {id:"esp43",num:43,style:"Espalda",tags:["Espalda","Palanca"],nombre:"Espalda con puesta de lado cada tres brazadas",desc:"Tras tres brazadas, posición lateral. El rolido debe nacer de la cadera que se hunde hacia abajo, no del hombro. Los músculos grandes del tronco se activan y la brazada gana potencia.",objetivos:[]},
-    {id:"esp44",num:44,style:"Espalda",tags:["Espalda","Palanca"],fueraDePiscina:true,nombre:"Progresión horizontal agarrándose a una cuerda con un brazo",desc:"Flota en posición dorsal y agarra la cuerda. Tira del cuerpo hacia delante hasta que la mano llegue a la cadera. El cuerpo avanza sobre la mano fija sin balanceos.",objetivos:[]},
-    {id:"esp45",num:45,style:"Espalda",tags:["Espalda","Palanca"],nombre:"Imagen congelada con los brazos en oposición",desc:"Congela en el punto donde un brazo está extendido sobre la cabeza y el otro termina el empuje junto a la cadera. Ese es el instante de mayor palanca del ciclo.",objetivos:[]},
-    {id:"esp46",num:46,style:"Espalda",tags:["Espalda","Palanca"],nombre:"Axila por encima del agua",desc:"Nada con un solo brazo. Cuando la axila del brazo activo sale del agua, ese gesto impulsa el rolido automáticamente arrastrando el hombro y la cadera del mismo lado.",objetivos:[]},
-    {id:"esp47",num:47,style:"Espalda",tags:["Espalda","Coordinación"],nombre:"Rolido, tirón, rolido, empuje",desc:"Repite mentalmente: rolido, tirón, rolido, empuje. El primer rolido inicia el tirón. El segundo rolido inicia el empuje final. La cabeza permanece completamente inmóvil.",objetivos:[]},
-    {id:"esp48",num:48,style:"Espalda",tags:["Espalda","Coordinación"],nombre:"Meñique por delante",desc:"Al terminar el empuje la palma ya mira hacia afuera y el meñique corta la superficie primero de forma limpia. Practica durante varios largos hasta que sea automático.",objetivos:[]},
-    {id:"esp49",num:49,style:"Espalda",tags:["Espalda","Coordinación"],nombre:"Ejercicio de equilibrio con vaso en la frente",desc:"Coloca un vaso sobre la frente en posición dorsal. Nada a espalda sin que el vaso caiga. El rolido debe venir exclusivamente de caderas y hombros sin arrastrar la cabeza.",objetivos:[]},
-    {id:"esp50",num:50,style:"Espalda",tags:["Espalda","Coordinación"],nombre:"Solapamiento de la fase de propulsión de los brazos",desc:"Debe haber un breve solapamiento donde ambos brazos traccionan simultáneamente. Eso asegura que nunca haya un momento donde ningún brazo empuje.",objetivos:[]},
-    {id:"bra51",num:51,style:"Braza",tags:["Braza","Posición"],nombre:"La flecha",desc:"Impúlsate en posición X y compara con posición flecha hidrodinámica. Empuja el pecho hacia abajo durante el deslizamiento: esa presión eleva las caderas y el cuerpo se vuelve descendente.",objetivos:[]},
-    {id:"bra52",num:52,style:"Braza",tags:["Braza","Posición"],nombre:"Ejercicio de oscilaciones verticales",desc:"Empuja el pecho 8 cm hacia abajo: las caderas suben (posición descendente). Flexiona rodillas llevando talones hacia nalgas: las caderas bajan y la cabeza sube (posición ascendente). Alterna fluidamente.",objetivos:[]},
-    {id:"bra53",num:53,style:"Braza",tags:["Braza","Patada"],nombre:"Patada de pato",desc:"Talones hacia las nalgas con rodillas más juntas que los pies, pies flexionados hacia fuera. Barre circularmente hacia atrás y afuera hasta extender las piernas. Las rodillas nunca se abren más que los pies.",objetivos:[]},
-    {id:"bra54",num:54,style:"Braza",tags:["Braza","Patada"],nombre:"Patada de braza en posición dorsal",desc:"Boca arriba, talones atrás tocando los dedos de las manos, pies flexionados y girados hacia fuera. Barre en arco circular rápido hasta extender completamente. Al estar boca arriba puedes ver y corregir el movimiento.",objetivos:[]},
-    {id:"bra55",num:55,style:"Braza",tags:["Braza","Patada"],nombre:"Patada de braza vertical",desc:"En posición vertical, talones atrás con rodillas juntas, pies flexionados hacia fuera, barrido circular rápido hasta extender. La patada debe hacer que el cuerpo ascienda perceptiblemente.",objetivos:[]},
-    {id:"bra56",num:56,style:"Braza",tags:["Braza","Patada"],nombre:"Patada de braza con la cabeza alzada",desc:"Impúlsate con brazos en punta de flecha y cabeza mirando al frente. Columna firme y patada de braza con la cabeza siempre fuera. Vista directa de la brazada para corregir aceleración y recobro.",objetivos:[]},
-    {id:"bra57",num:57,style:"Braza",tags:["Braza","Brazada"],nombre:"Acción tridimensional de la brazada",desc:"Barrido hacia fuera formando Y, luego manos convergen bajo la barbilla. La brazada tiene tres dimensiones: anchura en el barrido, profundidad en el agarre, y altura con codos elevados.",objetivos:[]},
-    {id:"bra58",num:58,style:"Braza",tags:["Braza","Brazada"],nombre:"Remadas de braza",desc:"Con brazos ligeramente extendidos, barres en forma de ocho: afuera con palmas inclinadas hacia fuera, hacia dentro con palmas hacia dentro. Los codos altos generan sustentación.",objetivos:[]},
-    {id:"bra59",num:59,style:"Braza",tags:["Braza","Brazada"],nombre:"Brazadas de amplitud media",desc:"Reduce la amplitud hasta que las manos queden dentro de tu campo de visión. El barrido adentro tiene más aceleración y el recobro más inercia con esta amplitud media.",objetivos:[]},
-    {id:"bra60",num:60,style:"Braza",tags:["Braza","Brazada"],nombre:"Ejercicio de las esquinas",desc:"En cada cambio de dirección de las manos la muñeca gira y los pulgares cambian: hacia abajo en la apertura, hacia arriba en el cierre. Las esquinas deben ser rápidas y definidas.",objetivos:[]},
-    {id:"bra61",num:61,style:"Braza",tags:["Braza","Brazada"],nombre:"Ejercicio de velocidad de manos",desc:"Cara al frente, brazada visible. Las muñecas deben estar firmes en las esquinas. Los codos altos. Las manos van más rápido en el barrido adentro que en el afuera.",objetivos:[]},
-    {id:"bra62",num:62,style:"Braza",tags:["Braza","Brazada"],nombre:"Brazada de braza con los puños cerrados",desc:"Cierra los puños. El antebrazo es la única superficie propulsora, solo si los codos están muy altos. Al abrir los puños el contraste es inmediato: el agarre es mucho mayor.",objetivos:[]},
-    {id:"bra63",num:63,style:"Braza",tags:["Braza","Recobro"],nombre:"Elongación del recobro",desc:"Tras el barrido adentro, sumerge los codos bajo el pecho y extiéndelos hacia delante mientras el pecho desciende siguiéndolos. El recobro más largo es el que hace al cuerpo deslizarse.",objetivos:[]},
-    {id:"bra64",num:64,style:"Braza",tags:["Braza","Recobro"],nombre:"Proyección en punta de flecha",desc:"En cuanto las manos convergen bajo la barbilla, proyéctalas de inmediato como por un agujero estrecho. Al mismo tiempo el pecho se hunde y las caderas suben siguiendo a los brazos.",objetivos:[]},
-    {id:"bra65",num:65,style:"Braza",tags:["Braza","Recobro"],nombre:"Codos plegados y encogimiento de hombros",desc:"Al recobrar, encoge los hombros hacia las orejas y pliega los codos ocupando el menor espacio. Ese encogimiento reduce la resistencia frontal y el deslizamiento se alarga.",objetivos:[]},
-    {id:"bra66",num:66,style:"Braza",tags:["Braza","Respiración"],nombre:"Inhalar en el punto más alto",desc:"La boca sale del agua cuando los codos aceleran en las esquinas y el pecho se eleva. La boca sale como consecuencia del movimiento del cuerpo, no por un gesto de la cabeza.",objetivos:[]},
-    {id:"bra67",num:67,style:"Braza",tags:["Braza","Respiración"],nombre:"Ojos fijos en el agua",desc:"Mantén los ojos mirando al fondo durante todo el ciclo incluyendo cuando respiras. Si el cuerpo sube correctamente, la boca sale mientras los ojos siguen viendo el fondo.",objetivos:[]},
-    {id:"bra68",num:68,style:"Braza",tags:["Braza","Respiración"],fueraDePiscina:true,nombre:"Ejercicio con una pelota de tenis",desc:"Coloca una pelota de tenis bajo la barbilla. Nada a braza: si alzas la barbilla la pelota cae. La respiración debe venir de la elevación generada por el movimiento del cuerpo.",objetivos:[]},
-    {id:"bra69",num:69,style:"Braza",tags:["Braza","Palanca"],nombre:"Nado a braza con delfín",desc:"Nada a braza con patada de delfín. Cuando los brazos se extienden al frente y el pecho presiona hacia abajo, el cuerpo ondula y las piernas dan el latigazo. Exagera el balanceo vertical.",objetivos:[]},
-    {id:"bra70",num:70,style:"Braza",tags:["Braza","Palanca"],nombre:"Nado a braza alternando delfín con patada de braza",desc:"Una brazada con delfín, la siguiente con braza normal alternando. Transfiere el sentido de oscilación vertical del delfín a la braza regular.",objetivos:[]},
-    {id:"bra71",num:71,style:"Braza",tags:["Braza","Palanca"],nombre:"Brazada ascendente para respirar, patada descendente para deslizarse",desc:"La brazada sube el cuerpo y la patada lo impulsa hacia abajo. Cuando las esquinas elevan el pecho, los talones ya están recogidos preparando la patada.",objetivos:[]},
-    {id:"bra72",num:72,style:"Braza",tags:["Braza","Coordinación"],nombre:"Nada de estrellas",desc:"Da la brazada completa y espera: no des la patada hasta que los brazos estén casi totalmente extendidos. Secuencia estricta: brazada primero, patada después.",objetivos:[]},
-    {id:"bra73",num:73,style:"Braza",tags:["Braza","Coordinación"],nombre:"Mantra: brazada, respiración, patada, deslizamiento",desc:"Sincroniza cada palabra con la acción. Ningún elemento se solapa con el siguiente. Si el deslizamiento llega antes de que la patada termine, interrumpes la propulsión.",objetivos:[]},
-    {id:"bra74",num:74,style:"Braza",tags:["Braza","Coordinación"],nombre:"Longitud del deslizamiento, velocidad del deslizamiento",desc:"Mide tu deslizamiento. El momento exacto para la siguiente brazada es cuando la velocidad cae notablemente, ni antes ni después.",objetivos:[]},
-    {id:"bra75",num:75,style:"Braza",tags:["Braza","Coordinación"],nombre:"Enhebra la aguja",desc:"En cada deslizamiento el cuerpo entra por el agujero más pequeño posible. Las manos en punta de flecha abren el agujero y la cabeza, hombros, caderas y pies siguen la misma trayectoria.",objetivos:[]},
-    {id:"mar76",num:76,style:"Mariposa",tags:["Mariposa","Posición"],fueraDePiscina:true,nombre:"La reverencia",desc:"Apóyate de espaldas a la pared y activa el abdomen para eliminar el hueco entre la zona lumbar y la pared. Manteniendo esa tensión abdominal, echa el pecho hacia delante unos 15 cm sin doblar la columna: eso es la reverencia. Repite sin la pared. En el agua, esa reverencia activa",objetivos:[]},
-    {id:"mar77",num:77,style:"Mariposa",tags:["Mariposa","Posición"],fueraDePiscina:true,nombre:"Desplazamiento del peso",desc:"Apóyate en la pared y siente el hueco entre la zona lumbar y la pared. Activa el abdomen hasta eliminar ese hueco. Ahora echa el pecho hacia delante como una reverencia: el peso se desplaza al tren superior y las caderas suben solas. Esa es la posición descendente en la que el ag",objetivos:[]},
-    {id:"mar78",num:78,style:"Mariposa",tags:["Mariposa","Patada"],fueraDePiscina:true,nombre:"Ondear una cinta",desc:"Fuera del agua sostén una cinta o cuerda larga y ondéala de arriba a abajo con el brazo. Observa cómo la ola nace en tu mano y hombro y viaja hasta el extremo de la cinta: el extremo no hace nada por sí mismo, solo recibe la energía que le llega. En el agua el delfín funciona exa",objetivos:[]},
-    {id:"mar79",num:79,style:"Mariposa",tags:["Mariposa","Patada"],fueraDePiscina:true,nombre:"El delfín profundo a superficial",desc:"Con el agua a las caderas, haz una reverencia hacia delante, flexiona las rodillas y salta desde el fondo. En el punto más alto del salto profundiza la reverencia y cuando la cabeza entra al agua sigue hundiéndola hacia abajo mientras las caderas suben y los pies dan un latigazo ",objetivos:[]},
-    {id:"mar80",num:80,style:"Mariposa",tags:["Mariposa","Patada"],fueraDePiscina:true,nombre:"Zambullidas de delfín",desc:"Con el agua a las caderas, haz la reverencia hacia delante y salta. En el aire profundiza la reverencia y al entrar al agua sigue impulsando la cabeza hacia abajo mientras las piernas suben y luego dan el latigazo descendente. Sin pausa, repite varias zambullidas seguidas. La cla",objetivos:[]},
-    {id:"mar81",num:81,style:"Mariposa",tags:["Mariposa","Patada"],nombre:"Delfín vertical",desc:"En aguas de tu altura, adopta posición vertical con remadas suaves. Inicia un movimiento lento de delfín inclinando el tren superior hacia abajo y luego arriba, dejando que las piernas reaccionen: cuando el tren superior baja, los pies suben; cuando sube, los pies bajan. No hagas",objetivos:[]},
-    {id:"mar82",num:82,style:"Mariposa",tags:["Mariposa","Patada"],nombre:"Delfín de espaldas",desc:"Impúlsate de la pared boca arriba con los brazos junto a los costados y realiza el delfín. La onda debe empezar en el pecho y los hombros y viajar hacia los pies. Al estar boca arriba tus rodillas son completamente visibles: no deben sobresalir de la superficie ni doblarse en exc",objetivos:[]},
-    {id:"mar83",num:83,style:"Mariposa",tags:["Mariposa","Brazada"],nombre:"Inclinación de las manos durante el barrido",desc:"Impúlsate para nadar a mariposa con las caderas en alto. Cuando los brazos están extendidos al frente listos para el tirón, inclina ligeramente las yemas hacia abajo para que las palmas miren hacia atrás y hacia afuera, no hacia el fondo. Mantén esa inclinación durante todo el ba",objetivos:[]},
-    {id:"mar84",num:84,style:"Mariposa",tags:["Mariposa","Brazada"],nombre:"Barridos trazando signos de interrogación",desc:"Impúlsate para nadar a mariposa. Practica el barrido completo prestando atención a su forma: desde la posición extendida al frente, los brazos se abren hacia afuera y alrededor describiendo un arco amplio, luego se cierran hacia el vientre acelerando. Las trayectorias de los dos ",objetivos:[]},
-    {id:"mar85",num:85,style:"Mariposa",tags:["Mariposa","Brazada"],nombre:"Nado a mariposa a un solo brazo",desc:"Impúlsate con el brazo derecho extendido al frente y el izquierdo pegado al cuerpo. Nada a mariposa usando solo el brazo derecho: barre el signo de interrogación, acelera al final, saca el brazo por encima del agua con los meñiques arriba y vuelve a la posición extendida. Respira",objetivos:[]},
-    {id:"mar86",num:86,style:"Mariposa",tags:["Mariposa","Brazada"],nombre:"Brazo izquierdo, brazo derecho, ambos brazos",desc:"Nada a mariposa siguiendo la secuencia: dos brazadas con el brazo izquierdo, dos con el derecho, dos con ambos. Repite ese ciclo completo sin pausa. Al pasar a ambos brazos intenta conservar exactamente la misma trayectoria y la misma aceleración en el barrido final que sentiste ",objetivos:[]},
-    {id:"mar87",num:87,style:"Mariposa",tags:["Mariposa","Brazada"],nombre:"La curva convexa",desc:"Nada a mariposa con un solo brazo y fíjate en el final de cada brazada. Cuando las manos llegan a la altura de la cintura, inclina las palmas hacia fuera y ejerce una última presión rápida hacia atrás y afuera como si trazaras una curva convexa con las manos. Esa curva final lanz",objetivos:[]},
-    {id:"mar88",num:88,style:"Mariposa",tags:["Mariposa","Recobro"],fueraDePiscina:true,nombre:"Fase aérea con los meñiques arriba",desc:"Frente a un espejo, inclínate hacia delante hasta que el tronco quede horizontal. Con los brazos extendidos al frente, practica la brazada de mariposa en el aire: signo de interrogación con cada brazo, acelerón al final con los meñiques hacia arriba. Cuando los brazos salen del a",objetivos:[]},
-    {id:"mar89",num:89,style:"Mariposa",tags:["Mariposa","Recobro"],nombre:"Batido de brazos",desc:"Impúlsate para nadar a mariposa. Después de varios delfines inicia las brazadas fijándote en el recobro. Cuando los meñiques salen del agua, deja que los brazos vuelen en arco por encima del agua usando la inercia de la presión final, sin forzarlos. El arco debe ser amplio y cómo",objetivos:[]},
-    {id:"mar90",num:90,style:"Mariposa",tags:["Mariposa","Recobro"],nombre:"Extensión de brazos en Y",desc:"Impúlsate para nadar a mariposa. Al final de cada recobro, antes de que las manos entren al agua, abre los codos hacia los lados hasta que los pulgares apunten al otro extremo de la piscina: las manos quedan más separadas que los hombros formando una Y con los brazos y el pecho. ",objetivos:[]},
-    {id:"mar91",num:91,style:"Mariposa",tags:["Mariposa","Respiración"],nombre:"Ejercicio para sincronizar la respiración",desc:"Impúlsate para nadar a mariposa respirando en cada brazada. Fíjate en el momento exacto en que la cara sale del agua: debe ocurrir cuando los brazos terminan el barrido y el tren superior está en su punto más elevado. Justo después de inspirar, la cara debe volver al agua antes q",objetivos:[]},
-    {id:"mar92",num:92,style:"Mariposa",tags:["Mariposa","Respiración"],fueraDePiscina:true,nombre:"Zambullidas de delfín",desc:"Con el agua a la cintura, haz una reverencia con la cara dentro del agua y los brazos extendidos al frente. Traza el signo de interrogación con los brazos: abre hacia afuera, cierra hacia el vientre y acelera al final. Cuando los meñiques salen del agua, incorpórate para respirar",objetivos:[]},
-    {id:"mar93",num:93,style:"Mariposa",tags:["Mariposa","Respiración"],nombre:"Nado a mariposa con los ojos fijos en el agua",desc:"Nada a mariposa manteniendo los ojos mirando hacia el fondo durante todo el ciclo incluyendo cuando respiras. Al elevar la cara para inspirar, dirige la mirada hacia el agua que tienes justo delante en vez de al horizonte. El agua debe ser visible en todo momento. Esto te obliga ",objetivos:[]},
-    {id:"mar94",num:94,style:"Mariposa",tags:["Mariposa","Respiración"],nombre:"Clavo y martillo",desc:"Impúlsate para nadar a mariposa y respira en cada brazada. Cuando la boca sale del agua para inspirar, la vista mira al frente bajo o al agua: eso es el clavo. Inmediatamente después de inspirar, hunde la cabeza rápidamente hacia delante y abajo como si clavases la cabeza de vuel",objetivos:[]},
-    {id:"mar95",num:95,style:"Mariposa",tags:["Mariposa","Palanca"],nombre:"Mariposa avanzado a un brazo",desc:"Impúlsate con el brazo izquierdo extendido al frente y el derecho pegado al costado. Nada mariposa con el brazo izquierdo solo. Fíjate en las caderas: en la posición descendente las caderas están altas, cuando respiras las caderas bajan. Ese movimiento de caderas arriba y abajo e",objetivos:[]},
-    {id:"mar96",num:96,style:"Mariposa",tags:["Mariposa","Palanca"],nombre:"Nado a mariposa sin patada",desc:"Nada un largo de mariposa completo a ritmo normal. Luego cruza los pies para inmovilizar completamente las piernas y nada otro largo. Aunque seas más lento, el núcleo corporal y los brazos deben ser capaces de generar movimiento hacia delante mediante la onda. Si sin piernas el c",objetivos:[]},
-    {id:"mar97",num:97,style:"Mariposa",tags:["Mariposa","Palanca"],nombre:"Nado a mariposa sin pausas",desc:"Nada mariposa sin hacer ninguna pausa en ningún punto del ciclo: ni en la entrada de las manos, ni en el pico de la respiración, ni en el recobro. La onda debe ser continua e ininterrumpida. Cualquier pausa, aunque sea mínima, corta la inercia y obliga al cuerpo a arrancar de nue",objetivos:[]},
-    {id:"mar98",num:98,style:"Mariposa",tags:["Mariposa","Coordinación"],nombre:"Equilibrio sobre el pecho",desc:"Nada a mariposa y congela el movimiento en el momento en que el tren superior alcanza su posición más elevada. Ese pico es donde muchos nadadores pausan: el avance se detiene en seco. Ahora, sin perder ni un instante, hunde el pecho hacia abajo para recuperar la posición descende",objetivos:[]},
-    {id:"mar99",num:99,style:"Mariposa",tags:["Mariposa","Coordinación"],nombre:"Punto de comprobación de la coordinación",desc:"Nada a mariposa estableciendo tres puntos de comprobación en cada ciclo. Punto uno: cuando las manos entran al agua, los pies dan el primer latigazo. Punto dos: cuando las manos pasan bajo el vientre, los pies dan el segundo latigazo. Punto tres: cuando los meñiques salen del agu",objetivos:[]},
-    {id:"mar100",num:100,style:"Mariposa",tags:["Mariposa","Coordinación"],nombre:"Nado a mariposa silencioso",desc:"Con el agua a la cintura, haz la reverencia, extiende los brazos y da cuatro brazadas completas observando la salpicadura al entrar las manos. Si el agua salpica hacia los lados, las manos están empujando lateralmente en vez de hacia delante. Si salpica hacia atrás, el ángulo de ",objetivos:[]}
+    {id:"cro1",num:1,pagina:29,style:"Crol",tags:["Crol","Posición"],nombre:"Flotación descendente",desc:"Colócate en posición ventral con los brazos pegados al cuerpo y la cabeza mirando al fondo de la piscina. Baja levemente la barbilla hacia el pecho y dirige la presión hacia el pecho. Las caderas y piernas suben solas.",objetivos:[]},
+    {id:"cro2",num:2,pagina:31,style:"Crol",tags:["Crol","Posición"],nombre:"Rolido",desc:"Impúlsate en posición ventral. Ladéate 90 grados desde la cadera y el hombro. Mantén cinco patadas y regresa al centro. El giro lo inicia la cadera, no el hombro.",objetivos:[]},
+    {id:"cro3",num:3,pagina:33,style:"Crol",tags:["Crol","Posición"],nombre:"Crol lateral con cambio de lado cada doce patadas",desc:"Flota de lado con el brazo inferior extendido. Patada tipo tijera lateral. Cuenta doce patadas y rola para cambiar de lado sin que la cabeza salte.",objetivos:[]},
+    {id:"cro4",num:4,pagina:35,style:"Crol",tags:["Crol","Patada"],nombre:"Ejercicio con los dedos del pie en punta",desc:"Adopta posición ventral con brazos extendidos. Prueba la patada con pies en punta y luego flexionados. Con los pies en punta el cuerpo avanza más: el empeine actúa como pala.",objetivos:[]},
+    {id:"cro5",num:5,pagina:38,style:"Crol",tags:["Crol","Patada"],nombre:"Ejercicio de aleteo con los pies",desc:"Coloca una aleta en un solo pie y nada con brazos extendidos. Siente cómo la aleta se dobla. Alterna el pie con aleta. El objetivo es que sin aleta la sensación sea igual.",objetivos:[]},
+    {id:"cro6",num:6,pagina:40,style:"Crol",tags:["Crol","Patada"],nombre:"Secuencia de patada vertical",desc:"En posición vertical, usa remadas en ocho con las manos para flotar. Inicia la patada alternada con piernas extendidas. Si la cabeza baja, la patada no genera suficiente sustentación.",objetivos:[]},
+    {id:"cro7",num:7,pagina:42,style:"Crol",tags:["Crol","Patada"],nombre:"Patada de crol a una sola pierna",desc:"Apoya la tabla bajo los brazos. Patada solo con la pierna derecha 30 segundos, luego izquierda, luego alterna cada 15 segundos. La patada sale del muslo, no dobla la rodilla en exceso.",objetivos:[]},
+    {id:"cro8",num:8,pagina:44,style:"Crol",tags:["Crol","Brazada"],nombre:"Tirón y empuje en estilo crol",desc:"Una sola brazada con el brazo izquierdo: yemas hacia abajo para agarrar el agua, codo alto y fijo, barre en curva hacia fuera y adentro, acelera en el empuje hasta que el pulgar roza el muslo.",objetivos:[]},
+    {id:"cro9",num:9,pagina:47,style:"Crol",tags:["Crol","Brazada"],nombre:"Tiempo muerto",desc:"Cuando el brazo llega al final del tirón junto a la cadera, detente: relaja la mano, espera un instante y solo entonces eleva el codo para el recobro. La brazada se alarga y el impulso aumenta.",objetivos:[]},
+    {id:"cro10",num:10,pagina:49,style:"Crol",tags:["Crol","Brazada"],nombre:"Ejercicio de apuntar con el pulgar",desc:"Apunta con el pulgar hacia el otro extremo de la piscina al extender el brazo. Esto alinea la brazada frente al hombro en vez de que cruce hacia el centro, evitando que el cuerpo serpentee.",objetivos:[]},
+    {id:"cro11",num:11,pagina:51,style:"Crol",tags:["Crol","Brazada"],fueraDePiscina:true,nombre:"Remadas",desc:"De pie con el agua a los hombros, barres hacia fuera con palmas inclinadas y luego hacia dentro. Experimenta ángulos distintos. Cuando el agua presiona la palma y el antebrazo, ahí está el agarre.",objetivos:[]},
+    {id:"cro12",num:12,pagina:54,style:"Crol",tags:["Crol","Brazada"],nombre:"Nado a crol con los puños cerrados",desc:"Cierra los puños antes de la primera brazada. El antebrazo actúa como pala si mantienes el codo alto. Al abrir los puños el agarre con la mano abierta se sentirá enormemente mayor.",objetivos:[]},
+    {id:"cro13",num:13,pagina:56,style:"Crol",tags:["Crol","Recobro"],nombre:"Ejercicio de aleteo con las manos",desc:"Ejercicio de tiempo muerto: cuando el brazo llega atrás, sacude la mano un par de veces antes de subir el codo. El aleteo obliga a que la muñeca esté relajada antes del recobro.",objetivos:[]},
+    {id:"cro14",num:14,pagina:58,style:"Crol",tags:["Crol","Recobro"],nombre:"Aleta de tiburón",desc:"Flota de lado. Sube el codo del brazo superior hacia el cielo en ángulo recto como si una cuerda tirara del codo. Aguanta seis patadas. Luego deja caer el brazo en arco hacia delante.",objetivos:[]},
+    {id:"cro15",num:15,pagina:60,style:"Crol",tags:["Crol","Respiración"],nombre:"Brazo de inspiración y brazo de espiración",desc:"Asigna la inspiración a un brazo y la espiración al otro. Inhala exactamente cuando el brazo de inspiración empieza la tracción. Esta asociación crea un ritmo automático.",objetivos:[]},
+    {id:"cro16",num:16,pagina:63,style:"Crol",tags:["Crol","Respiración"],nombre:"El brazo ingrávido",desc:"Congela el movimiento al respirar: el brazo hacia el que giraste debe estar completamente extendido debajo del pecho. Respira sin sacrificar ni un centímetro de longitud.",objetivos:[]},
+    {id:"cro17",num:17,pagina:66,style:"Crol",tags:["Crol","Respiración"],nombre:"Presionar con la sien",desc:"Congela en posición de respirar: la sien debe estar apoyada contra el brazo extendido y la boca apenas roza la superficie. El aire está en la ola de proa, no hay que levantar la cabeza.",objetivos:[]},
+    {id:"cro18",num:18,pagina:68,style:"Crol",tags:["Crol","Respiración"],nombre:"Nado a crol con brazo estático",desc:"Nada con un brazo inmovilizado pegado al cuerpo. Respira hacia el lado del brazo quieto rolando completamente de cadera y hombro. Siente que el cuerpo avanza sobre la mano que tracciona.",objetivos:[]},
+    {id:"cro19",num:19,pagina:70,style:"Crol",tags:["Crol","Palanca"],nombre:"Crol lateral con cambio de lado cada tres brazadas",desc:"Tras la tercera brazada rola para quedar en posición lateral. Seis patadas y otras tres al otro lado. El rolido nace de la cadera que se hunde, no del hombro.",objetivos:[]},
+    {id:"cro20",num:20,pagina:73,style:"Crol",tags:["Crol","Palanca"],nombre:"El efecto de péndulo",desc:"Cuando el brazo aéreo llega al punto más alto, hunde la cadera superior y deja que su peso arrastre el rolido al otro lado. Ese intercambio suave de peso acelera el cambio de costado.",objetivos:[]},
+    {id:"cro21",num:21,pagina:75,style:"Crol",tags:["Crol","Palanca"],nombre:"Patinar sobre las caderas",desc:"En posición lateral, sube el codo hacia el cielo. Desliza la mano desde el codo hacia la cadera contraria como si patinaras sobre el hielo. Ese deslizamiento desencadena el rolido de forma natural.",objetivos:[]},
+    {id:"cro22",num:22,pagina:77,style:"Crol",tags:["Crol","Coordinación"],nombre:"Nado a crol con la cabeza alzada",desc:"Nada con la cabeza fuera del agua mirando al frente, barbilla baja. Para mantenerla necesitarás patada enérgica y codos muy altos. Al bajar la cabeza el patrón de codo alto se intensifica.",objetivos:[]},
+    {id:"cro23",num:23,pagina:80,style:"Crol",tags:["Crol","Coordinación"],fueraDePiscina:true,nombre:"Progresión horizontal agarrándose a una cuerda tendida",desc:"Agarra la cuerda bajo la superficie. Tira del cuerpo hacia delante hasta que la mano quede junto a la cadera. No es el brazo el que se mueve sino el cuerpo que avanza sobre la mano fija.",objetivos:[]},
+    {id:"cro24",num:24,pagina:82,style:"Crol",tags:["Crol","Coordinación"],nombre:"Nado a crol con delfín",desc:"Da seis a doce patadas de delfín antes de iniciar el crol. Al pasar al crol, sincroniza una patada de delfín con cada brazada. La brazada parece impulsada desde las caderas.",objetivos:[]},
+    {id:"cro25",num:25,pagina:84,style:"Crol",tags:["Crol","Coordinación"],nombre:"Respiración bilateral",desc:"Respira en la tercera brazada hacia un lado y en la sexta hacia el otro alternando. El lado no dominante revela el desequilibrio. El rolido debe sentirse idéntico a ambos lados.",objetivos:[]},
+    {id:"esp26",num:26,pagina:87,style:"Espalda",tags:["Espalda","Posición"],nombre:"Flotar sobre la columna vertebral",desc:"Túmbate boca arriba. Echa la cabeza atrás hasta que los lóbulos de las orejas queden bajo la superficie. Las piernas subirán solas. Activa el abdomen para mantener la columna recta.",objetivos:[]},
+    {id:"esp27",num:27,pagina:89,style:"Espalda",tags:["Espalda","Posición"],nombre:"Ejercicio con la línea de flotación",desc:"Busca que la superficie quede a la altura de los lóbulos de las orejas. Cuando la línea de flotación es correcta, el cuello y los hombros se relajan solos sin ningún esfuerzo.",objetivos:[]},
+    {id:"esp28",num:28,pagina:92,style:"Espalda",tags:["Espalda","Posición"],nombre:"Espalda lateral con cambio de lado cada doce patadas",desc:"Flota en espalda de lado con un brazo extendido sobre la cabeza. Patada y cuenta doce. Rola al otro lado. Busca la posición más larga: oreja alineada con el hombro, brazo en línea con la columna.",objetivos:[]},
+    {id:"esp29",num:29,pagina:94,style:"Espalda",tags:["Espalda","Patada"],nombre:"Ejercicio de batido del agua",desc:"En posición dorsal, patada alternada poniendo más fuerza en el movimiento ascendente. Los pies hacen borbotear la superficie sin que las rodillas la rompan. Gira levemente las puntas hacia dentro.",objetivos:[]},
+    {id:"esp30",num:30,pagina:97,style:"Espalda",tags:["Espalda","Patada"],nombre:"Brazos en punta de flecha, batido de piernas sin levantar las rodillas",desc:"Extiende los brazos sobre la cabeza comprimiendo las orejas entre los codos. Patada a ritmo tal que desde fuera no se distinga qué pie mueve el agua. Rodillas siempre bajo la superficie.",objetivos:[]},
+    {id:"esp31",num:31,pagina:99,style:"Espalda",tags:["Espalda","Patada"],nombre:"Batido de piernas con las puntas de los dedos hacia dentro",desc:"Gira las puntas de los pies hacia dentro antes de la patada. El dedo gordo debe ser lo más cercano a la superficie en cada ascenso. Amplía la superficie del pie y centra la propulsión.",objetivos:[]},
+    {id:"esp32",num:32,pagina:102,style:"Espalda",tags:["Espalda","Patada"],nombre:"Rolido parcial con vaso en la frente",desc:"Coloca un vaso de plástico sobre la frente en posición dorsal. Inicia la patada intentando que el vaso no se mueva. Practica rolidos de 20 grados a cada lado manteniendo el vaso en su sitio.",objetivos:[]},
+    {id:"esp33",num:33,pagina:104,style:"Espalda",tags:["Espalda","Brazada"],nombre:"Tirón y empuje con un brazo",desc:"Un brazo extendido sobre la cabeza, el otro pegado al cuerpo. Una brazada: la cadera del mismo lado se hunde 20 cm, la mano entra profunda y agarra el agua con el codo estable.",objetivos:[]},
+    {id:"esp34",num:34,pagina:107,style:"Espalda",tags:["Espalda","Brazada"],nombre:"Arriba y por encima",desc:"La mano traza un arco arriba y por encima como si siguiera la parte interna de un cuenco. El movimiento es curvo, no recto hacia atrás. En el punto más alto el codo lleva al agua y la mano acelera.",objetivos:[]},
+    {id:"esp35",num:35,pagina:109,style:"Espalda",tags:["Espalda","Brazada"],nombre:"Nadar con los puños cerrados",desc:"Cierra los puños antes de la primera brazada. El antebrazo sustituye a la palma pero solo si el codo está alto. Al abrir los puños el contraste es inmediato: el agarre es mucho mayor.",objetivos:[]},
+    {id:"esp36",num:36,pagina:111,style:"Espalda",tags:["Espalda","Brazada"],nombre:"El sacacorchos",desc:"Una brazada derecha mientras el izquierdo recobra. En ese instante los hombros forman diagonal pronunciada. La trayectoria de cada brazo es curva hacia el cuerpo bajo el agua, describiendo una espiral.",objetivos:[]},
+    {id:"esp37",num:37,pagina:113,style:"Espalda",tags:["Espalda","Recobro"],nombre:"Manecillas del reloj",desc:"El brazo derecho sube hacia las 11 en vez de las 12. El brazo izquierdo hacia la 1. La mano siempre entra ligeramente hacia el exterior del hombro, nunca cruzando la línea central.",objetivos:[]},
+    {id:"esp38",num:38,pagina:116,style:"Espalda",tags:["Espalda","Recobro"],nombre:"Recobro en dos pasos",desc:"Primero el brazo sube recto hacia las 11 o la 1. Luego la mano gira con el meñique hacia abajo y corta la superficie limpiamente. Practica esas dos fases por separado hasta que fluyan.",objetivos:[]},
+    {id:"esp39",num:39,pagina:118,style:"Espalda",tags:["Espalda","Recobro"],nombre:"Ejercicio con el codo extendido",desc:"Bloquea el codo en el recobro como si quisieras tocar el otro extremo de la piscina con las yemas. La diferencia de alcance entre codo doblado y extendido es la longitud de brazada que pierdes.",objetivos:[]},
+    {id:"esp40",num:40,pagina:121,style:"Espalda",tags:["Espalda","Recobro"],nombre:"Rotación externa de las manos en la fase aérea",desc:"Cuando el brazo alcanza su punto más alto, gira la mano hacia fuera de modo que el meñique apunte hacia la superficie. El meñique entra primero y corta el agua limpiamente.",objetivos:[]},
+    {id:"esp41",num:41,pagina:124,style:"Espalda",tags:["Espalda","Respiración"],nombre:"Secuencia con respiración rítmica",desc:"Asigna la inspiración a una brazada y la espiración a la siguiente. Prueba ritmos de una, dos o tres brazadas para ver cuál permite una brazada más relajada y económica.",objetivos:[]},
+    {id:"esp42",num:42,pagina:126,style:"Espalda",tags:["Espalda","Respiración"],nombre:"Crear una bolsa de aire",desc:"Cuando el hombro del brazo que recobra está fuera y el contrario sumergido, se crea un bolsillo de aire junto a la boca. Inhala exactamente cuando aparece ese bolsillo.",objetivos:[]},
+    {id:"esp43",num:43,pagina:128,style:"Espalda",tags:["Espalda","Palanca"],nombre:"Espalda con puesta de lado cada tres brazadas",desc:"Tras tres brazadas, posición lateral. El rolido debe nacer de la cadera que se hunde hacia abajo, no del hombro. Los músculos grandes del tronco se activan y la brazada gana potencia.",objetivos:[]},
+    {id:"esp44",num:44,pagina:131,style:"Espalda",tags:["Espalda","Palanca"],fueraDePiscina:true,nombre:"Progresión horizontal agarrándose a una cuerda con un brazo",desc:"Flota en posición dorsal y agarra la cuerda. Tira del cuerpo hacia delante hasta que la mano llegue a la cadera. El cuerpo avanza sobre la mano fija sin balanceos.",objetivos:[]},
+    {id:"esp45",num:45,pagina:133,style:"Espalda",tags:["Espalda","Palanca"],nombre:"Imagen congelada con los brazos en oposición",desc:"Congela en el punto donde un brazo está extendido sobre la cabeza y el otro termina el empuje junto a la cadera. Ese es el instante de mayor palanca del ciclo.",objetivos:[]},
+    {id:"esp46",num:46,pagina:135,style:"Espalda",tags:["Espalda","Palanca"],nombre:"Axila por encima del agua",desc:"Nada con un solo brazo. Cuando la axila del brazo activo sale del agua, ese gesto impulsa el rolido automáticamente arrastrando el hombro y la cadera del mismo lado.",objetivos:[]},
+    {id:"esp47",num:47,pagina:137,style:"Espalda",tags:["Espalda","Coordinación"],nombre:"Rolido, tirón, rolido, empuje",desc:"Repite mentalmente: rolido, tirón, rolido, empuje. El primer rolido inicia el tirón. El segundo rolido inicia el empuje final. La cabeza permanece completamente inmóvil.",objetivos:[]},
+    {id:"esp48",num:48,pagina:140,style:"Espalda",tags:["Espalda","Coordinación"],nombre:"Meñique por delante",desc:"Al terminar el empuje la palma ya mira hacia afuera y el meñique corta la superficie primero de forma limpia. Practica durante varios largos hasta que sea automático.",objetivos:[]},
+    {id:"esp49",num:49,pagina:142,style:"Espalda",tags:["Espalda","Coordinación"],nombre:"Ejercicio de equilibrio con vaso en la frente",desc:"Coloca un vaso sobre la frente en posición dorsal. Nada a espalda sin que el vaso caiga. El rolido debe venir exclusivamente de caderas y hombros sin arrastrar la cabeza.",objetivos:[]},
+    {id:"esp50",num:50,pagina:145,style:"Espalda",tags:["Espalda","Coordinación"],nombre:"Solapamiento de la fase de propulsión de los brazos",desc:"Debe haber un breve solapamiento donde ambos brazos traccionan simultáneamente. Eso asegura que nunca haya un momento donde ningún brazo empuje.",objetivos:[]},
+    {id:"bra51",num:51,pagina:149,style:"Braza",tags:["Braza","Posición"],nombre:"La flecha",desc:"Impúlsate en posición X y compara con posición flecha hidrodinámica. Empuja el pecho hacia abajo durante el deslizamiento: esa presión eleva las caderas y el cuerpo se vuelve descendente.",objetivos:[]},
+    {id:"bra52",num:52,pagina:152,style:"Braza",tags:["Braza","Posición"],nombre:"Ejercicio de oscilaciones verticales",desc:"Empuja el pecho 8 cm hacia abajo: las caderas suben (posición descendente). Flexiona rodillas llevando talones hacia nalgas: las caderas bajan y la cabeza sube (posición ascendente). Alterna fluidamente.",objetivos:[]},
+    {id:"bra53",num:53,pagina:155,style:"Braza",tags:["Braza","Patada"],nombre:"Patada de pato",desc:"Talones hacia las nalgas con rodillas más juntas que los pies, pies flexionados hacia fuera. Barre circularmente hacia atrás y afuera hasta extender las piernas. Las rodillas nunca se abren más que los pies.",objetivos:[]},
+    {id:"bra54",num:54,pagina:158,style:"Braza",tags:["Braza","Patada"],nombre:"Patada de braza en posición dorsal",desc:"Boca arriba, talones atrás tocando los dedos de las manos, pies flexionados y girados hacia fuera. Barre en arco circular rápido hasta extender completamente. Al estar boca arriba puedes ver y corregir el movimiento.",objetivos:[]},
+    {id:"bra55",num:55,pagina:162,style:"Braza",tags:["Braza","Patada"],nombre:"Patada de braza vertical",desc:"En posición vertical, talones atrás con rodillas juntas, pies flexionados hacia fuera, barrido circular rápido hasta extender. La patada debe hacer que el cuerpo ascienda perceptiblemente.",objetivos:[]},
+    {id:"bra56",num:56,pagina:164,style:"Braza",tags:["Braza","Patada"],nombre:"Patada de braza con la cabeza alzada",desc:"Impúlsate con brazos en punta de flecha y cabeza mirando al frente. Columna firme y patada de braza con la cabeza siempre fuera. Vista directa de la brazada para corregir aceleración y recobro.",objetivos:[]},
+    {id:"bra57",num:57,pagina:167,style:"Braza",tags:["Braza","Brazada"],nombre:"Acción tridimensional de la brazada",desc:"Barrido hacia fuera formando Y, luego manos convergen bajo la barbilla. La brazada tiene tres dimensiones: anchura en el barrido, profundidad en el agarre, y altura con codos elevados.",objetivos:[]},
+    {id:"bra58",num:58,pagina:169,style:"Braza",tags:["Braza","Brazada"],nombre:"Remadas de braza",desc:"Con brazos ligeramente extendidos, barres en forma de ocho: afuera con palmas inclinadas hacia fuera, hacia dentro con palmas hacia dentro. Los codos altos generan sustentación.",objetivos:[]},
+    {id:"bra59",num:59,pagina:172,style:"Braza",tags:["Braza","Brazada"],nombre:"Brazadas de amplitud media",desc:"Reduce la amplitud hasta que las manos queden dentro de tu campo de visión. El barrido adentro tiene más aceleración y el recobro más inercia con esta amplitud media.",objetivos:[]},
+    {id:"bra60",num:60,pagina:174,style:"Braza",tags:["Braza","Brazada"],nombre:"Ejercicio de las esquinas",desc:"En cada cambio de dirección de las manos la muñeca gira y los pulgares cambian: hacia abajo en la apertura, hacia arriba en el cierre. Las esquinas deben ser rápidas y definidas.",objetivos:[]},
+    {id:"bra61",num:61,pagina:176,style:"Braza",tags:["Braza","Brazada"],nombre:"Ejercicio de velocidad de manos",desc:"Cara al frente, brazada visible. Las muñecas deben estar firmes en las esquinas. Los codos altos. Las manos van más rápido en el barrido adentro que en el afuera.",objetivos:[]},
+    {id:"bra62",num:62,pagina:179,style:"Braza",tags:["Braza","Brazada"],nombre:"Brazada de braza con los puños cerrados",desc:"Cierra los puños. El antebrazo es la única superficie propulsora, solo si los codos están muy altos. Al abrir los puños el contraste es inmediato: el agarre es mucho mayor.",objetivos:[]},
+    {id:"bra63",num:63,pagina:181,style:"Braza",tags:["Braza","Recobro"],nombre:"Elongación del recobro",desc:"Tras el barrido adentro, sumerge los codos bajo el pecho y extiéndelos hacia delante mientras el pecho desciende siguiéndolos. El recobro más largo es el que hace al cuerpo deslizarse.",objetivos:[]},
+    {id:"bra64",num:64,pagina:184,style:"Braza",tags:["Braza","Recobro"],nombre:"Proyección en punta de flecha",desc:"En cuanto las manos convergen bajo la barbilla, proyéctalas de inmediato como por un agujero estrecho. Al mismo tiempo el pecho se hunde y las caderas suben siguiendo a los brazos.",objetivos:[]},
+    {id:"bra65",num:65,pagina:186,style:"Braza",tags:["Braza","Recobro"],nombre:"Codos plegados y encogimiento de hombros",desc:"Al recobrar, encoge los hombros hacia las orejas y pliega los codos ocupando el menor espacio. Ese encogimiento reduce la resistencia frontal y el deslizamiento se alarga.",objetivos:[]},
+    {id:"bra66",num:66,pagina:190,style:"Braza",tags:["Braza","Respiración"],nombre:"Inhalar en el punto más alto",desc:"La boca sale del agua cuando los codos aceleran en las esquinas y el pecho se eleva. La boca sale como consecuencia del movimiento del cuerpo, no por un gesto de la cabeza.",objetivos:[]},
+    {id:"bra67",num:67,pagina:192,style:"Braza",tags:["Braza","Respiración"],nombre:"Ojos fijos en el agua",desc:"Mantén los ojos mirando al fondo durante todo el ciclo incluyendo cuando respiras. Si el cuerpo sube correctamente, la boca sale mientras los ojos siguen viendo el fondo.",objetivos:[]},
+    {id:"bra68",num:68,pagina:195,style:"Braza",tags:["Braza","Respiración"],fueraDePiscina:true,nombre:"Ejercicio con una pelota de tenis",desc:"Coloca una pelota de tenis bajo la barbilla. Nada a braza: si alzas la barbilla la pelota cae. La respiración debe venir de la elevación generada por el movimiento del cuerpo.",objetivos:[]},
+    {id:"bra69",num:69,pagina:197,style:"Braza",tags:["Braza","Palanca"],nombre:"Nado a braza con delfín",desc:"Nada a braza con patada de delfín. Cuando los brazos se extienden al frente y el pecho presiona hacia abajo, el cuerpo ondula y las piernas dan el latigazo. Exagera el balanceo vertical.",objetivos:[]},
+    {id:"bra70",num:70,pagina:199,style:"Braza",tags:["Braza","Palanca"],nombre:"Nado a braza alternando delfín con patada de braza",desc:"Una brazada con delfín, la siguiente con braza normal alternando. Transfiere el sentido de oscilación vertical del delfín a la braza regular.",objetivos:[]},
+    {id:"bra71",num:71,pagina:202,style:"Braza",tags:["Braza","Palanca"],nombre:"Brazada ascendente para respirar, patada descendente para deslizarse",desc:"La brazada sube el cuerpo y la patada lo impulsa hacia abajo. Cuando las esquinas elevan el pecho, los talones ya están recogidos preparando la patada.",objetivos:[]},
+    {id:"bra72",num:72,pagina:204,style:"Braza",tags:["Braza","Coordinación"],nombre:"Nada de estrellas",desc:"Da la brazada completa y espera: no des la patada hasta que los brazos estén casi totalmente extendidos. Secuencia estricta: brazada primero, patada después.",objetivos:[]},
+    {id:"bra73",num:73,pagina:207,style:"Braza",tags:["Braza","Coordinación"],nombre:"Mantra: brazada, respiración, patada, deslizamiento",desc:"Sincroniza cada palabra con la acción. Ningún elemento se solapa con el siguiente. Si el deslizamiento llega antes de que la patada termine, interrumpes la propulsión.",objetivos:[]},
+    {id:"bra74",num:74,pagina:210,style:"Braza",tags:["Braza","Coordinación"],nombre:"Longitud del deslizamiento, velocidad del deslizamiento",desc:"Mide tu deslizamiento. El momento exacto para la siguiente brazada es cuando la velocidad cae notablemente, ni antes ni después.",objetivos:[]},
+    {id:"bra75",num:75,pagina:213,style:"Braza",tags:["Braza","Coordinación"],nombre:"Enhebra la aguja",desc:"En cada deslizamiento el cuerpo entra por el agujero más pequeño posible. Las manos en punta de flecha abren el agujero y la cabeza, hombros, caderas y pies siguen la misma trayectoria.",objetivos:[]},
+    {id:"mar76",num:76,pagina:217,style:"Mariposa",tags:["Mariposa","Posición"],fueraDePiscina:true,nombre:"La reverencia",desc:"Apóyate de espaldas a la pared y activa el abdomen para eliminar el hueco entre la zona lumbar y la pared. Manteniendo esa tensión abdominal, echa el pecho hacia delante unos 15 cm sin doblar la columna: eso es la reverencia. Repite sin la pared. En el agua, esa reverencia activa",objetivos:[]},
+    {id:"mar77",num:77,pagina:220,style:"Mariposa",tags:["Mariposa","Posición"],fueraDePiscina:true,nombre:"Desplazamiento del peso",desc:"Apóyate en la pared y siente el hueco entre la zona lumbar y la pared. Activa el abdomen hasta eliminar ese hueco. Ahora echa el pecho hacia delante como una reverencia: el peso se desplaza al tren superior y las caderas suben solas. Esa es la posición descendente en la que el ag",objetivos:[]},
+    {id:"mar78",num:78,pagina:223,style:"Mariposa",tags:["Mariposa","Patada"],fueraDePiscina:true,nombre:"Ondear una cinta",desc:"Fuera del agua sostén una cinta o cuerda larga y ondéala de arriba a abajo con el brazo. Observa cómo la ola nace en tu mano y hombro y viaja hasta el extremo de la cinta: el extremo no hace nada por sí mismo, solo recibe la energía que le llega. En el agua el delfín funciona exa",objetivos:[]},
+    {id:"mar79",num:79,pagina:225,style:"Mariposa",tags:["Mariposa","Patada"],fueraDePiscina:true,nombre:"El delfín profundo a superficial",desc:"Con el agua a las caderas, haz una reverencia hacia delante, flexiona las rodillas y salta desde el fondo. En el punto más alto del salto profundiza la reverencia y cuando la cabeza entra al agua sigue hundiéndola hacia abajo mientras las caderas suben y los pies dan un latigazo ",objetivos:[]},
+    {id:"mar80",num:80,pagina:228,style:"Mariposa",tags:["Mariposa","Patada"],fueraDePiscina:true,nombre:"Zambullidas de delfín",desc:"Con el agua a las caderas, haz la reverencia hacia delante y salta. En el aire profundiza la reverencia y al entrar al agua sigue impulsando la cabeza hacia abajo mientras las piernas suben y luego dan el latigazo descendente. Sin pausa, repite varias zambullidas seguidas. La cla",objetivos:[]},
+    {id:"mar81",num:81,pagina:230,style:"Mariposa",tags:["Mariposa","Patada"],nombre:"Delfín vertical",desc:"En aguas de tu altura, adopta posición vertical con remadas suaves. Inicia un movimiento lento de delfín inclinando el tren superior hacia abajo y luego arriba, dejando que las piernas reaccionen: cuando el tren superior baja, los pies suben; cuando sube, los pies bajan. No hagas",objetivos:[]},
+    {id:"mar82",num:82,pagina:233,style:"Mariposa",tags:["Mariposa","Patada"],nombre:"Delfín de espaldas",desc:"Impúlsate de la pared boca arriba con los brazos junto a los costados y realiza el delfín. La onda debe empezar en el pecho y los hombros y viajar hacia los pies. Al estar boca arriba tus rodillas son completamente visibles: no deben sobresalir de la superficie ni doblarse en exc",objetivos:[]},
+    {id:"mar83",num:83,pagina:235,style:"Mariposa",tags:["Mariposa","Brazada"],nombre:"Inclinación de las manos durante el barrido",desc:"Impúlsate para nadar a mariposa con las caderas en alto. Cuando los brazos están extendidos al frente listos para el tirón, inclina ligeramente las yemas hacia abajo para que las palmas miren hacia atrás y hacia afuera, no hacia el fondo. Mantén esa inclinación durante todo el ba",objetivos:[]},
+    {id:"mar84",num:84,pagina:238,style:"Mariposa",tags:["Mariposa","Brazada"],nombre:"Barridos trazando signos de interrogación",desc:"Impúlsate para nadar a mariposa. Practica el barrido completo prestando atención a su forma: desde la posición extendida al frente, los brazos se abren hacia afuera y alrededor describiendo un arco amplio, luego se cierran hacia el vientre acelerando. Las trayectorias de los dos ",objetivos:[]},
+    {id:"mar85",num:85,pagina:240,style:"Mariposa",tags:["Mariposa","Brazada"],nombre:"Nado a mariposa a un solo brazo",desc:"Impúlsate con el brazo derecho extendido al frente y el izquierdo pegado al cuerpo. Nada a mariposa usando solo el brazo derecho: barre el signo de interrogación, acelera al final, saca el brazo por encima del agua con los meñiques arriba y vuelve a la posición extendida. Respira",objetivos:[]},
+    {id:"mar86",num:86,pagina:242,style:"Mariposa",tags:["Mariposa","Brazada"],nombre:"Brazo izquierdo, brazo derecho, ambos brazos",desc:"Nada a mariposa siguiendo la secuencia: dos brazadas con el brazo izquierdo, dos con el derecho, dos con ambos. Repite ese ciclo completo sin pausa. Al pasar a ambos brazos intenta conservar exactamente la misma trayectoria y la misma aceleración en el barrido final que sentiste ",objetivos:[]},
+    {id:"mar87",num:87,pagina:245,style:"Mariposa",tags:["Mariposa","Brazada"],nombre:"La curva convexa",desc:"Nada a mariposa con un solo brazo y fíjate en el final de cada brazada. Cuando las manos llegan a la altura de la cintura, inclina las palmas hacia fuera y ejerce una última presión rápida hacia atrás y afuera como si trazaras una curva convexa con las manos. Esa curva final lanz",objetivos:[]},
+    {id:"mar88",num:88,pagina:247,style:"Mariposa",tags:["Mariposa","Recobro"],fueraDePiscina:true,nombre:"Fase aérea con los meñiques arriba",desc:"Frente a un espejo, inclínate hacia delante hasta que el tronco quede horizontal. Con los brazos extendidos al frente, practica la brazada de mariposa en el aire: signo de interrogación con cada brazo, acelerón al final con los meñiques hacia arriba. Cuando los brazos salen del a",objetivos:[]},
+    {id:"mar89",num:89,pagina:250,style:"Mariposa",tags:["Mariposa","Recobro"],nombre:"Batido de brazos",desc:"Impúlsate para nadar a mariposa. Después de varios delfines inicia las brazadas fijándote en el recobro. Cuando los meñiques salen del agua, deja que los brazos vuelen en arco por encima del agua usando la inercia de la presión final, sin forzarlos. El arco debe ser amplio y cómo",objetivos:[]},
+    {id:"mar90",num:90,pagina:252,style:"Mariposa",tags:["Mariposa","Recobro"],nombre:"Extensión de brazos en Y",desc:"Impúlsate para nadar a mariposa. Al final de cada recobro, antes de que las manos entren al agua, abre los codos hacia los lados hasta que los pulgares apunten al otro extremo de la piscina: las manos quedan más separadas que los hombros formando una Y con los brazos y el pecho. ",objetivos:[]},
+    {id:"mar91",num:91,pagina:254,style:"Mariposa",tags:["Mariposa","Respiración"],nombre:"Ejercicio para sincronizar la respiración",desc:"Impúlsate para nadar a mariposa respirando en cada brazada. Fíjate en el momento exacto en que la cara sale del agua: debe ocurrir cuando los brazos terminan el barrido y el tren superior está en su punto más elevado. Justo después de inspirar, la cara debe volver al agua antes q",objetivos:[]},
+    {id:"mar92",num:92,pagina:257,style:"Mariposa",tags:["Mariposa","Respiración"],fueraDePiscina:true,nombre:"Zambullidas de delfín",desc:"Con el agua a la cintura, haz una reverencia con la cara dentro del agua y los brazos extendidos al frente. Traza el signo de interrogación con los brazos: abre hacia afuera, cierra hacia el vientre y acelera al final. Cuando los meñiques salen del agua, incorpórate para respirar",objetivos:[]},
+    {id:"mar93",num:93,pagina:259,style:"Mariposa",tags:["Mariposa","Respiración"],nombre:"Nado a mariposa con los ojos fijos en el agua",desc:"Nada a mariposa manteniendo los ojos mirando hacia el fondo durante todo el ciclo incluyendo cuando respiras. Al elevar la cara para inspirar, dirige la mirada hacia el agua que tienes justo delante en vez de al horizonte. El agua debe ser visible en todo momento. Esto te obliga ",objetivos:[]},
+    {id:"mar94",num:94,pagina:262,style:"Mariposa",tags:["Mariposa","Respiración"],nombre:"Clavo y martillo",desc:"Impúlsate para nadar a mariposa y respira en cada brazada. Cuando la boca sale del agua para inspirar, la vista mira al frente bajo o al agua: eso es el clavo. Inmediatamente después de inspirar, hunde la cabeza rápidamente hacia delante y abajo como si clavases la cabeza de vuel",objetivos:[]},
+    {id:"mar95",num:95,pagina:265,style:"Mariposa",tags:["Mariposa","Palanca"],nombre:"Mariposa avanzado a un brazo",desc:"Impúlsate con el brazo izquierdo extendido al frente y el derecho pegado al costado. Nada mariposa con el brazo izquierdo solo. Fíjate en las caderas: en la posición descendente las caderas están altas, cuando respiras las caderas bajan. Ese movimiento de caderas arriba y abajo e",objetivos:[]},
+    {id:"mar96",num:96,pagina:267,style:"Mariposa",tags:["Mariposa","Palanca"],nombre:"Nado a mariposa sin patada",desc:"Nada un largo de mariposa completo a ritmo normal. Luego cruza los pies para inmovilizar completamente las piernas y nada otro largo. Aunque seas más lento, el núcleo corporal y los brazos deben ser capaces de generar movimiento hacia delante mediante la onda. Si sin piernas el c",objetivos:[]},
+    {id:"mar97",num:97,pagina:270,style:"Mariposa",tags:["Mariposa","Palanca"],nombre:"Nado a mariposa sin pausas",desc:"Nada mariposa sin hacer ninguna pausa en ningún punto del ciclo: ni en la entrada de las manos, ni en el pico de la respiración, ni en el recobro. La onda debe ser continua e ininterrumpida. Cualquier pausa, aunque sea mínima, corta la inercia y obliga al cuerpo a arrancar de nue",objetivos:[]},
+    {id:"mar98",num:98,pagina:272,style:"Mariposa",tags:["Mariposa","Coordinación"],nombre:"Equilibrio sobre el pecho",desc:"Nada a mariposa y congela el movimiento en el momento en que el tren superior alcanza su posición más elevada. Ese pico es donde muchos nadadores pausan: el avance se detiene en seco. Ahora, sin perder ni un instante, hunde el pecho hacia abajo para recuperar la posición descende",objetivos:[]},
+    {id:"mar99",num:99,pagina:274,style:"Mariposa",tags:["Mariposa","Coordinación"],nombre:"Punto de comprobación de la coordinación",desc:"Nada a mariposa estableciendo tres puntos de comprobación en cada ciclo. Punto uno: cuando las manos entran al agua, los pies dan el primer latigazo. Punto dos: cuando las manos pasan bajo el vientre, los pies dan el segundo latigazo. Punto tres: cuando los meñiques salen del agu",objetivos:[]},
+    {id:"mar100",num:100,pagina:276,style:"Mariposa",tags:["Mariposa","Coordinación"],nombre:"Nado a mariposa silencioso",desc:"Con el agua a la cintura, haz la reverencia, extiende los brazos y da cuatro brazadas completas observando la salpicadura al entrar las manos. Si el agua salpica hacia los lados, las manos están empujando lateralmente en vez de hacia delante. Si salpica hacia atrás, el ángulo de ",objetivos:[]}
   ];
 
   // Biblioteca cargada estáticamente (95 ejercicios de lightswan.github.io/biblioteca-natacion)
@@ -2265,7 +2334,7 @@
   }
   function toggleStyleBoth(key){ toggleStyle(key); renderStylesS(); }
 
-  // Simple técnica slider
+  // técnica fija al 50% — slider eliminado
   const tecnicaSliderS = document.getElementById("tecnicaSliderS");
   const tecnicaValueS  = document.getElementById("tecnicaValueS");
   tecnicaSliderS.addEventListener("input", () => {
@@ -2300,7 +2369,7 @@
       return;
     }
     const totalPct = estilosActivos.reduce((s,[k,st])=>s+st.percentage,0);
-    const pctTec   = parseInt(tecnicaSliderS.value)||0;
+    const pctTec = parseInt(tecnicaSliderS.value) || 0;
     const dist = getDistribucion();
     const sumD = dist.cal+dist.main+dist.cool||1;
     const pCal=dist.cal/sumD, pMain=dist.main/sumD, pCool=dist.cool/sumD;
@@ -2359,7 +2428,7 @@
         [...pool].sort(()=>Math.random()-.5).slice(0,nEjs).forEach(ej=>{
           used.add(ej.id);
           const ns=Math.max(1,Math.round(mPorEj/msTec));
-          ejs.push({id:"ej_"+(ejercicioCounter++),refId:ej.id,nombre:`${ns}x${msTec} ${ej.nombre}`,distancia:`${ns*msTec}m`,desc:ej.desc||"",tags:ej.tags,style:bs,series:ns,metrosSerie:msTec,intensidad:Math.round(intS()*.75),ritmo:0,bloqueado:false,editing:false,esGenerica:false});
+          ejs.push({id:"ej_"+(ejercicioCounter++),refId:ej.id,nombre:`${ns}x${msTec} ${ej.nombre}`,distancia:`${ns*msTec}m`,desc:ej.desc||"",tags:ej.tags,style:bs,pagina:ej.pagina||null,series:ns,metrosSerie:msTec,intensidad:Math.round(intS()*.75),ritmo:0,bloqueado:false,editing:false,esGenerica:false});
         });
       }
 
@@ -2638,13 +2707,10 @@
     this.classList.toggle("active", !isOpen);
     if(!isOpen){
       renderDeficiencias();
-      // Poner el slider a 50% por defecto al activar
-      cantTecnica.value = 50;
-      cantTecnicaValue.innerHTML = `<span style="color:var(--primary)">50%</span> · Rendimiento <span style="color:var(--success)">50%</span>`;
-      cantTecnica.disabled = false;
     }
   });
 
+  // cantTecnica — slider de técnica/rendimiento en modo experto
   const cantTecnica = document.getElementById("cantTecnica");
   const cantTecnicaValue = document.getElementById("cantTecnicaValue");
   const tecnicaHint = document.getElementById("tecnicaHint");
@@ -2653,20 +2719,17 @@
     if(!cantTecnica) return;
     const deficienciasActivas = document.querySelectorAll(".deficiency.active").length > 0;
     if(!deficienciasActivas){
-      cantTecnica.value = 0;
-      cantTecnicaValue.innerHTML = `<span style="color:var(--primary)">0%</span> · Rendimiento <span style="color:var(--success)">100%</span>`;
-      cantTecnica.disabled = true;
-      if(tecnicaHint) tecnicaHint.style.display = "block";
-    } else {
-      cantTecnica.disabled = false;
-      if(tecnicaHint) tecnicaHint.style.display = "none";
+      cantTecnicaValue.innerHTML = `<span style="color:var(--primary)">50%</span> · Rendimiento <span style="color:var(--success)">50%</span>`;
     }
+    if(tecnicaHint) tecnicaHint.style.display = deficienciasActivas ? "none" : "block";
   }
 
-  cantTecnica.addEventListener("input", () => {
-    const pct = parseInt(cantTecnica.value);
-    cantTecnicaValue.innerHTML = `<span style="color:var(--primary)">${pct}%</span> · Rendimiento <span style="color:var(--success)">${100-pct}%</span>`;
-  });
+  if(cantTecnica){
+    cantTecnica.addEventListener("input", () => {
+      const pct = parseInt(cantTecnica.value);
+      cantTecnicaValue.innerHTML = `<span style="color:var(--primary)">${pct}%</span> · Rendimiento <span style="color:var(--success)">${100-pct}%</span>`;
+    });
+  }
 
   actualizarCantTecnica();
 
@@ -2677,7 +2740,7 @@
   function actualizarIntensidadDisplay(){
     const min = parseInt(intensidadMin.value);
     const max = parseInt(intensidadMax.value);
-    intensidadValue.innerHTML = `<span style="color:${intensidadColor(min)};font-weight:700;">${min}%</span> &ndash; <span style="color:${intensidadColor(max)};font-weight:700;">${max}%</span>`;
+    intensidadValue.innerHTML = min + "% &ndash; " + max + "%";
   }
 
   intensidadMin.addEventListener("input", () => {
@@ -2992,7 +3055,7 @@
       tags: ejRef.tags ? [...ejRef.tags] : [],
       objetivos: ejRef.objetivos ? [...ejRef.objetivos] : [],
       style: ejRef.style,
-      pagina: ejRef.pagina,
+      pagina: ejRef.pagina || null,
       series: series,
       metrosSerie: metrosSerie,
       intensidad: intensidad !== undefined ? intensidad : 80,
@@ -3586,11 +3649,14 @@
 
     const descHTML = ej.desc ? `<div class="exercise-desc">${ej.desc}</div>` : "";
     const tagsHTML = !ej.esGenerica ? `<div class="exercise-tags">${ej.tags.map(t => `<div class="mini-tag">${t}</div>`).join("")}</div>` : "";
-    const paginaHTML = ej.pagina ? `<a href="https://drive.google.com/file/d/1Xk1ljDGgu5mvXG3CsbF6fA1XN1FpDD-G/view?usp=sharing" target="_blank" style="color:var(--primary);font-size:13px;font-weight:600;text-decoration:none;" title="Ver página ${ej.pagina} en el libro">📄 Libro pág. ${ej.pagina} ↗</a>` : "";
-    const infoHTML = `<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px;font-size:13px;color:var(--muted);align-items:center;">
+    const paginaHTML = (ej.pagina && !ej.esGenerica) ? `<a href="https://drive.google.com/file/d/1Xk1ljDGgu5mvXG3CsbF6fA1XN1FpDD-G/preview#page=${ej.pagina}" target="_blank" style="display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--primary);text-decoration:none;background:rgba(14,165,233,.08);border:1px solid rgba(14,165,233,.2);border-radius:6px;padding:3px 9px;margin-bottom:8px;" title="Ver página ${ej.pagina} en el libro">📄 Libro pág. ${ej.pagina} ↗</a>` : "";
+    const intensidadHTML = `<span style="color:${intensidadColor(ej.intensidad)};font-weight:600;font-size:13px;">${ej.intensidad}% intensidad</span>`;
+    const infoHTML = ej.esGenerica ? `<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px;font-size:13px;color:var(--muted);">
       <span style="color:${intensidadColor(ej.intensidad)};font-weight:600;">${ej.intensidad}% intensidad</span>
       ${ej.ritmo > 0 ? `<span>⏱ @${String(Math.floor(ej.ritmo/60)).padStart(2,"0")}:${String(ej.ritmo%60).padStart(2,"0")}/100m</span>` : ""}
-      ${paginaHTML}
+    </div>` : `<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:8px;">
+      ${intensidadHTML}
+      ${ej.ritmo > 0 ? `<span style="color:var(--muted);font-size:13px;">⏱ @${String(Math.floor(ej.ritmo/60)).padStart(2,"0")}:${String(ej.ritmo%60).padStart(2,"0")}/100m</span>` : ""}
     </div>`;
 
     return `
@@ -3600,6 +3666,7 @@
           <div class="exercise-distance">${ej.distancia}</div>
         </div>
         ${descHTML}
+        ${paginaHTML}
         ${infoHTML}
         ${tagsHTML}
         ${editHTML}
@@ -4214,18 +4281,119 @@
     const list = document.getElementById("manualExList_"+bloque);
     const distEl = document.getElementById("manualDist_"+bloque);
     const items = manualData[bloque];
-    list.innerHTML = items.map(e=>`
-      <div class="manual-exercise-row" style="flex-direction:column;align-items:flex-start;gap:2px;">
-        <div style="display:flex;align-items:center;gap:8px;width:100%;">
-          <div class="manual-ex-name">${e.nombre}</div>
-          <div class="manual-ex-dist" style="margin-left:auto;">${e.series*e.metros}m</div>
-          <button class="manual-ex-remove" style="margin-right:4px;border-color:var(--primary);color:var(--primary);flex-shrink:0;" onclick="manualEdit('${bloque}','${e.uid}')" title="Editar">✎</button>
-          <button class="manual-ex-remove" style="flex-shrink:0;" onclick="manualRemove('${bloque}','${e.uid}')" title="Eliminar">✕</button>
+
+    list.innerHTML = items.map((e, idx) => `
+      <div class="manual-exercise-row" data-bloque="${bloque}" data-idx="${idx}" draggable="true">
+        <span class="manual-drag-handle" title="Arrastrar para reordenar">⠿</span>
+        <div class="manual-reorder-btns">
+          <button class="manual-reorder-btn" onclick="manualMover('${bloque}',${idx},-1)" title="Subir" ${idx===0?"disabled":""}>▲</button>
+          <button class="manual-reorder-btn" onclick="manualMover('${bloque}',${idx},1)" title="Bajar" ${idx===items.length-1?"disabled":""}>▼</button>
         </div>
-        ${e.desc ? `<div style="font-size:11px;color:var(--muted);padding-left:2px;padding-bottom:4px;">${e.desc}</div>` : ""}
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;align-items:center;gap:8px;width:100%;">
+            <div class="manual-ex-name">${e.nombre}</div>
+            <div class="manual-ex-dist" style="margin-left:auto;flex-shrink:0;">${e.series*e.metros}m</div>
+            <button class="manual-ex-remove" style="margin-right:4px;border-color:var(--primary);color:var(--primary);flex-shrink:0;" onclick="manualEdit('${bloque}','${e.uid}')" title="Editar">✎</button>
+            <button class="manual-ex-remove" style="flex-shrink:0;" onclick="manualRemove('${bloque}','${e.uid}')" title="Eliminar">✕</button>
+          </div>
+          ${e.desc ? `<div style="font-size:11px;color:var(--muted);padding-top:2px;padding-bottom:2px;">${e.desc}</div>` : ""}
+        </div>
       </div>`).join("");
+
+    // — Botones ↑↓ —
+    // (ya inyectados inline via manualMover)
+
+    // — Drag & Drop (mouse) —
+    let dragSrcIdx = null;
+    list.querySelectorAll(".manual-exercise-row").forEach(row => {
+      const handle = row.querySelector(".manual-drag-handle");
+
+      handle.addEventListener("mousedown", () => { row.draggable = true; });
+      row.addEventListener("dragstart", e => {
+        dragSrcIdx = parseInt(row.dataset.idx);
+        row.classList.add("dragging");
+        e.dataTransfer.effectAllowed = "move";
+      });
+      row.addEventListener("dragend", () => {
+        row.classList.remove("dragging");
+        list.querySelectorAll(".manual-exercise-row").forEach(r => r.classList.remove("drag-over"));
+        dragSrcIdx = null;
+      });
+      row.addEventListener("dragover", e => {
+        e.preventDefault();
+        list.querySelectorAll(".manual-exercise-row").forEach(r => r.classList.remove("drag-over"));
+        row.classList.add("drag-over");
+      });
+      row.addEventListener("drop", e => {
+        e.preventDefault();
+        const targetIdx = parseInt(row.dataset.idx);
+        if(dragSrcIdx === null || dragSrcIdx === targetIdx) return;
+        const arr = manualData[bloque];
+        const [moved] = arr.splice(dragSrcIdx, 1);
+        arr.splice(targetIdx, 0, moved);
+        renderManualBlock(bloque);
+        updateManualTotal();
+      });
+    });
+
+    // — Touch drag (móvil) —
+    let touchSrcIdx = null, touchClone = null;
+    list.querySelectorAll(".manual-exercise-row").forEach(row => {
+      const handle = row.querySelector(".manual-drag-handle");
+      handle.addEventListener("touchstart", e => {
+        touchSrcIdx = parseInt(row.dataset.idx);
+        const rect = row.getBoundingClientRect();
+        touchClone = row.cloneNode(true);
+        touchClone.style.cssText = `position:fixed;left:${rect.left}px;top:${rect.top}px;width:${rect.width}px;opacity:.7;z-index:9999;pointer-events:none;background:var(--panel);border-radius:12px;`;
+        document.body.appendChild(touchClone);
+        row.classList.add("dragging");
+        e.preventDefault();
+      }, {passive:false});
+
+      handle.addEventListener("touchmove", e => {
+        if(touchClone === null) return;
+        const t = e.touches[0];
+        touchClone.style.top = (t.clientY - 30) + "px";
+        touchClone.style.left = touchClone.style.left;
+        // highlight target
+        list.querySelectorAll(".manual-exercise-row").forEach(r => r.classList.remove("drag-over"));
+        const el = document.elementFromPoint(t.clientX, t.clientY);
+        const target = el ? el.closest(".manual-exercise-row") : null;
+        if(target && target !== row) target.classList.add("drag-over");
+        e.preventDefault();
+      }, {passive:false});
+
+      handle.addEventListener("touchend", e => {
+        if(touchClone){ touchClone.remove(); touchClone = null; }
+        list.querySelectorAll(".manual-exercise-row").forEach(r => r.classList.remove("dragging","drag-over"));
+        const t = e.changedTouches[0];
+        const el = document.elementFromPoint(t.clientX, t.clientY);
+        const target = el ? el.closest(".manual-exercise-row") : null;
+        if(target){
+          const targetIdx = parseInt(target.dataset.idx);
+          if(touchSrcIdx !== null && touchSrcIdx !== targetIdx){
+            const arr = manualData[bloque];
+            const [moved] = arr.splice(touchSrcIdx, 1);
+            arr.splice(targetIdx, 0, moved);
+            renderManualBlock(bloque);
+            updateManualTotal();
+          }
+        }
+        touchSrcIdx = null;
+      });
+    });
+
     const total = items.reduce((s,e)=>s+e.series*e.metros,0);
     distEl.textContent = total+"m";
+  }
+
+  function manualMover(bloque, idx, dir){
+    const arr = manualData[bloque];
+    const newIdx = idx + dir;
+    if(newIdx < 0 || newIdx >= arr.length) return;
+    [arr[idx], arr[newIdx]] = [arr[newIdx], arr[idx]];
+    renderManualBlock(bloque);
+    updateManualTotal();
   }
 
   function updateManualTotal(){
@@ -4416,7 +4584,7 @@
     // Técnica
     if(document.getElementById("tecnicaSection").style.display !== "none"){
       html += `<div class="summary-section-title">Técnica</div>`;
-      const nTec = cantTecnica ? cantTecnica.value : 0;
+      const nTec = cantTecnica ? cantTecnica.value : 50;
       html += `<div class="summary-row"><span class="summary-label">Técnica / Rendimiento</span><span class="summary-val">${nTec}% / ${100-parseInt(nTec)}%</span></div>`;
       if(defActivas.length > 0){
         html += `<div class="summary-row" style="flex-direction:column;align-items:flex-start;gap:4px;"><span class="summary-label">Defectos</span><span style="color:var(--primary);font-size:12px;">${defActivas.join(", ")}</span></div>`;
