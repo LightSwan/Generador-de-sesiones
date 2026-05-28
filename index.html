@@ -1564,15 +1564,10 @@
           <button class="action-btn extra-toggle" id="btnTecnica" style="width:100%;justify-content:center;">🎯 Corregir un defecto</button>
         </div>
         <div id="tecnicaSection" style="display:none;margin-top:14px;">
-          <div class="slider-group">
-            <div class="slider-top">
-              <span>T&eacute;cnica</span>
-              <strong id="cantTecnicaValue"><span style="color:var(--primary)">50%</span> · Rendimiento <span style="color:var(--success)">50%</span></strong>
-            </div>
+          <!-- slider cantTecnica oculto — requerido por el script, no eliminar -->
+          <div style="display:none;" aria-hidden="true">
+            <strong id="cantTecnicaValue"><span style="color:var(--primary)">50%</span> · Rendimiento <span style="color:var(--success)">50%</span></strong>
             <input type="range" min="0" max="100" step="5" value="50" id="cantTecnica" />
-            <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:4px;">
-              <span>0% técnica</span><span>50/50</span><span>100% técnica</span>
-            </div>
           </div>
           <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">Defectos a corregir:</div>
           <div id="stylesDefContainer"></div>
@@ -4573,7 +4568,20 @@
     html += `<div class="summary-row"><span class="summary-label">Metros totales</span><span class="summary-val">~${totalMts}m</span></div>`;
     html += `<div class="summary-row"><span class="summary-label">Series</span><span class="summary-val">${seriesCount.value}</span></div>`;
     html += `<div class="summary-row"><span class="summary-label">Metros/serie</span><span class="summary-val">${extrasActivos.variarMetros ? variarMetrosMin.value+"–"+variarMetrosMax.value+"m" : seriesMeters.value+"m"}</span></div>`;
-    html += `<div class="summary-row"><span class="summary-label">Intensidad</span><span class="summary-val">${intensidadMin.value}%–${intensidadMax.value}%</span></div>`;
+    // Intensidad: usar rango real según modo activo
+    const modoEsAuto = document.getElementById("autoLayout") && document.getElementById("autoLayout").style.display !== "none";
+    let intMin, intMax;
+    if(modoEsAuto){
+      const DC = {
+        facil:      {minInt:30, maxInt:55},
+        intermedio: {minInt:50, maxInt:70},
+        dificil:    {minInt:70, maxInt:95}
+      }[dificultadActual] || {minInt:40, maxInt:60};
+      intMin = DC.minInt; intMax = DC.maxInt;
+    } else {
+      intMin = intensidadMin.value; intMax = intensidadMax.value;
+    }
+    html += `<div class="summary-row"><span class="summary-label">Intensidad</span><span class="summary-val"><span style="color:${intensidadColor(parseInt(intMin))};font-weight:700;">${intMin}%</span> – <span style="color:${intensidadColor(parseInt(intMax))};font-weight:700;">${intMax}%</span></span></div>`;
 
     // Estilos
     html += `<div class="summary-section-title">Estilos</div>`;
