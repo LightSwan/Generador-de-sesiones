@@ -559,6 +559,10 @@
       align-items:flex-start;
     }
 
+    @keyframes pwaGlow{
+      0%,100%{box-shadow:0 0 0 0 rgba(99,102,241,0.5),0 4px 20px rgba(14,165,233,0.4);}
+      50%{box-shadow:0 0 0 8px rgba(99,102,241,0),0 4px 20px rgba(14,165,233,0.4);}
+    }
     @keyframes fadeIn{
       from{opacity:0}
       to{opacity:1}
@@ -1385,15 +1389,15 @@
           <div class="slider-group">
             <div class="slider-top">
               <span>Técnica</span>
-              <strong id="tecnicaValueS"><span style="color:var(--primary)">0%</span> · Rendimiento <span style="color:var(--success)">100%</span></strong>
+              <strong id="tecnicaValueS"><span style="color:var(--primary)">50%</span> · Rendimiento <span style="color:var(--success)">50%</span></strong>
             </div>
-            <input type="range" min="0" max="100" step="5" value="0" id="tecnicaSliderS" />
+            <input type="range" min="0" max="100" step="5" value="50" id="tecnicaSliderS" />
             <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:4px;">
               <span>0% técnica</span><span>50/50</span><span>100% técnica</span>
             </div>
           </div>
 
-          <div class="section-title" style="margin-top:14px;">Dificultad</div>
+          <div class="section-title" style="margin-top:28px;">Dificultad</div>
           <div class="difficulty-grid">
             <div class="difficulty-card active" data-diff="facil" id="diffFacil">
               <div class="diff-icon">🟢</div>
@@ -1673,16 +1677,18 @@
           <span class="total-value" id="manualTotalDist">0m</span>
         </div>
         <div class="bar-actions">
-          <button class="action-btn" id="manualCopyBtn" title="Copiar al portapapeles">
-            <span class="btn-icon">📋</span>Copiar
-          </button>
-          <button class="action-btn" id="manualImgBtn" title="Descargar imagen">
-            <span class="btn-icon">🖼️</span>Imagen
-          </button>
           <button class="action-btn" id="manualSummaryBtn" title="Ver resumen">
             <span class="btn-icon">≡</span>Resumen
           </button>
         </div>
+      </div>
+      <div style="display:flex;gap:10px;justify-content:center;padding:12px 16px 4px;flex-wrap:wrap;">
+        <button class="action-btn" id="manualCopyBtn" title="Copiar al portapapeles" style="flex:1;max-width:200px;justify-content:center;">
+          <span class="btn-icon">📋</span>Copiar
+        </button>
+        <button class="action-btn" id="manualImgBtn" title="Descargar entrenamiento" style="flex:1;max-width:200px;justify-content:center;background:linear-gradient(135deg,#0ea5e9,#6366f1);color:#fff;border:none;font-weight:700;animation:pwaGlow 2s infinite;">
+          <span class="btn-icon">🖼️</span>Descargar entrenamiento
+        </button>
       </div>
 
     </div>
@@ -1846,12 +1852,12 @@
   // ──────────────────────────────────────────────────────────────────────
 
   const ejerciciosBiblioteca = [
-    {id:"cro1",num:1,pagina:29,style:"Crol",tags:["Crol","Posición"],nombre:"Flotación descendente",desc:"Colócate en posición ventral con los brazos pegados al cuerpo y la cabeza mirando al fondo de la piscina. Baja levemente la barbilla hacia el pecho y dirige la presión hacia el pecho. Las caderas y piernas suben solas.",objetivos:[]},
-    {id:"cro2",num:2,pagina:31,style:"Crol",tags:["Crol","Posición"],nombre:"Rolido",desc:"Impúlsate en posición ventral. Ladéate 90 grados desde la cadera y el hombro. Mantén cinco patadas y regresa al centro. El giro lo inicia la cadera, no el hombro.",objetivos:[]},
+    {id:"cro1",num:1,pagina:29,style:"Crol",tags:["Crol","Posición"],fueraDePiscina:true,nombre:"Flotación descendente",desc:"Colócate en posición ventral con los brazos pegados al cuerpo y la cabeza mirando al fondo de la piscina. Baja levemente la barbilla hacia el pecho y dirige la presión hacia el pecho. Las caderas y piernas suben solas.",objetivos:[]},
+    {id:"cro2",num:2,pagina:31,style:"Crol",tags:["Crol","Posición"],fueraDePiscina:true,nombre:"Rolido",desc:"Impúlsate en posición ventral. Ladéate 90 grados desde la cadera y el hombro. Mantén cinco patadas y regresa al centro. El giro lo inicia la cadera, no el hombro.",objetivos:[]},
     {id:"cro3",num:3,pagina:33,style:"Crol",tags:["Crol","Posición"],nombre:"Crol lateral con cambio de lado cada doce patadas",desc:"Flota de lado con el brazo inferior extendido. Patada tipo tijera lateral. Cuenta doce patadas y rola para cambiar de lado sin que la cabeza salte.",objetivos:[]},
     {id:"cro4",num:4,pagina:35,style:"Crol",tags:["Crol","Patada"],nombre:"Ejercicio con los dedos del pie en punta",desc:"Adopta posición ventral con brazos extendidos. Prueba la patada con pies en punta y luego flexionados. Con los pies en punta el cuerpo avanza más: el empeine actúa como pala.",objetivos:[]},
     {id:"cro5",num:5,pagina:38,style:"Crol",tags:["Crol","Patada"],nombre:"Ejercicio de aleteo con los pies",desc:"Coloca una aleta en un solo pie y nada con brazos extendidos. Siente cómo la aleta se dobla. Alterna el pie con aleta. El objetivo es que sin aleta la sensación sea igual.",objetivos:[]},
-    {id:"cro6",num:6,pagina:40,style:"Crol",tags:["Crol","Patada"],nombre:"Secuencia de patada vertical",desc:"En posición vertical, usa remadas en ocho con las manos para flotar. Inicia la patada alternada con piernas extendidas. Si la cabeza baja, la patada no genera suficiente sustentación.",objetivos:[]},
+    {id:"cro6",num:6,pagina:40,style:"Crol",tags:["Crol","Patada"],fueraDePiscina:true,nombre:"Secuencia de patada vertical",desc:"En posición vertical, usa remadas en ocho con las manos para flotar. Inicia la patada alternada con piernas extendidas. Si la cabeza baja, la patada no genera suficiente sustentación.",objetivos:[]},
     {id:"cro7",num:7,pagina:42,style:"Crol",tags:["Crol","Patada"],nombre:"Patada de crol a una sola pierna",desc:"Apoya la tabla bajo los brazos. Patada solo con la pierna derecha 30 segundos, luego izquierda, luego alterna cada 15 segundos. La patada sale del muslo, no dobla la rodilla en exceso.",objetivos:[]},
     {id:"cro8",num:8,pagina:44,style:"Crol",tags:["Crol","Brazada"],nombre:"Tirón y empuje en estilo crol",desc:"Una sola brazada con el brazo izquierdo: yemas hacia abajo para agarrar el agua, codo alto y fijo, barre en curva hacia fuera y adentro, acelera en el empuje hasta que el pulgar roza el muslo.",objetivos:[]},
     {id:"cro9",num:9,pagina:47,style:"Crol",tags:["Crol","Brazada"],nombre:"Tiempo muerto",desc:"Cuando el brazo llega al final del tirón junto a la cadera, detente: relaja la mano, espera un instante y solo entonces eleva el codo para el recobro. La brazada se alarga y el impulso aumenta.",objetivos:[]},
@@ -1871,10 +1877,10 @@
     {id:"cro23",num:23,pagina:80,style:"Crol",tags:["Crol","Coordinación"],fueraDePiscina:true,nombre:"Progresión horizontal agarrándose a una cuerda tendida",desc:"Agarra la cuerda bajo la superficie. Tira del cuerpo hacia delante hasta que la mano quede junto a la cadera. No es el brazo el que se mueve sino el cuerpo que avanza sobre la mano fija.",objetivos:[]},
     {id:"cro24",num:24,pagina:82,style:"Crol",tags:["Crol","Coordinación"],nombre:"Nado a crol con delfín",desc:"Da seis a doce patadas de delfín antes de iniciar el crol. Al pasar al crol, sincroniza una patada de delfín con cada brazada. La brazada parece impulsada desde las caderas.",objetivos:[]},
     {id:"cro25",num:25,pagina:84,style:"Crol",tags:["Crol","Coordinación"],nombre:"Respiración bilateral",desc:"Respira en la tercera brazada hacia un lado y en la sexta hacia el otro alternando. El lado no dominante revela el desequilibrio. El rolido debe sentirse idéntico a ambos lados.",objetivos:[]},
-    {id:"esp26",num:26,pagina:87,style:"Espalda",tags:["Espalda","Posición"],nombre:"Flotar sobre la columna vertebral",desc:"Túmbate boca arriba. Echa la cabeza atrás hasta que los lóbulos de las orejas queden bajo la superficie. Las piernas subirán solas. Activa el abdomen para mantener la columna recta.",objetivos:[]},
-    {id:"esp27",num:27,pagina:89,style:"Espalda",tags:["Espalda","Posición"],nombre:"Ejercicio con la línea de flotación",desc:"Busca que la superficie quede a la altura de los lóbulos de las orejas. Cuando la línea de flotación es correcta, el cuello y los hombros se relajan solos sin ningún esfuerzo.",objetivos:[]},
+    {id:"esp26",num:26,pagina:87,style:"Espalda",tags:["Espalda","Posición"],fueraDePiscina:true,nombre:"Flotar sobre la columna vertebral",desc:"Túmbate boca arriba. Echa la cabeza atrás hasta que los lóbulos de las orejas queden bajo la superficie. Las piernas subirán solas. Activa el abdomen para mantener la columna recta.",objetivos:[]},
+    {id:"esp27",num:27,pagina:89,style:"Espalda",tags:["Espalda","Posición"],fueraDePiscina:true,nombre:"Ejercicio con la línea de flotación",desc:"Busca que la superficie quede a la altura de los lóbulos de las orejas. Cuando la línea de flotación es correcta, el cuello y los hombros se relajan solos sin ningún esfuerzo.",objetivos:[]},
     {id:"esp28",num:28,pagina:92,style:"Espalda",tags:["Espalda","Posición"],nombre:"Espalda lateral con cambio de lado cada doce patadas",desc:"Flota en espalda de lado con un brazo extendido sobre la cabeza. Patada y cuenta doce. Rola al otro lado. Busca la posición más larga: oreja alineada con el hombro, brazo en línea con la columna.",objetivos:[]},
-    {id:"esp29",num:29,pagina:94,style:"Espalda",tags:["Espalda","Patada"],nombre:"Ejercicio de batido del agua",desc:"En posición dorsal, patada alternada poniendo más fuerza en el movimiento ascendente. Los pies hacen borbotear la superficie sin que las rodillas la rompan. Gira levemente las puntas hacia dentro.",objetivos:[]},
+    {id:"esp29",num:29,pagina:94,style:"Espalda",tags:["Espalda","Patada"],fueraDePiscina:true,nombre:"Ejercicio de batido del agua",desc:"En posición dorsal, patada alternada poniendo más fuerza en el movimiento ascendente. Los pies hacen borbotear la superficie sin que las rodillas la rompan. Gira levemente las puntas hacia dentro.",objetivos:[]},
     {id:"esp30",num:30,pagina:97,style:"Espalda",tags:["Espalda","Patada"],nombre:"Brazos en punta de flecha, batido de piernas sin levantar las rodillas",desc:"Extiende los brazos sobre la cabeza comprimiendo las orejas entre los codos. Patada a ritmo tal que desde fuera no se distinga qué pie mueve el agua. Rodillas siempre bajo la superficie.",objetivos:[]},
     {id:"esp31",num:31,pagina:99,style:"Espalda",tags:["Espalda","Patada"],nombre:"Batido de piernas con las puntas de los dedos hacia dentro",desc:"Gira las puntas de los pies hacia dentro antes de la patada. El dedo gordo debe ser lo más cercano a la superficie en cada ascenso. Amplía la superficie del pie y centra la propulsión.",objetivos:[]},
     {id:"esp32",num:32,pagina:102,style:"Espalda",tags:["Espalda","Patada"],nombre:"Rolido parcial con vaso en la frente",desc:"Coloca un vaso de plástico sobre la frente en posición dorsal. Inicia la patada intentando que el vaso no se mueva. Practica rolidos de 20 grados a cada lado manteniendo el vaso en su sitio.",objetivos:[]},
@@ -1884,7 +1890,7 @@
     {id:"esp36",num:36,pagina:111,style:"Espalda",tags:["Espalda","Brazada"],nombre:"El sacacorchos",desc:"Una brazada derecha mientras el izquierdo recobra. En ese instante los hombros forman diagonal pronunciada. La trayectoria de cada brazo es curva hacia el cuerpo bajo el agua, describiendo una espiral.",objetivos:[]},
     {id:"esp37",num:37,pagina:113,style:"Espalda",tags:["Espalda","Recobro"],nombre:"Manecillas del reloj",desc:"El brazo derecho sube hacia las 11 en vez de las 12. El brazo izquierdo hacia la 1. La mano siempre entra ligeramente hacia el exterior del hombro, nunca cruzando la línea central.",objetivos:[]},
     {id:"esp38",num:38,pagina:116,style:"Espalda",tags:["Espalda","Recobro"],nombre:"Recobro en dos pasos",desc:"Primero el brazo sube recto hacia las 11 o la 1. Luego la mano gira con el meñique hacia abajo y corta la superficie limpiamente. Practica esas dos fases por separado hasta que fluyan.",objetivos:[]},
-    {id:"esp39",num:39,pagina:118,style:"Espalda",tags:["Espalda","Recobro"],nombre:"Ejercicio con el codo extendido",desc:"Bloquea el codo en el recobro como si quisieras tocar el otro extremo de la piscina con las yemas. La diferencia de alcance entre codo doblado y extendido es la longitud de brazada que pierdes.",objetivos:[]},
+    {id:"esp39",num:39,pagina:118,style:"Espalda",tags:["Espalda","Recobro"],fueraDePiscina:true,nombre:"Ejercicio con el codo extendido",desc:"Bloquea el codo en el recobro como si quisieras tocar el otro extremo de la piscina con las yemas. La diferencia de alcance entre codo doblado y extendido es la longitud de brazada que pierdes.",objetivos:[]},
     {id:"esp40",num:40,pagina:121,style:"Espalda",tags:["Espalda","Recobro"],nombre:"Rotación externa de las manos en la fase aérea",desc:"Cuando el brazo alcanza su punto más alto, gira la mano hacia fuera de modo que el meñique apunte hacia la superficie. El meñique entra primero y corta el agua limpiamente.",objetivos:[]},
     {id:"esp41",num:41,pagina:124,style:"Espalda",tags:["Espalda","Respiración"],nombre:"Secuencia con respiración rítmica",desc:"Asigna la inspiración a una brazada y la espiración a la siguiente. Prueba ritmos de una, dos o tres brazadas para ver cuál permite una brazada más relajada y económica.",objetivos:[]},
     {id:"esp42",num:42,pagina:126,style:"Espalda",tags:["Espalda","Respiración"],nombre:"Crear una bolsa de aire",desc:"Cuando el hombro del brazo que recobra está fuera y el contrario sumergido, se crea un bolsillo de aire junto a la boca. Inhala exactamente cuando aparece ese bolsillo.",objetivos:[]},
@@ -1900,7 +1906,7 @@
     {id:"bra52",num:52,pagina:152,style:"Braza",tags:["Braza","Posición"],nombre:"Ejercicio de oscilaciones verticales",desc:"Empuja el pecho 8 cm hacia abajo: las caderas suben (posición descendente). Flexiona rodillas llevando talones hacia nalgas: las caderas bajan y la cabeza sube (posición ascendente). Alterna fluidamente.",objetivos:[]},
     {id:"bra53",num:53,pagina:155,style:"Braza",tags:["Braza","Patada"],nombre:"Patada de pato",desc:"Talones hacia las nalgas con rodillas más juntas que los pies, pies flexionados hacia fuera. Barre circularmente hacia atrás y afuera hasta extender las piernas. Las rodillas nunca se abren más que los pies.",objetivos:[]},
     {id:"bra54",num:54,pagina:158,style:"Braza",tags:["Braza","Patada"],nombre:"Patada de braza en posición dorsal",desc:"Boca arriba, talones atrás tocando los dedos de las manos, pies flexionados y girados hacia fuera. Barre en arco circular rápido hasta extender completamente. Al estar boca arriba puedes ver y corregir el movimiento.",objetivos:[]},
-    {id:"bra55",num:55,pagina:162,style:"Braza",tags:["Braza","Patada"],nombre:"Patada de braza vertical",desc:"En posición vertical, talones atrás con rodillas juntas, pies flexionados hacia fuera, barrido circular rápido hasta extender. La patada debe hacer que el cuerpo ascienda perceptiblemente.",objetivos:[]},
+    {id:"bra55",num:55,pagina:162,style:"Braza",tags:["Braza","Patada"],fueraDePiscina:true,nombre:"Patada de braza vertical",desc:"En posición vertical, talones atrás con rodillas juntas, pies flexionados hacia fuera, barrido circular rápido hasta extender. La patada debe hacer que el cuerpo ascienda perceptiblemente.",objetivos:[]},
     {id:"bra56",num:56,pagina:164,style:"Braza",tags:["Braza","Patada"],nombre:"Patada de braza con la cabeza alzada",desc:"Impúlsate con brazos en punta de flecha y cabeza mirando al frente. Columna firme y patada de braza con la cabeza siempre fuera. Vista directa de la brazada para corregir aceleración y recobro.",objetivos:[]},
     {id:"bra57",num:57,pagina:167,style:"Braza",tags:["Braza","Brazada"],nombre:"Acción tridimensional de la brazada",desc:"Barrido hacia fuera formando Y, luego manos convergen bajo la barbilla. La brazada tiene tres dimensiones: anchura en el barrido, profundidad en el agarre, y altura con codos elevados.",objetivos:[]},
     {id:"bra58",num:58,pagina:169,style:"Braza",tags:["Braza","Brazada"],nombre:"Remadas de braza",desc:"Con brazos ligeramente extendidos, barres en forma de ocho: afuera con palmas inclinadas hacia fuera, hacia dentro con palmas hacia dentro. Los codos altos generan sustentación.",objetivos:[]},
@@ -1926,7 +1932,7 @@
     {id:"mar78",num:78,pagina:223,style:"Mariposa",tags:["Mariposa","Patada"],fueraDePiscina:true,nombre:"Ondear una cinta",desc:"Fuera del agua sostén una cinta o cuerda larga y ondéala de arriba a abajo con el brazo. Observa cómo la ola nace en tu mano y hombro y viaja hasta el extremo de la cinta: el extremo no hace nada por sí mismo, solo recibe la energía que le llega. En el agua el delfín funciona exa",objetivos:[]},
     {id:"mar79",num:79,pagina:225,style:"Mariposa",tags:["Mariposa","Patada"],fueraDePiscina:true,nombre:"El delfín profundo a superficial",desc:"Con el agua a las caderas, haz una reverencia hacia delante, flexiona las rodillas y salta desde el fondo. En el punto más alto del salto profundiza la reverencia y cuando la cabeza entra al agua sigue hundiéndola hacia abajo mientras las caderas suben y los pies dan un latigazo ",objetivos:[]},
     {id:"mar80",num:80,pagina:228,style:"Mariposa",tags:["Mariposa","Patada"],fueraDePiscina:true,nombre:"Zambullidas de delfín",desc:"Con el agua a las caderas, haz la reverencia hacia delante y salta. En el aire profundiza la reverencia y al entrar al agua sigue impulsando la cabeza hacia abajo mientras las piernas suben y luego dan el latigazo descendente. Sin pausa, repite varias zambullidas seguidas. La cla",objetivos:[]},
-    {id:"mar81",num:81,pagina:230,style:"Mariposa",tags:["Mariposa","Patada"],nombre:"Delfín vertical",desc:"En aguas de tu altura, adopta posición vertical con remadas suaves. Inicia un movimiento lento de delfín inclinando el tren superior hacia abajo y luego arriba, dejando que las piernas reaccionen: cuando el tren superior baja, los pies suben; cuando sube, los pies bajan. No hagas",objetivos:[]},
+    {id:"mar81",num:81,pagina:230,style:"Mariposa",tags:["Mariposa","Patada"],fueraDePiscina:true,nombre:"Delfín vertical",desc:"En aguas de tu altura, adopta posición vertical con remadas suaves. Inicia un movimiento lento de delfín inclinando el tren superior hacia abajo y luego arriba, dejando que las piernas reaccionen: cuando el tren superior baja, los pies suben; cuando sube, los pies bajan. No hagas",objetivos:[]},
     {id:"mar82",num:82,pagina:233,style:"Mariposa",tags:["Mariposa","Patada"],nombre:"Delfín de espaldas",desc:"Impúlsate de la pared boca arriba con los brazos junto a los costados y realiza el delfín. La onda debe empezar en el pecho y los hombros y viajar hacia los pies. Al estar boca arriba tus rodillas son completamente visibles: no deben sobresalir de la superficie ni doblarse en exc",objetivos:[]},
     {id:"mar83",num:83,pagina:235,style:"Mariposa",tags:["Mariposa","Brazada"],nombre:"Inclinación de las manos durante el barrido",desc:"Impúlsate para nadar a mariposa con las caderas en alto. Cuando los brazos están extendidos al frente listos para el tirón, inclina ligeramente las yemas hacia abajo para que las palmas miren hacia atrás y hacia afuera, no hacia el fondo. Mantén esa inclinación durante todo el ba",objetivos:[]},
     {id:"mar84",num:84,pagina:238,style:"Mariposa",tags:["Mariposa","Brazada"],nombre:"Barridos trazando signos de interrogación",desc:"Impúlsate para nadar a mariposa. Practica el barrido completo prestando atención a su forma: desde la posición extendida al frente, los brazos se abren hacia afuera y alrededor describiendo un arco amplio, luego se cierran hacia el vientre acelerando. Las trayectorias de los dos ",objetivos:[]},
@@ -1936,7 +1942,7 @@
     {id:"mar88",num:88,pagina:247,style:"Mariposa",tags:["Mariposa","Recobro"],fueraDePiscina:true,nombre:"Fase aérea con los meñiques arriba",desc:"Frente a un espejo, inclínate hacia delante hasta que el tronco quede horizontal. Con los brazos extendidos al frente, practica la brazada de mariposa en el aire: signo de interrogación con cada brazo, acelerón al final con los meñiques hacia arriba. Cuando los brazos salen del a",objetivos:[]},
     {id:"mar89",num:89,pagina:250,style:"Mariposa",tags:["Mariposa","Recobro"],nombre:"Batido de brazos",desc:"Impúlsate para nadar a mariposa. Después de varios delfines inicia las brazadas fijándote en el recobro. Cuando los meñiques salen del agua, deja que los brazos vuelen en arco por encima del agua usando la inercia de la presión final, sin forzarlos. El arco debe ser amplio y cómo",objetivos:[]},
     {id:"mar90",num:90,pagina:252,style:"Mariposa",tags:["Mariposa","Recobro"],nombre:"Extensión de brazos en Y",desc:"Impúlsate para nadar a mariposa. Al final de cada recobro, antes de que las manos entren al agua, abre los codos hacia los lados hasta que los pulgares apunten al otro extremo de la piscina: las manos quedan más separadas que los hombros formando una Y con los brazos y el pecho. ",objetivos:[]},
-    {id:"mar91",num:91,pagina:254,style:"Mariposa",tags:["Mariposa","Respiración"],nombre:"Ejercicio para sincronizar la respiración",desc:"Impúlsate para nadar a mariposa respirando en cada brazada. Fíjate en el momento exacto en que la cara sale del agua: debe ocurrir cuando los brazos terminan el barrido y el tren superior está en su punto más elevado. Justo después de inspirar, la cara debe volver al agua antes q",objetivos:[]},
+    {id:"mar91",num:91,pagina:254,style:"Mariposa",tags:["Mariposa","Respiración"],fueraDePiscina:true,nombre:"Ejercicio para sincronizar la respiración",desc:"Impúlsate para nadar a mariposa respirando en cada brazada. Fíjate en el momento exacto en que la cara sale del agua: debe ocurrir cuando los brazos terminan el barrido y el tren superior está en su punto más elevado. Justo después de inspirar, la cara debe volver al agua antes q",objetivos:[]},
     {id:"mar92",num:92,pagina:257,style:"Mariposa",tags:["Mariposa","Respiración"],fueraDePiscina:true,nombre:"Zambullidas de delfín",desc:"Con el agua a la cintura, haz una reverencia con la cara dentro del agua y los brazos extendidos al frente. Traza el signo de interrogación con los brazos: abre hacia afuera, cierra hacia el vientre y acelera al final. Cuando los meñiques salen del agua, incorpórate para respirar",objetivos:[]},
     {id:"mar93",num:93,pagina:259,style:"Mariposa",tags:["Mariposa","Respiración"],nombre:"Nado a mariposa con los ojos fijos en el agua",desc:"Nada a mariposa manteniendo los ojos mirando hacia el fondo durante todo el ciclo incluyendo cuando respiras. Al elevar la cara para inspirar, dirige la mirada hacia el agua que tienes justo delante en vez de al horizonte. El agua debe ser visible en todo momento. Esto te obliga ",objetivos:[]},
     {id:"mar94",num:94,pagina:262,style:"Mariposa",tags:["Mariposa","Respiración"],nombre:"Clavo y martillo",desc:"Impúlsate para nadar a mariposa y respira en cada brazada. Cuando la boca sale del agua para inspirar, la vista mira al frente bajo o al agua: eso es el clavo. Inmediatamente después de inspirar, hunde la cabeza rápidamente hacia delante y abajo como si clavases la cabeza de vuel",objetivos:[]},
@@ -3393,9 +3399,15 @@
       <span>🏊 Entrenamiento &mdash; <strong>${totalFinal}m</strong></span>
       <div style="display:flex;gap:8px;">
         <button class="action-btn" id="downloadTxtBtn" title="Copiar al portapapeles" style="font-size:13px;">📋 Copiar</button>
-        <button class="action-btn" id="downloadImgBtn" title="Descargar imagen" style="font-size:13px;">🖼️ Imagen</button>
       </div>`;
     content.appendChild(tituloTotal);
+
+    // Botón descargar entrenamiento — fila destacada debajo del total
+    const downloadRow = document.createElement("div");
+    downloadRow.style.cssText = "display:flex;gap:10px;justify-content:center;padding:4px 16px 16px;flex-wrap:wrap;";
+    downloadRow.innerHTML = `
+      <button class="action-btn" id="downloadImgBtn" title="Descargar entrenamiento" style="flex:1;max-width:260px;justify-content:center;background:linear-gradient(135deg,#0ea5e9,#6366f1);color:#fff;border:none;font-weight:700;animation:pwaGlow 2s infinite;font-size:13px;">🖼️ Descargar entrenamiento</button>`;
+    content.appendChild(downloadRow);
 
     entrenamientoActual.bloques.forEach((bloque, bi) => {
       const block = document.createElement("div");
@@ -3495,12 +3507,16 @@
       lines.push({ text: htmlDecode(b.titulo) + "  (" + b.distancia + ")", type:"block" });
       b.ejercicios.forEach(ej => {
         lines.push({ text: "  • " + htmlDecode(ej.nombre), type:"ej" });
-        if(ej.desc) lines.push({ text: htmlDecode(ej.desc), type:"desc" });
+        if(ej.intensidad) lines.push({ text: "    Intensidad: " + ej.intensidad + "%", type:"desc" });
+        const descFinal = ej.desc || (ej.refId ? (ejerciciosBiblioteca.find(b=>b.id===ej.refId)||{}).desc||"" : "");
+        if(descFinal) lines.push({ text: "    " + htmlDecode(descFinal), type:"desc" });
       });
     });
 
     const PAD = 40, FONT = 15, LINE_H = 26, TITLE_H = 42, DESC_FONT = 12, DESC_LINE_H = 18;
-    const MAX_TEXT_W = 700 - PAD * 2;
+    const BASE_W = 700;
+    const MAX_TEXT_W = BASE_W - PAD * 2;
+    const SCALE = 2;
 
     // First pass: expand desc lines into wrapped sub-lines to measure height
     const ctx0 = document.createElement("canvas").getContext("2d");
@@ -3520,12 +3536,13 @@
     canvasH += PAD;
 
     const canvas = document.createElement("canvas");
-    canvas.width = 700;
-    canvas.height = canvasH;
+    canvas.width  = BASE_W  * SCALE;
+    canvas.height = canvasH * SCALE;
     const ctx = canvas.getContext("2d");
+    ctx.scale(SCALE, SCALE);
 
     ctx.fillStyle = "#0f172a";
-    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillRect(0, 0, BASE_W, canvasH);
 
     let y = PAD;
     expanded.forEach(l => {
@@ -3540,7 +3557,7 @@
         ctx.fillText(l.text, PAD, y + FONT + 4);
         ctx.strokeStyle = "#1e3a5f";
         ctx.lineWidth = 1;
-        ctx.beginPath(); ctx.moveTo(PAD, y+FONT+8); ctx.lineTo(canvas.width-PAD, y+FONT+8); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(PAD, y+FONT+8); ctx.lineTo(BASE_W-PAD, y+FONT+8); ctx.stroke();
         y += LINE_H;
       } else if(l.type==="desc"){
         ctx.fillStyle = "#64748b";
@@ -4156,7 +4173,7 @@
 
     if(mmActiveTab === "bib"){
       if(!mmSelectedEj){ alert("Selecciona un ejercicio de la lista."); return; }
-      ej = { id: mmSelectedEj.id, nombre: mmSelectedEj.nombre, style: mmSelectedEj.style||"", tags: mmSelectedEj.tags||[] };
+      ej = { id: mmSelectedEj.id, nombre: mmSelectedEj.nombre, desc: mmSelectedEj.desc||"", style: mmSelectedEj.style||"", tags: mmSelectedEj.tags||[] };
     } else {
       const rawNombre = document.getElementById("mmFreeName").value.trim();
       if(!rawNombre){ alert("Escribe el nombre del ejercicio."); return; }
@@ -4478,12 +4495,15 @@
       lines.push({text:label+"  ("+(bTotal||"⏱")+(bTotal?"m":"")+")", type:"block"});
       items.forEach(e=>{
         lines.push({text:"  • "+htmlDecode(e.nombre), type:"ej"});
-        const nota = e.desc || "";
-        if(nota) lines.push({text:"    "+htmlDecode(nota), type:"desc"});
+        if(e.intensidad) lines.push({text:"    Intensidad: "+e.intensidad+"%", type:"desc"});
+        // Si desc está vacío pero el ejercicio proviene de biblioteca, recuperarlo
+        const descFinal = e.desc || (e.refId ? (ejerciciosBiblioteca.find(b=>b.id===e.refId)||{}).desc||"" : "");
+        if(descFinal) lines.push({text:"    "+htmlDecode(descFinal), type:"desc"});
       });
     });
     const PAD=40,FONT=15,LINE_H=26,TITLE_H=42,DESC_FONT=12,DESC_LINE_H=18;
-    const MAX_TEXT_W=700-PAD*2;
+    const BASE_W=700, SCALE=2;
+    const MAX_TEXT_W=BASE_W-PAD*2;
     const ctx0=document.createElement("canvas").getContext("2d");
     ctx0.font=DESC_FONT+"px 'Inter',system-ui,sans-serif";
     const expanded=[];
@@ -4496,13 +4516,14 @@
     expanded.forEach(l=>{canvasH+=l.type==="title"?TITLE_H:l.type==="desc"?DESC_LINE_H:LINE_H;});
     canvasH+=PAD;
     const canvas=document.createElement("canvas");
-    canvas.width=700; canvas.height=canvasH;
+    canvas.width=BASE_W*SCALE; canvas.height=canvasH*SCALE;
     const ctx=canvas.getContext("2d");
-    ctx.fillStyle="#0f172a"; ctx.fillRect(0,0,700,canvasH);
+    ctx.scale(SCALE,SCALE);
+    ctx.fillStyle="#0f172a"; ctx.fillRect(0,0,BASE_W,canvasH);
     let y=PAD;
     expanded.forEach(l=>{
       if(l.type==="title"){ctx.fillStyle="#38bdf8";ctx.font="bold 22px 'Inter',system-ui,sans-serif";ctx.fillText(l.text,PAD,y+28);y+=TITLE_H;}
-      else if(l.type==="block"){ctx.fillStyle="#38bdf8";ctx.font="bold "+FONT+"px 'Inter',system-ui,sans-serif";ctx.fillText(l.text,PAD,y+FONT+4);ctx.strokeStyle="#1e3a5f";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(PAD,y+FONT+8);ctx.lineTo(700-PAD,y+FONT+8);ctx.stroke();y+=LINE_H;}
+      else if(l.type==="block"){ctx.fillStyle="#38bdf8";ctx.font="bold "+FONT+"px 'Inter',system-ui,sans-serif";ctx.fillText(l.text,PAD,y+FONT+4);ctx.strokeStyle="#1e3a5f";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(PAD,y+FONT+8);ctx.lineTo(BASE_W-PAD,y+FONT+8);ctx.stroke();y+=LINE_H;}
       else if(l.type==="desc"){ctx.fillStyle="#64748b";ctx.font=DESC_FONT+"px 'Inter',system-ui,sans-serif";ctx.fillText(l.text,PAD,y+DESC_FONT+2);y+=DESC_LINE_H;}
       else{ctx.fillStyle="#e2e8f0";ctx.font=FONT+"px 'Inter',system-ui,sans-serif";ctx.fillText(l.text,PAD,y+FONT+2);y+=LINE_H;}
     });
@@ -4700,6 +4721,9 @@
 
   const isInStandalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone;
   const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isMac = /macintosh|mac os x/i.test(navigator.userAgent) && !isIOS;
+  const isSafariMac = isMac && /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+  const isFirefox = /firefox/i.test(navigator.userAgent);
 
   function showInstallBtns() {
     const f = document.getElementById("pwaInstallBtnFooter");
@@ -4725,25 +4749,57 @@
       return;
     }
     if(isIOS){
-      const overlay = document.createElement("div");
-      overlay.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;display:flex;align-items:flex-end;justify-content:center;padding:20px;";
-      overlay.innerHTML = `
-        <div style="background:#1e293b;border:1px solid #334155;border-radius:20px;padding:24px;max-width:360px;width:100%;text-align:center;margin-bottom:16px;">
-          <div style="font-size:36px;margin-bottom:12px;">📲</div>
-          <div style="font-size:17px;font-weight:700;color:#f8fafc;margin-bottom:10px;">Añadir a la pantalla de inicio</div>
-          <div style="font-size:14px;color:#94a3b8;line-height:1.6;margin-bottom:16px;">
-            1. Pulsa el botón <strong style="color:#38bdf8;">Compartir</strong> <span style="font-size:18px;">⎙</span> en la barra de Safari<br>
-            2. Desplázate y toca <strong style="color:#38bdf8;">"Añadir a pantalla de inicio"</strong>
-          </div>
-          <button onclick="this.closest('div[style*=\\"inset:0\\"]').remove()" style="width:100%;padding:12px;border-radius:12px;border:none;background:#38bdf8;color:#001018;font-weight:700;font-size:15px;cursor:pointer;">Entendido</button>
-        </div>`;
-      document.body.appendChild(overlay);
-      overlay.addEventListener("click", e => { if(e.target===overlay) overlay.remove(); });
+      showOverlay(`
+        <div style="font-size:36px;margin-bottom:12px;">📲</div>
+        <div style="font-size:17px;font-weight:700;color:#f8fafc;margin-bottom:10px;">Añadir a la pantalla de inicio</div>
+        <div style="font-size:14px;color:#94a3b8;line-height:1.8;margin-bottom:16px;">
+          1. Pulsa el botón <strong style="color:#38bdf8;">Compartir</strong> <span style="font-size:18px;">⎙</span> en la barra de Safari<br>
+          2. Desplázate y toca <strong style="color:#38bdf8;">"Añadir a pantalla de inicio"</strong>
+        </div>`);
+    } else if(isSafariMac){
+      showOverlay(`
+        <div style="font-size:36px;margin-bottom:12px;">🖥️</div>
+        <div style="font-size:17px;font-weight:700;color:#f8fafc;margin-bottom:10px;">Instalar en Mac — Safari</div>
+        <div style="font-size:14px;color:#94a3b8;line-height:1.8;margin-bottom:16px;">
+          1. En el menú <strong style="color:#38bdf8;">Archivo</strong> de Safari<br>
+          2. Selecciona <strong style="color:#38bdf8;">"Añadir al Dock"</strong><br>
+          <span style="font-size:12px;opacity:.7;">(requiere Safari 17 o superior)</span>
+        </div>`);
+    } else if(isFirefox){
+      showOverlay(`
+        <div style="font-size:36px;margin-bottom:12px;">🦊</div>
+        <div style="font-size:17px;font-weight:700;color:#f8fafc;margin-bottom:10px;">Instalar en Firefox</div>
+        <div style="font-size:14px;color:#94a3b8;line-height:1.8;margin-bottom:16px;">
+          1. Pulsa el icono <strong style="color:#38bdf8;">⋮</strong> (menú)<br>
+          2. Selecciona <strong style="color:#38bdf8;">"Instalar"</strong> o <strong style="color:#38bdf8;">"Añadir a la pantalla de inicio"</strong>
+        </div>`);
     } else {
-      // deferredPrompt es null: Chrome ya usó el prompt o no está disponible.
-      // Ocultamos el botón porque no hay nada útil que hacer.
-      hideInstallBtns();
+      // Chrome / Edge en PC o Android — el prompt debería haberse disparado
+      // Si llega aquí es porque ya fue usado o la app ya está instalada
+      showOverlay(`
+        <div style="font-size:36px;margin-bottom:12px;">💻</div>
+        <div style="font-size:17px;font-weight:700;color:#f8fafc;margin-bottom:10px;">Instalar en Chrome / Edge</div>
+        <div style="font-size:14px;color:#94a3b8;line-height:1.8;margin-bottom:16px;">
+          1. Pulsa el icono <strong style="color:#38bdf8;">⋮</strong> en la barra del navegador<br>
+          2. Selecciona <strong style="color:#38bdf8;">"Instalar aplicación"</strong> o <strong style="color:#38bdf8;">"Añadir a pantalla de inicio"</strong><br>
+          <span style="font-size:12px;opacity:.7;">Si no aparece la opción, puede que la app ya esté instalada.</span>
+        </div>`);
     }
+  }
+
+  function showOverlay(innerHtml){
+    const overlayId = "pwaOverlay_" + Date.now();
+    const overlay = document.createElement("div");
+    overlay.id = overlayId;
+    overlay.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;";
+    overlay.innerHTML = `
+      <div style="background:#1e293b;border:1px solid #334155;border-radius:20px;padding:28px;max-width:380px;width:100%;text-align:center;">
+        ${innerHtml}
+        <button id="${overlayId}_btn" style="width:100%;padding:12px;border-radius:12px;border:none;background:#38bdf8;color:#001018;font-weight:700;font-size:15px;cursor:pointer;">Entendido</button>
+      </div>`;
+    document.body.appendChild(overlay);
+    document.getElementById(overlayId + "_btn").addEventListener("click", () => overlay.remove());
+    overlay.addEventListener("click", e => { if(e.target === overlay) overlay.remove(); });
   }
 
   // Footer button exists after this script — bind once DOM is fully parsed
