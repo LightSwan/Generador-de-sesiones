@@ -1765,19 +1765,21 @@
 
       <!-- Por tiempo -->
       <div id="mmCfgTiempo" style="display:none;align-items:center;gap:8px;flex-wrap:wrap;width:100%;">
-        <label>Series:</label>
-        <input type="number" min="1" max="99" value="1" id="mmTSeries">
-        <label>×</label>
-        <input type="number" min="10" max="3600" step="10" value="60" id="mmTSegundos">
-        <label>seg</label>
-        <label style="margin-left:8px;">Distancia:</label>
-        <input type="number" min="50" max="2000" step="50" value="100" id="mmTMetros">
+        <input type="number" min="1" max="99" value="1" id="mmTSeries" style="width:52px;">
+        <label style="font-weight:700;font-size:15px;">×</label>
+        <input type="number" min="50" max="2000" step="50" value="100" id="mmTMetros" style="width:72px;">
         <label>m</label>
+        <label style="margin-left:4px;">cada</label>
+        <input type="number" min="0" max="59" value="1" id="mmTMin" style="width:52px;" placeholder="min">
+        <label>:</label>
+        <input type="number" min="0" max="59" value="30" id="mmTSeg" style="width:52px;" placeholder="seg">
         <div style="display:flex;align-items:center;gap:8px;width:100%;margin-top:6px;">
           <label style="color:var(--muted);font-size:13px;">Ritmo:</label>
           <span id="mmTRitmoLabel" style="color:var(--primary);font-weight:700;font-size:13px;">—</span>
           <span style="color:var(--muted);font-size:12px;">/100m</span>
         </div>
+        <!-- campo oculto de compatibilidad — requerido por el script -->
+        <input type="hidden" id="mmTSegundos" value="90">
       </div>
 
       <!-- Intensidad -->
@@ -3634,28 +3636,41 @@
 
   function renderEjercicioHTML(ej, bi, ei){
     const editHTML = ej.editing ? `
-      <div class="edit-inline">
-        <label>Series:</label>
-        <input type="number" min="1" max="99" value="${ej.series}" class="edit-series" data-bi="${bi}" data-ei="${ei}" oninput="previewEdit(${bi},${ei})">
-        <label>x</label>
-        <input type="number" min="50" max="1000" step="50" value="${ej.metrosSerie}" class="edit-metros" data-bi="${bi}" data-ei="${ei}" oninput="previewEdit(${bi},${ei})">
-        <input type="range" min="50" max="400" step="50" value="${ej.metrosSerie}" class="edit-metros-range" data-bi="${bi}" data-ei="${ei}" oninput="syncMetrosFromRange(${bi},${ei},this.value)">
-        <label>m</label>
-        <span style="color:var(--primary);font-weight:700;margin-left:8px;">= <span class="edit-preview-total">${ej.series * ej.metrosSerie}</span>m</span>
-        <br>
-        <label>Intensidad:</label>
-        <input type="range" min="50" max="100" step="5" value="${ej.intensidad}" class="edit-intensidad" data-bi="${bi}" data-ei="${ei}" oninput="previewEditIntensidad(${bi},${ei},this.value)" style="max-width:150px;">
-        <span class="edit-intensidad-val" style="color:${intensidadColor(ej.intensidad)};font-weight:700;">${ej.intensidad}%</span>
-        <br>
-        <label>Ritmo:</label>
-        <input type="number" min="0" max="59" value="${Math.floor(ej.ritmo/60)}" class="edit-ritmo-min" data-bi="${bi}" data-ei="${ei}" oninput="previewEditRitmo(${bi},${ei})" style="width:45px;">
-        <span style="color:var(--muted);">:</span>
-        <input type="number" min="0" max="59" value="${ej.ritmo%60}" class="edit-ritmo-seg" data-bi="${bi}" data-ei="${ei}" oninput="previewEditRitmo(${bi},${ei})" style="width:45px;">
-        <span style="color:var(--muted);font-size:12px;">/100m</span>
-        <button class="action-btn" onclick="toggleRitmoEjercicio(${bi},${ei})" style="padding:6px 10px;font-size:11px;">${ej.ritmo>0?'✕ Quitar':'+ Ritmo'}</button>
-        <br>
-        <button class="action-btn" onclick="saveEdit(${bi},${ei})">💾 Guardar</button>
-        <button class="action-btn" onclick="cancelEdit(${bi},${ei})">✕ Cancelar</button>
+      <div class="edit-inline" style="display:flex;flex-direction:column;gap:12px;padding:14px;background:rgba(14,165,233,.06);border:1px solid rgba(14,165,233,.15);border-radius:12px;margin:10px 0;">
+
+        <!-- Series × Metros -->
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <span style="color:var(--muted);font-size:12px;min-width:60px;">Series</span>
+          <input type="number" min="1" max="99" value="${ej.series}" class="edit-series" data-bi="${bi}" data-ei="${ei}" oninput="previewEdit(${bi},${ei})" style="width:54px;">
+          <span style="color:var(--muted);">×</span>
+          <input type="number" min="50" max="1000" step="50" value="${ej.metrosSerie}" class="edit-metros" data-bi="${bi}" data-ei="${ei}" oninput="previewEdit(${bi},${ei})" style="width:70px;">
+          <span style="color:var(--muted);">m</span>
+          <span style="color:var(--primary);font-weight:700;font-size:13px;">= <span class="edit-preview-total">${ej.series * ej.metrosSerie}</span>m</span>
+        </div>
+        <input type="range" min="50" max="400" step="50" value="${ej.metrosSerie}" class="edit-metros-range" data-bi="${bi}" data-ei="${ei}" oninput="syncMetrosFromRange(${bi},${ei},this.value)" style="width:100%;">
+
+        <!-- Intensidad -->
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="color:var(--muted);font-size:12px;min-width:60px;">Intensidad</span>
+          <input type="range" min="50" max="100" step="5" value="${ej.intensidad}" class="edit-intensidad" data-bi="${bi}" data-ei="${ei}" oninput="previewEditIntensidad(${bi},${ei},this.value)" style="flex:1;">
+          <span class="edit-intensidad-val" style="color:${intensidadColor(ej.intensidad)};font-weight:700;min-width:36px;">${ej.intensidad}%</span>
+        </div>
+
+        <!-- Ritmo -->
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <span style="color:var(--muted);font-size:12px;min-width:60px;">Ritmo</span>
+          <input type="number" min="0" max="59" value="${Math.floor(ej.ritmo/60)}" class="edit-ritmo-min" data-bi="${bi}" data-ei="${ei}" oninput="previewEditRitmo(${bi},${ei})" style="width:48px;">
+          <span style="color:var(--muted);">:</span>
+          <input type="number" min="0" max="59" value="${ej.ritmo%60}" class="edit-ritmo-seg" data-bi="${bi}" data-ei="${ei}" oninput="previewEditRitmo(${bi},${ei})" style="width:48px;">
+          <span style="color:var(--muted);font-size:12px;">/100m</span>
+          <button class="action-btn" onclick="toggleRitmoEjercicio(${bi},${ei})" style="padding:5px 10px;font-size:11px;">${ej.ritmo>0?'✕ Quitar':'+ Añadir'}</button>
+        </div>
+
+        <!-- Acciones -->
+        <div style="display:flex;gap:8px;justify-content:flex-end;">
+          <button class="action-btn" onclick="cancelEdit(${bi},${ei})" style="padding:7px 14px;">✕ Cancelar</button>
+          <button class="action-btn" onclick="saveEdit(${bi},${ei})" style="padding:7px 14px;background:rgba(14,165,233,.15);color:var(--primary);border-color:rgba(14,165,233,.3);">💾 Guardar</button>
+        </div>
       </div>
     ` : "";
 
@@ -3685,7 +3700,7 @@
         <div class="exercise-actions">
           <button class="action-btn" onclick="cambiarEjercicio(${bi},${ei})">↻ Cambiar</button>
           <button class="action-btn ${ej.bloqueado?'active':''}" onclick="toggleBloquear(${bi},${ei})">${ej.bloqueado?'🔓 Desbloquear':'🔒 Bloquear'}</button>
-          <button class="action-btn" onclick="editarMetros(${bi},${ei})">✎ Editar metros</button>
+          <button class="action-btn" onclick="editarMetros(${bi},${ei})">✎ Editar</button>
           <button class="action-btn" onclick="duplicarEjercicio(${bi},${ei})">⧉ Duplicar</button>
           <button class="action-btn danger" onclick="eliminarEjercicio(${bi},${ei})">🗑 Eliminar</button>
         </div>
@@ -3985,7 +4000,10 @@
 
   // Pace auto-calculator: seg/metros → ritmo por 100m
   function calcularRitmo(){
-    const seg = parseInt(document.getElementById("mmTSegundos").value)||0;
+    const min  = parseInt(document.getElementById("mmTMin").value)||0;
+    const segC = parseInt(document.getElementById("mmTSeg").value)||0;
+    const seg  = min * 60 + segC;
+    document.getElementById("mmTSegundos").value = seg; // sync hidden field
     const metros = parseInt(document.getElementById("mmTMetros").value)||0;
     const label = document.getElementById("mmTRitmoLabel");
     if(!seg || !metros){ label.textContent = "—"; return; }
@@ -3994,7 +4012,8 @@
     const s = Math.round(segPor100 % 60);
     label.textContent = `${m}'${String(s).padStart(2,"0")}"`;
   }
-  document.getElementById("mmTSegundos").addEventListener("input", calcularRitmo);
+  document.getElementById("mmTMin").addEventListener("input", calcularRitmo);
+  document.getElementById("mmTSeg").addEventListener("input", calcularRitmo);
   document.getElementById("mmTMetros").addEventListener("input", calcularRitmo);
   calcularRitmo();
   document.getElementById("mmTypeSeries").addEventListener("click",()=>{
@@ -4183,12 +4202,12 @@
     // Build nombre and metros
     if(esTiempo){
       const series = parseInt(document.getElementById("mmTSeries").value)||1;
-      const seg = parseInt(document.getElementById("mmTSegundos").value)||60;
+      const min  = parseInt(document.getElementById("mmTMin").value)||0;
+      const segC = parseInt(document.getElementById("mmTSeg").value)||0;
+      const seg  = min * 60 + segC;
       const tMetros = parseInt(document.getElementById("mmTMetros").value)||100;
-      const ritmoLabel = document.getElementById("mmTRitmoLabel").textContent;
-      const minStr = seg >= 60 ? Math.floor(seg/60)+"'"+(seg%60?String(seg%60).padStart(2,"0")+"\"":"") : seg+"\"";
-      const ritmoStr = (ritmoLabel && ritmoLabel!=="—") ? ` @${ritmoLabel}/100m` : "";
-      nombre = `${emoji} ${series}×${minStr} (${tMetros}m)${ritmoStr} ${ej.nombre}`;
+      const cadaStr = `${min}:${String(segC).padStart(2,"0")}`;
+      nombre = `${emoji} ${series}×${tMetros}m cada ${cadaStr} ${ej.nombre}`;
       metros = tMetros;
     } else {
       const series = parseInt(document.getElementById("mmSeries").value)||1;
@@ -4261,7 +4280,10 @@
       document.getElementById("mmTypeTiempo").classList.add("active");
       document.getElementById("mmTypeSeries").classList.remove("active");
       document.getElementById("mmTSeries").value = item.series;
-      document.getElementById("mmTSegundos").value = item.seg || 60;
+      const totalSeg = item.seg || 90;
+      document.getElementById("mmTMin").value = Math.floor(totalSeg / 60);
+      document.getElementById("mmTSeg").value = totalSeg % 60;
+      document.getElementById("mmTSegundos").value = totalSeg;
       document.getElementById("mmTMetros").value = item.metros;
       calcularRitmo();
     } else {
