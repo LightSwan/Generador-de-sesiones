@@ -1194,6 +1194,29 @@
     .difficulty-card .diff-icon{ font-size:22px; margin-bottom:4px; }
     .difficulty-card .diff-label{ font-size:12px; font-weight:700; color:var(--text); }
     .difficulty-card .diff-sub{ font-size:10px; color:var(--muted); margin-top:2px; }
+
+    /* AUTO RESULT — compact rows with drag */
+    .exercise{ display:flex; flex-direction:column; border-bottom:1px solid rgba(255,255,255,.05); position:relative; transition:background .15s; }
+    .exercise:last-child{ border-bottom:none; }
+    .exercise.dragging{ opacity:.4; background:rgba(56,189,248,.05); }
+    .exercise.drag-over{ border-top:2px solid var(--primary); }
+    .exercise-main-row{ display:flex; align-items:center; gap:8px; padding:11px 16px; }
+    .drag-handle{ color:var(--muted); font-size:16px; cursor:grab; padding:4px 2px; user-select:none; flex-shrink:0; touch-action:none; line-height:1; }
+    .drag-handle:active{ cursor:grabbing; }
+    .exercise-name-wrap{ flex:1; min-width:0; }
+    .exercise-name{ font-size:15px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .exercise-name[contenteditable="true"]{ white-space:normal; overflow:visible; border-bottom:1px dashed var(--primary); outline:none; color:var(--primary); }
+    .exercise-desc-small{ font-size:11px; color:var(--muted); margin-top:2px; display:none; }
+    .exercise-desc-small.visible{ display:block; }
+    .exercise-right{ display:flex; align-items:center; gap:5px; flex-shrink:0; }
+    .exercise-distance{ color:var(--primary); font-weight:700; font-size:13px; white-space:nowrap; }
+    .exercise-action-icon{ width:28px; height:28px; border-radius:8px; border:1px solid var(--border); background:transparent; color:var(--muted); font-size:13px; cursor:pointer; transition:.15s; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .exercise-action-icon:hover{ border-color:var(--primary); color:var(--primary); }
+    .exercise-action-icon.danger:hover{ border-color:#ef4444; color:#ef4444; }
+    .exercise-action-icon.active{ border-color:var(--primary); color:var(--primary); background:rgba(56,189,248,.1); }
+    .exercise-expand{ padding:0 16px 12px; display:none; flex-direction:column; gap:10px; }
+    .exercise-expand.open{ display:flex; }
+
     .summary-sidebar{
       position:fixed;
       right:0;
@@ -1560,7 +1583,7 @@
       </div>
 
       <div class="section">
-        <div class="section-title">Estilos y porcentajes</div>
+        <div class="section-title" style="margin-top:28px;">Estilos y porcentajes</div>
         <div id="stylesContainer"></div>
 
         <!-- Corrección 4: Botón para activar técnica + defectos -->
@@ -3434,10 +3457,89 @@
     content.scrollIntoView({ behavior: "smooth", block: "start" });
     showSummaryToggle(true);
 
+    // Bind drag-and-drop for all exercise rows
+    bindDragDrop();
+
     // Bind download buttons
     document.getElementById("downloadTxtBtn").addEventListener("click", descargarTexto);
     document.getElementById("downloadImgBtn").addEventListener("click", descargarImagen);
   }
+
+  // ====================================================================
+  // DRAG & DROP — auto result exercises
+  // ====================================================================
+  let dragSrcBi = null, dragSrcEi = null;
+
+  function bindDragDrop(){
+    content.querySelectorAll(".exercise").forEach(el => {
+      el.addEventListener("dragstart", onDragStart);
+      el.addEventListener("dragover",  onDragOver);
+      el.addEventListener("dragleave", onDragLeave);
+      el.addEventListener("drop",      onDrop);
+      el.addEventListener("dragend",   onDragEnd);
+    });
+    // Touch drag via handle
+    content.querySelectorAll(".drag-handle").forEach(handle => {
+      handle.addEventListener("touchstart", onTouchStart, {passive:true});
+    });
+  }
+
+  function onDragStart(e){
+    dragSrcBi = parseInt(this.dataset.bi);
+    dragSrcEi = parseInt(this.dataset.ei);
+    this.classList.add("dragging");
+    e.dataTransfer.effectAllowed = "move";
+  }
+  function onDragOver(e){
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    this.classList.add("drag-over");
+  }
+  function onDragLeave(){ this.classList.remove("drag-over"); }
+  function onDragEnd(){ content.querySelectorAll(".exercise").forEach(el=>el.classList.remove("dragging","drag-over")); }
+  function onDrop(e){
+    e.preventDefault();
+    this.classList.remove("drag-over");
+    const tgtBi = parseInt(this.dataset.bi);
+    const tgtEi = parseInt(this.dataset.ei);
+    if(dragSrcBi === null || (dragSrcBi === tgtBi && dragSrcEi === tgtEi)) return;
+    if(dragSrcBi !== tgtBi){
+      // Move across blocks
+      const ej = entrenamientoActual.bloques[dragSrcBi].ejercicios.splice(dragSrcEi, 1)[0];
+      entrenamientoActual.bloques[tgtBi].ejercicios.splice(tgtEi, 0, ej);
+      actualizarTotalesBloque(dragSrcBi);
+    } else {
+      const ejs = entrenamientoActual.bloques[tgtBi].ejercicios;
+      const [moved] = ejs.splice(dragSrcEi, 1);
+      ejs.splice(tgtEi, 0, moved);
+    }
+    actualizarTotalesBloque(tgtBi);
+    renderEntrenamiento();
+    dragSrcBi = null; dragSrcEi = null;
+  }
+
+  // Simple touch drag (long-press on handle)
+  let touchDragEl = null, touchClone = null;
+  function onTouchStart(e){
+    const handle = e.currentTarget;
+    const exEl = handle.closest(".exercise");
+    touchDragEl = exEl;
+    dragSrcBi = parseInt(exEl.dataset.bi);
+    dragSrcEi = parseInt(exEl.dataset.ei);
+  }
+
+  // Auto-save expand panel inputs on change (no explicit save button needed)
+  document.getElementById("content").addEventListener("change", e => {
+    const el = e.target;
+    const bi = parseInt(el.dataset.bi);
+    const ei = parseInt(el.dataset.ei);
+    if(isNaN(bi)||isNaN(ei)) return;
+    if(el.classList.contains("edit-series")||el.classList.contains("edit-metros")||
+       el.classList.contains("edit-intensidad")||el.classList.contains("edit-ritmo-min")||
+       el.classList.contains("edit-ritmo-seg")){
+      saveEdit(bi, ei);
+    }
+  });
 
   // Decodifica entidades HTML usando el DOM (evita artefactos â€", &eacute;, etc.)
   function htmlDecode(str){
@@ -3635,9 +3737,27 @@
   }
 
   function renderEjercicioHTML(ej, bi, ei){
-    const editHTML = ej.editing ? `
-      <div class="edit-inline" style="display:flex;flex-direction:column;gap:12px;padding:14px;background:rgba(14,165,233,.06);border:1px solid rgba(14,165,233,.15);border-radius:12px;margin:10px 0;">
+    const emoji = intensidadEmoji ? intensidadEmoji(ej.intensidad) : "";
+    const ritmoStr = ej.ritmo > 0 ? ` · ⏱${String(Math.floor(ej.ritmo/60)).padStart(2,"0")}:${String(ej.ritmo%60).padStart(2,"0")}/100m` : "";
+    const infoLine = `<span style="color:${intensidadColor(ej.intensidad)};font-weight:600;">${emoji} ${ej.intensidad}%</span>${ritmoStr}`;
+    const paginaBtn = (ej.pagina && !ej.esGenerica) ? `<a href="https://drive.google.com/file/d/1Xk1ljDGgu5mvXG3CsbF6fA1XN1FpDD-G/preview#page=${ej.pagina}" target="_blank" class="exercise-action-icon" title="Ver pág. ${ej.pagina}" style="text-decoration:none;font-size:11px;">📄</a>` : "";
 
+    const expandContent = `
+      <div class="exercise-expand" id="exp_${bi}_${ei}">
+        <!-- Nombre editable -->
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="color:var(--muted);font-size:12px;min-width:60px;">Nombre</span>
+          <div contenteditable="true" class="exercise-name-edit" data-bi="${bi}" data-ei="${ei}"
+            style="flex:1;padding:5px 8px;border-radius:8px;border:1px solid var(--border);background:#0f172a;color:var(--text);font-size:13px;outline:none;min-height:24px;"
+            onblur="saveNombreEdit(${bi},${ei},this.textContent)">${ej.nombre}</div>
+        </div>
+        <!-- Descripción editable -->
+        <div style="display:flex;align-items:flex-start;gap:8px;">
+          <span style="color:var(--muted);font-size:12px;min-width:60px;margin-top:6px;">Desc.</span>
+          <div contenteditable="true" class="exercise-desc-edit" data-bi="${bi}" data-ei="${ei}"
+            style="flex:1;padding:5px 8px;border-radius:8px;border:1px solid var(--border);background:#0f172a;color:var(--muted);font-size:12px;outline:none;min-height:28px;"
+            onblur="saveDescEdit(${bi},${ei},this.textContent)" placeholder="Añadir descripción...">${ej.desc||""}</div>
+        </div>
         <!-- Series × Metros -->
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
           <span style="color:var(--muted);font-size:12px;min-width:60px;">Series</span>
@@ -3648,14 +3768,12 @@
           <span style="color:var(--primary);font-weight:700;font-size:13px;">= <span class="edit-preview-total">${ej.series * ej.metrosSerie}</span>m</span>
         </div>
         <input type="range" min="50" max="400" step="50" value="${ej.metrosSerie}" class="edit-metros-range" data-bi="${bi}" data-ei="${ei}" oninput="syncMetrosFromRange(${bi},${ei},this.value)" style="width:100%;">
-
         <!-- Intensidad -->
         <div style="display:flex;align-items:center;gap:8px;">
           <span style="color:var(--muted);font-size:12px;min-width:60px;">Intensidad</span>
-          <input type="range" min="50" max="100" step="5" value="${ej.intensidad}" class="edit-intensidad" data-bi="${bi}" data-ei="${ei}" oninput="previewEditIntensidad(${bi},${ei},this.value)" style="flex:1;">
+          <input type="range" min="0" max="100" step="5" value="${ej.intensidad}" class="edit-intensidad" data-bi="${bi}" data-ei="${ei}" oninput="previewEditIntensidad(${bi},${ei},this.value)" style="flex:1;">
           <span class="edit-intensidad-val" style="color:${intensidadColor(ej.intensidad)};font-weight:700;min-width:36px;">${ej.intensidad}%</span>
         </div>
-
         <!-- Ritmo -->
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
           <span style="color:var(--muted);font-size:12px;min-width:60px;">Ritmo</span>
@@ -3663,49 +3781,63 @@
           <span style="color:var(--muted);">:</span>
           <input type="number" min="0" max="59" value="${ej.ritmo%60}" class="edit-ritmo-seg" data-bi="${bi}" data-ei="${ei}" oninput="previewEditRitmo(${bi},${ei})" style="width:48px;">
           <span style="color:var(--muted);font-size:12px;">/100m</span>
-          <button class="action-btn" onclick="toggleRitmoEjercicio(${bi},${ei})" style="padding:5px 10px;font-size:11px;">${ej.ritmo>0?'✕ Quitar':'+ Añadir'}</button>
         </div>
-
         <!-- Acciones -->
-        <div style="display:flex;gap:8px;justify-content:flex-end;">
-          <button class="action-btn" onclick="cancelEdit(${bi},${ei})" style="padding:7px 14px;">✕ Cancelar</button>
-          <button class="action-btn" onclick="saveEdit(${bi},${ei})" style="padding:7px 14px;background:rgba(14,165,233,.15);color:var(--primary);border-color:rgba(14,165,233,.3);">💾 Guardar</button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;padding-top:4px;border-top:1px solid var(--border);">
+          <button class="action-btn" onclick="cambiarEjercicio(${bi},${ei})" style="font-size:12px;">↻ Cambiar</button>
+          <button class="action-btn" onclick="duplicarEjercicio(${bi},${ei})" style="font-size:12px;">⧉ Duplicar</button>
+          <button class="action-btn danger" onclick="eliminarEjercicio(${bi},${ei})" style="font-size:12px;margin-left:auto;">🗑 Eliminar</button>
         </div>
-      </div>
-    ` : "";
-
-    const descHTML = ej.desc ? `<div class="exercise-desc">${ej.desc}</div>` : "";
-    const tagsHTML = !ej.esGenerica ? `<div class="exercise-tags">${ej.tags.map(t => `<div class="mini-tag">${t}</div>`).join("")}</div>` : "";
-    const paginaHTML = (ej.pagina && !ej.esGenerica) ? `<a href="https://drive.google.com/file/d/1Xk1ljDGgu5mvXG3CsbF6fA1XN1FpDD-G/preview#page=${ej.pagina}" target="_blank" style="display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--primary);text-decoration:none;background:rgba(14,165,233,.08);border:1px solid rgba(14,165,233,.2);border-radius:6px;padding:3px 9px;margin-bottom:8px;" title="Ver página ${ej.pagina} en el libro">📄 Libro pág. ${ej.pagina} ↗</a>` : "";
-    const intensidadHTML = `<span style="color:${intensidadColor(ej.intensidad)};font-weight:600;font-size:13px;">${ej.intensidad}% intensidad</span>`;
-    const infoHTML = ej.esGenerica ? `<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px;font-size:13px;color:var(--muted);">
-      <span style="color:${intensidadColor(ej.intensidad)};font-weight:600;">${ej.intensidad}% intensidad</span>
-      ${ej.ritmo > 0 ? `<span>⏱ @${String(Math.floor(ej.ritmo/60)).padStart(2,"0")}:${String(ej.ritmo%60).padStart(2,"0")}/100m</span>` : ""}
-    </div>` : `<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:8px;">
-      ${intensidadHTML}
-      ${ej.ritmo > 0 ? `<span style="color:var(--muted);font-size:13px;">⏱ @${String(Math.floor(ej.ritmo/60)).padStart(2,"0")}:${String(ej.ritmo%60).padStart(2,"0")}/100m</span>` : ""}
-    </div>`;
+      </div>`;
 
     return `
-      <div class="exercise" data-bi="${bi}" data-ei="${ei}">
-        <div class="exercise-top">
-          <div class="exercise-name">${ej.nombre}</div>
-          <div class="exercise-distance">${ej.distancia}</div>
+      <div class="exercise" data-bi="${bi}" data-ei="${ei}" draggable="true">
+        <div class="exercise-main-row">
+          <span class="drag-handle" title="Arrastrar para reordenar">⠿</span>
+          <div class="exercise-name-wrap">
+            <div class="exercise-name">${ej.nombre}</div>
+            ${ej.desc ? `<div class="exercise-desc-small visible">${ej.desc}</div>` : `<div class="exercise-desc-small"></div>`}
+            <div style="font-size:11px;color:var(--muted);margin-top:2px;">${infoLine}</div>
+          </div>
+          <div class="exercise-right">
+            <span class="exercise-distance">${ej.distancia}</span>
+            ${paginaBtn}
+            <button class="exercise-action-icon ${ej.bloqueado?'active':''}" onclick="toggleBloquear(${bi},${ei})" title="${ej.bloqueado?'Desbloquear':'Bloquear'}">${ej.bloqueado?'🔒':'🔓'}</button>
+            <button class="exercise-action-icon" onclick="toggleExpandEj(${bi},${ei})" title="Editar" id="expBtn_${bi}_${ei}">✎</button>
+          </div>
         </div>
-        ${descHTML}
-        ${paginaHTML}
-        ${infoHTML}
-        ${tagsHTML}
-        ${editHTML}
-        <div class="exercise-actions">
-          <button class="action-btn" onclick="cambiarEjercicio(${bi},${ei})">↻ Cambiar</button>
-          <button class="action-btn ${ej.bloqueado?'active':''}" onclick="toggleBloquear(${bi},${ei})">${ej.bloqueado?'🔓 Desbloquear':'🔒 Bloquear'}</button>
-          <button class="action-btn" onclick="editarMetros(${bi},${ei})">✎ Editar</button>
-          <button class="action-btn" onclick="duplicarEjercicio(${bi},${ei})">⧉ Duplicar</button>
-          <button class="action-btn danger" onclick="eliminarEjercicio(${bi},${ei})">🗑 Eliminar</button>
-        </div>
-      </div>
-    `;
+        ${expandContent}
+      </div>`;
+  }
+
+  function toggleExpandEj(bi, ei){
+    const exp = document.getElementById(`exp_${bi}_${ei}`);
+    const btn = document.getElementById(`expBtn_${bi}_${ei}`);
+    if(!exp) return;
+    const open = exp.classList.toggle("open");
+    if(btn) btn.classList.toggle("active", open);
+  }
+
+  function saveNombreEdit(bi, ei, val){
+    val = val.trim();
+    if(!val) return;
+    entrenamientoActual.bloques[bi].ejercicios[ei].nombre = val;
+    // Update the visible name row without full re-render
+    const exEl = content.querySelector(`.exercise[data-bi="${bi}"][data-ei="${ei}"]`);
+    if(exEl){
+      const nameEl = exEl.querySelector(".exercise-name");
+      if(nameEl) nameEl.textContent = val;
+    }
+  }
+
+  function saveDescEdit(bi, ei, val){
+    val = val.trim();
+    entrenamientoActual.bloques[bi].ejercicios[ei].desc = val;
+    const exEl = content.querySelector(`.exercise[data-bi="${bi}"][data-ei="${ei}"]`);
+    if(exEl){
+      const descEl = exEl.querySelector(".exercise-desc-small");
+      if(descEl){ descEl.textContent = val; descEl.classList.toggle("visible", !!val); }
+    }
   }
 
   function refreshEjercicio(bi, ei){
@@ -3777,6 +3909,7 @@
 
   function saveEdit(bi, ei){
     const block = content.querySelector(`.block[data-block-index="${bi}"]`);
+    if(!block) return;
     const seriesInput = block.querySelector(`.edit-series[data-bi="${bi}"][data-ei="${ei}"]`);
     const metrosInput = block.querySelector(`.edit-metros[data-bi="${bi}"][data-ei="${ei}"]`);
     if(!seriesInput || !metrosInput) return;
@@ -3797,11 +3930,24 @@
       ej.ritmo = rm * 60 + rs;
     }
 
-    const ref = ejerciciosBiblioteca.find(r => r.id === ej.refId);
-    actualizarNombreEjercicio(ej, ref || { nombre: ej.nombre.split(" ").slice(1).join(" ") || ej.style });
     ej.editing = false;
     actualizarTotalesBloque(bi);
-    refreshEjercicio(bi, ei);
+
+    // Update compact row without full re-render
+    const exEl = block.querySelector(`.exercise[data-bi="${bi}"][data-ei="${ei}"]`);
+    if(exEl){
+      const distEl = exEl.querySelector(".exercise-distance");
+      if(distEl) distEl.textContent = ej.distancia;
+      const infoEl = exEl.querySelector(".exercise-name-wrap div:last-child");
+      if(infoEl){
+        const emoji = intensidadEmoji ? intensidadEmoji(ej.intensidad) : "";
+        const ritmoStr = ej.ritmo > 0 ? ` · ⏱${String(Math.floor(ej.ritmo/60)).padStart(2,"0")}:${String(ej.ritmo%60).padStart(2,"0")}/100m` : "";
+        infoEl.innerHTML = `<span style="color:${intensidadColor(ej.intensidad)};font-weight:600;">${emoji} ${ej.intensidad}%</span>${ritmoStr}`;
+      }
+    }
+    // Update block distance header
+    const distHeader = block.querySelector(".block-distance");
+    if(distHeader) distHeader.textContent = entrenamientoActual.bloques[bi].distancia;
   }
 
   function cancelEdit(bi, ei){
