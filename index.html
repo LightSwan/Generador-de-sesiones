@@ -59,11 +59,15 @@
 
     .header{
       margin-bottom:30px;
+      text-align:center;
     }
 
     .header h1{
-      font-size:42px;
+      font-size:44px;
+      font-weight:800;
+      letter-spacing:-.02em;
       margin-bottom:10px;
+      color:var(--text);
     }
 
     .header p{
@@ -1355,7 +1359,7 @@
     de modo (Creador automático / Creación manual).
   ============================================================ -->
   <div class="header">
-    <div style="margin-bottom:14px;">
+    <div style="margin-bottom:14px;display:flex;justify-content:center;">
       <a href="https://lightswan.github.io/biblioteca-natacion/" 
         style="display:inline-flex;align-items:center;gap:6px;color:var(--muted);text-decoration:none;font-size:13px;font-weight:500;padding:6px 12px;border:1px solid var(--border);border-radius:999px;transition:.2s;"
         onmouseover="this.style.borderColor='var(--primary)';this.style.color='var(--primary)'" 
@@ -1363,16 +1367,19 @@
         ← Volver a la Biblioteca de Natación
       </a>
     </div>
-    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+    <div style="display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;">
       <h1>Generador de sesiones</h1>
       <span style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#000;font-size:11px;font-weight:800;padding:3px 10px;border-radius:999px;letter-spacing:.08em;text-transform:uppercase;vertical-align:middle;">BETA</span>
     </div>
     <p>Generador de entrenamientos desde la biblioteca de nataci&oacute;n.</p>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;align-items:center;">
-      <div class="mode-switcher" style="max-width:480px;margin:0;">
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;align-items:center;justify-content:center;">
+      <div class="mode-switcher" style="max-width:480px;margin:0 auto;">
         <button class="mode-btn" id="modeAutoBtn">⚙️ Creador automático</button>
         <button class="mode-btn active" id="modeManualBtn">✏️ Creación manual</button>
       </div>
+    </div>
+    <div style="display:flex;justify-content:center;margin-top:18px;">
+      <button class="action-btn" id="openImportModalBtn" style="justify-content:center;gap:10px;padding:14px 32px;font-size:15px;font-weight:800;color:#fff;border:none;background:linear-gradient(135deg,#a855f7,#6366f1);box-shadow:0 4px 20px rgba(168,85,247,0.4);animation:pwaGlow 2s infinite;border-radius:999px;">📋 Cargar entrenamiento</button>
     </div>
   </div>
 
@@ -1708,6 +1715,7 @@
         <div class="total-info">
           <span class="total-label">Total de la sesión</span>
           <span class="total-value" id="manualTotalDist">0m</span>
+          <span id="manualEntrenoNombre" style="display:block;font-size:12px;color:var(--muted);font-weight:500;margin-top:2px;"></span>
         </div>
         <div class="bar-actions">
           <button class="action-btn" id="manualSummaryBtn" title="Ver resumen">
@@ -1716,11 +1724,17 @@
         </div>
       </div>
       <div style="display:flex;gap:10px;justify-content:center;padding:12px 16px 4px;flex-wrap:wrap;">
-        <button class="action-btn" id="manualCopyBtn" title="Copiar al portapapeles" style="flex:1;max-width:200px;justify-content:center;">
+        <button class="action-btn" id="manualCopyBtn" title="Copiar al portapapeles" style="flex:1;max-width:200px;justify-content:center;background:linear-gradient(135deg,#a78bfa,#7c3aed);color:#fff;border:none;font-weight:700;">
           <span class="btn-icon">📋</span>Copiar
         </button>
         <button class="action-btn" id="manualImgBtn" title="Descargar entrenamiento" style="flex:1;max-width:200px;justify-content:center;background:linear-gradient(135deg,#0ea5e9,#6366f1);color:#fff;border:none;font-weight:700;animation:pwaGlow 2s infinite;">
           <span class="btn-icon">🖼️</span>Descargar entrenamiento
+        </button>
+        <button class="action-btn" id="manualJsonBtn" title="Copiar JSON para el reproductor" style="flex:1;max-width:220px;justify-content:center;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;border:none;font-weight:700;">
+          <span class="btn-icon">📋</span>Copiar entrenamiento (JSON)
+        </button>
+        <button class="action-btn" id="manualStartBtn" title="Abrir en el Reproductor de sesiones" style="flex:1;max-width:220px;justify-content:center;background:linear-gradient(135deg,#34d399,#0d9488);color:#fff;border:none;font-weight:700;">
+          <span class="btn-icon">🏊</span>Empezar entrenamiento
         </button>
       </div>
 
@@ -1850,6 +1864,22 @@
       <a href="https://lightswan.github.io/biblioteca-natacion/" target="_blank" style="color:var(--primary)">Biblioteca de la Nataci&oacute;n</a>
       &mdash; Blythe Lucero
     </p>
+  </div>
+</div>
+
+<div class="modal-overlay" id="importModalOverlay">
+  <div class="modal" style="max-width:600px;">
+    <div class="modal-header">
+      <h2>📋 Cargar entrenamiento</h2>
+      <button class="modal-close" id="importModalClose">&times;</button>
+    </div>
+    <p style="color:var(--muted);font-size:14px;margin-bottom:14px;">Pega aquí el JSON copiado desde "📋 Copiar entrenamiento (JSON)" para cargarlo y seguir editándolo.</p>
+    <textarea id="importJsonTextarea" placeholder='{"tipo":"sesion-natacion", ...}' style="width:100%;min-height:220px;background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:14px;color:var(--text);font-family:monospace;font-size:13px;resize:vertical;"></textarea>
+    <p id="importJsonError" style="color:#f87171;font-size:13px;margin-top:8px;display:none;"></p>
+    <div style="display:flex;gap:10px;margin-top:18px;">
+      <button class="action-btn" id="importJsonCancelBtn" style="flex:1;justify-content:center;">Cancelar</button>
+      <button class="action-btn" id="importJsonConfirmBtn" style="flex:1;justify-content:center;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;border:none;font-weight:700;">✓ Cargar</button>
+    </div>
   </div>
 </div>
 
@@ -2397,7 +2427,7 @@
   // ejercicios marcados con fueraDePiscina:true.
   // ====================================================================
   function generarSencillo(){
-    entrenamientoActual = { bloques:[] };
+    entrenamientoActual = { bloques:[], creadoEn: new Date().toISOString() };
     const totalMts = sliderToMeters(totalMeters.value)||1500;
     const estilosActivos = Object.entries(stylesData).filter(([k,s])=>s.active);
     if(!estilosActivos.length){
@@ -3117,7 +3147,7 @@
 
   function generarEntrenamiento(){
     content.innerHTML = "";
-    entrenamientoActual = { bloques: [] };
+    entrenamientoActual = { bloques: [], creadoEn: new Date().toISOString() };
 
     const totalMts = sliderToMeters(totalMeters.value);
     const deficienciasSel = getSelectedDeficiencies();
@@ -3431,15 +3461,20 @@
     tituloTotal.className = "entrenamiento-titulo";
     tituloTotal.style.cssText = "display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;";
     tituloTotal.innerHTML = `
-      <span>🏊 Entrenamiento &mdash; <strong>${totalFinal}m</strong></span>`;
+      <div>
+        <div>🏊 Entrenamiento &mdash; <strong>${totalFinal}m</strong></div>
+        <div style="font-size:12px;color:var(--muted);font-weight:500;margin-top:2px;">${entrenamientoActual.nombre || formatearNombreEntrenamiento(entrenamientoActual.creadoEn)}</div>
+      </div>`;
     content.appendChild(tituloTotal);
 
     // Botones de acción — centrados debajo del total
     const downloadRow = document.createElement("div");
     downloadRow.style.cssText = "display:flex;gap:10px;justify-content:center;padding:4px 16px 16px;flex-wrap:wrap;";
     downloadRow.innerHTML = `
-      <button class="action-btn" id="downloadTxtBtn" title="Copiar al portapapeles" style="flex:1;max-width:200px;justify-content:center;font-size:13px;">📋 Copiar en portapapeles</button>
-      <button class="action-btn" id="downloadImgBtn" title="Descargar entrenamiento" style="flex:1;max-width:260px;justify-content:center;background:linear-gradient(135deg,#0ea5e9,#6366f1);color:#fff;border:none;font-weight:700;animation:pwaGlow 2s infinite;font-size:13px;">🖼️ Descargar entrenamiento</button>`;
+      <button class="action-btn" id="downloadTxtBtn" title="Copiar al portapapeles" style="flex:1;max-width:200px;justify-content:center;background:linear-gradient(135deg,#a78bfa,#7c3aed);color:#fff;border:none;font-weight:700;font-size:13px;">📋 Copiar en portapapeles</button>
+      <button class="action-btn" id="downloadImgBtn" title="Descargar entrenamiento" style="flex:1;max-width:260px;justify-content:center;background:linear-gradient(135deg,#0ea5e9,#6366f1);color:#fff;border:none;font-weight:700;animation:pwaGlow 2s infinite;font-size:13px;">🖼️ Descargar entrenamiento</button>
+      <button class="action-btn" id="downloadJsonBtn" title="Copiar JSON para el reproductor" style="flex:1;max-width:220px;justify-content:center;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;border:none;font-weight:700;font-size:13px;">📋 Copiar entrenamiento (JSON)</button>
+      <button class="action-btn" id="downloadStartBtn" title="Abrir en el Reproductor de sesiones" style="flex:1;max-width:220px;justify-content:center;background:linear-gradient(135deg,#34d399,#0d9488);color:#fff;border:none;font-weight:700;font-size:13px;">🏊 Empezar entrenamiento</button>`;
     content.appendChild(downloadRow);
 
     entrenamientoActual.bloques.forEach((bloque, bi) => {
@@ -3471,6 +3506,11 @@
     // Bind download buttons
     document.getElementById("downloadTxtBtn").addEventListener("click", descargarTexto);
     document.getElementById("downloadImgBtn").addEventListener("click", descargarImagen);
+    document.getElementById("downloadJsonBtn").addEventListener("click", descargarJSONAuto);
+    document.getElementById("downloadStartBtn").addEventListener("click", () => {
+      if(!entrenamientoActual || !entrenamientoActual.bloques || entrenamientoActual.bloques.length === 0) return;
+      abrirEnReproductor(buildExportAuto());
+    });
   }
 
   // ====================================================================
@@ -3570,6 +3610,132 @@
       txt += "\n";
     });
     return txt;
+  }
+
+  // ====================================================================
+  // 📥 EXPORTACIÓN JSON — para el Reproductor de Entrenamientos
+  // Convierte entrenamientoActual / manualData a un formato normalizado
+  // y estable que la app "Reproductor" pueda leer, independientemente
+  // de si la sesión se generó en modo automático o manual.
+  //
+  // Esquema (version 1):
+  // {
+  //   tipo:"sesion-natacion", version:1, generadoEn:ISOString,
+  //   totalMetros:Number,
+  //   bloques:[{
+  //     titulo:String, distancia:String,
+  //     ejercicios:[{
+  //       nombre:String, desc:String, style:String, tags:[String],
+  //       series:Number, metros:Number, distanciaTotal:Number,
+  //       intensidad:Number|null,
+  //       tiempoObjetivo:Number|null   // segundos objetivo POR SERIE (repetición); null = sin umbral de tiempo
+  //       pagina:Number|null
+  //     }]
+  //   }]
+  // }
+  // ====================================================================
+
+  function normalizarEjercicioAuto(ej){
+    const tiempoObjetivo = (ej.ritmo && ej.ritmo > 0)
+      ? Math.round(ej.ritmo * ej.metrosSerie / 100)
+      : null;
+    return {
+      nombre: htmlDecode(ej.nombre),
+      desc: htmlDecode(ej.desc || ""),
+      style: ej.style || "",
+      tags: ej.tags ? [...ej.tags] : [],
+      series: ej.series,
+      metros: ej.metrosSerie,
+      distanciaTotal: ej.series * ej.metrosSerie,
+      intensidad: (ej.intensidad !== undefined && ej.intensidad !== null) ? ej.intensidad : null,
+      tiempoObjetivo,
+      pagina: ej.pagina || null
+    };
+  }
+
+  function formatearNombreEntrenamiento(iso){
+    const d = iso ? new Date(iso) : new Date();
+    const dd = String(d.getDate()).padStart(2,"0");
+    const mm = String(d.getMonth()+1).padStart(2,"0");
+    const yyyy = d.getFullYear();
+    return `Entrenamiento (${dd}/${mm}/${yyyy})`;
+  }
+
+  // Igual que formatearNombreEntrenamiento pero con guiones (en vez de barras)
+  // para que sea un nombre de archivo válido al descargar la imagen/PNG.
+  function nombreArchivoEntrenamiento(iso){
+    const d = iso ? new Date(iso) : new Date();
+    const dd = String(d.getDate()).padStart(2,"0");
+    const mm = String(d.getMonth()+1).padStart(2,"0");
+    const yyyy = d.getFullYear();
+    return `Entrenamiento (${dd}-${mm}-${yyyy})`;
+  }
+
+  function buildExportAuto(){
+    const totalMetros = entrenamientoActual.bloques.reduce((s,b) => s + (parseInt(b.distancia) || 0), 0);
+    const creadoEn = entrenamientoActual.creadoEn || new Date().toISOString();
+    return {
+      tipo: "sesion-natacion",
+      version: 1,
+      nombre: entrenamientoActual.nombre || formatearNombreEntrenamiento(creadoEn),
+      generadoEn: creadoEn,
+      totalMetros,
+      bloques: entrenamientoActual.bloques.map(b => ({
+        titulo: htmlDecode(b.titulo),
+        distancia: b.distancia,
+        ejercicios: b.ejercicios.map(normalizarEjercicioAuto)
+      }))
+    };
+  }
+
+  // URL del Reproductor de sesiones.
+  const REPRODUCTOR_URL = "https://lightswan.github.io/Reproductor-de-entrenamientos/";
+
+  function abrirEnReproductor(data){
+    const json = JSON.stringify(data);
+    // Abrimos la pestaña de forma síncrona (dentro del gesto de clic del
+    // usuario) para que el navegador no la bloquee como popup; el copiado
+    // al portapapeles va en paralelo.
+    const win = window.open(REPRODUCTOR_URL, "_blank");
+    navigator.clipboard.writeText(json).catch(() => {
+      const ta = document.createElement("textarea");
+      ta.value = json; ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.select();
+      try{ document.execCommand("copy"); }catch(e){}
+      document.body.removeChild(ta);
+    });
+    if(!win){
+      alert("Se ha copiado el entrenamiento al portapapeles. Abre el Reproductor de sesiones y pégalo ahí.");
+    }
+  }
+
+  function copiarJSONPortapapeles(data, btnId){
+    const json = JSON.stringify(data);
+    navigator.clipboard.writeText(json).then(() => {
+      const btn = document.getElementById(btnId);
+      if(!btn) return;
+      const orig = btn.innerHTML;
+      btn.innerHTML = "✅ Copiado";
+      setTimeout(() => { btn.innerHTML = orig; }, 2000);
+    }).catch(() => {
+      const ta = document.createElement("textarea");
+      ta.value = json;
+      ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+      const btn = document.getElementById(btnId);
+      if(!btn) return;
+      const orig = btn.innerHTML;
+      btn.innerHTML = "✅ Copiado";
+      setTimeout(() => { btn.innerHTML = orig; }, 2000);
+    });
+  }
+
+  function descargarJSONAuto(){
+    if(!entrenamientoActual || !entrenamientoActual.bloques || entrenamientoActual.bloques.length === 0) return;
+    copiarJSONPortapapeles(buildExportAuto(), "downloadJsonBtn");
   }
 
   function descargarTexto(){
@@ -3691,7 +3857,7 @@
     canvas.toBlob(blob => {
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
-      a.download = "entrenamiento.png";
+      a.download = nombreArchivoEntrenamiento(entrenamientoActual.creadoEn) + ".png";
       a.click();
       URL.revokeObjectURL(a.href);
     });
@@ -4065,6 +4231,18 @@
   // ====================================================================
 
   const manualData = { cal:[], main:[], cool:[] };
+  let manualCreadoEn = null;
+  let manualNombre = null;
+
+  // Los bloques extra se guardan como propiedades de manualData en el orden
+  // en que se crean, lo que los deja (por orden de inserción de objeto) al
+  // FINAL, después de "cool". Para que en el resultado/exportación aparezcan
+  // justo después de "Sesión principal" (como ya se ven en el editor),
+  // recorremos siempre en este orden fijo en vez de con Object.keys directo.
+  function ordenBloquesManual(){
+    const extras = Object.keys(manualData).filter(k => k.indexOf("extra_") === 0);
+    return ["cal", "main", ...extras, "cool"].filter(k => manualData[k]);
+  }
   let manualIdCounter = 0;
   let manualActiveBloque = null;
   let mmSelectedEj = null; // ejercicio seleccionado en la lista
@@ -4467,6 +4645,7 @@
       manualEditingUid = null;
       document.getElementById("mmConfirmBtn").textContent = "✓ Añadir ejercicio";
     } else {
+      if(!manualCreadoEn) manualCreadoEn = new Date().toISOString();
       manualData[manualActiveBloque].push({
         uid:"m_"+(manualIdCounter++), refId:ej.id,
         nombre,
@@ -4670,7 +4849,131 @@
   function updateManualTotal(){
     const total = Object.keys(manualData).reduce((s,b)=>s+manualData[b].reduce((ss,e)=>ss+e.series*e.metros,0),0);
     document.getElementById("manualTotalDist").textContent = total+"m";
+    const nombreEl = document.getElementById("manualEntrenoNombre");
+    if(nombreEl) nombreEl.textContent = manualCreadoEn ? (manualNombre || formatearNombreEntrenamiento(manualCreadoEn)) : "";
   }
+
+  // ====================================================================
+  // 📋 IMPORTACIÓN DE ENTRENAMIENTO — pega el JSON copiado y lo reconstruye
+  // en el modo automático para poder seguir editándolo.
+  // ====================================================================
+
+  // ====================================================================
+  // 📋 IMPORTACIÓN DE ENTRENAMIENTO — pega el JSON copiado y lo reconstruye
+  // en el modo MANUAL (cal/main/cool + bloques extra) para poder seguir
+  // editándolo con las mismas herramientas (editar, reordenar, eliminar).
+  // ====================================================================
+
+  function normalizarEjercicioParaManual(ne){
+    return {
+      uid: "m_" + (manualIdCounter++),
+      refId: null,
+      nombre: ne.nombre || "Ejercicio",
+      desc: ne.desc || "",
+      series: ne.series || 1,
+      metros: ne.metros || 0,
+      intensidad: (ne.intensidad !== undefined && ne.intensidad !== null) ? ne.intensidad : 50,
+      ...(ne.tiempoObjetivo ? {seg: ne.tiempoObjetivo, esTiempo:true} : {esTiempo:false}),
+      style: ne.style || "",
+      tags: ne.tags || []
+    };
+  }
+
+  function limpiarManualData(){
+    ["cal","main","cool"].forEach(bid => { manualData[bid] = []; });
+    Object.keys(manualData).filter(k => k.indexOf("extra_") === 0).forEach(bid => {
+      delete manualData[bid];
+      const el = document.getElementById("manualBloque_" + bid);
+      if(el) el.remove();
+    });
+    extraBlockCounter = 0;
+  }
+
+  function bidParaTitulo(titulo){
+    const t = (titulo || "").toLowerCase();
+    if(t.indexOf("calentamiento") !== -1) return "cal";
+    if(t.indexOf("principal") !== -1) return "main";
+    if(t.indexOf("calma") !== -1 || t.indexOf("vuelta") !== -1) return "cool";
+    return null; // requiere bloque extra
+  }
+
+  function crearBloqueExtraConTitulo(titulo){
+    addExtraBlock();
+    const bid = "extra_" + extraBlockCounter;
+    const blockEl = document.getElementById("manualBloque_" + bid);
+    if(blockEl){
+      const disp = blockEl.querySelector(".extra-block-title-display");
+      const inp = blockEl.querySelector(".extra-block-title-input");
+      const addB = blockEl.querySelector(".extra-block-add-btn");
+      const nombreLimpio = (titulo || "Bloque").replace(/^[\u{1F300}-\u{1FFFF}⬜🟢🟡🟠🔴💀📋]\s*/u, "").trim() || "Bloque";
+      if(disp) disp.childNodes[0].textContent = "📋 " + nombreLimpio;
+      if(inp) inp.value = nombreLimpio;
+      if(addB) addB.textContent = "+ Añadir ejercicio a " + nombreLimpio;
+    }
+    return bid;
+  }
+
+  function cargarEntrenamientoImportado(data){
+    if(!data || data.tipo !== "sesion-natacion" || !Array.isArray(data.bloques)){
+      throw new Error("El JSON no tiene el formato esperado de un entrenamiento.");
+    }
+
+    limpiarManualData();
+    manualCreadoEn = data.generadoEn || new Date().toISOString();
+    manualNombre = data.nombre || null;
+
+    data.bloques.forEach(b => {
+      let bid = bidParaTitulo(b.titulo);
+      if(!bid) bid = crearBloqueExtraConTitulo(b.titulo);
+      if(!manualData[bid]) manualData[bid] = [];
+      (b.ejercicios || []).forEach(ne => {
+        manualData[bid].push(normalizarEjercicioParaManual(ne));
+      });
+    });
+
+    Object.keys(manualData).forEach(bid => renderManualBlock(bid));
+    updateManualTotal();
+
+    document.getElementById("modeManualBtn").click();
+  }
+
+  const importModalOverlay = document.getElementById("importModalOverlay");
+  const importJsonTextarea = document.getElementById("importJsonTextarea");
+  const importJsonError = document.getElementById("importJsonError");
+
+  function closeImportModal(){
+    importModalOverlay.classList.remove("open");
+    importJsonTextarea.value = "";
+    importJsonError.style.display = "none";
+  }
+
+  document.getElementById("openImportModalBtn").addEventListener("click", () => {
+    importJsonError.style.display = "none";
+    importJsonTextarea.value = "";
+    importModalOverlay.classList.add("open");
+    importJsonTextarea.focus();
+  });
+
+  document.getElementById("importModalClose").addEventListener("click", closeImportModal);
+  document.getElementById("importJsonCancelBtn").addEventListener("click", closeImportModal);
+  importModalOverlay.addEventListener("click", (e) => { if(e.target === importModalOverlay) closeImportModal(); });
+
+  document.getElementById("importJsonConfirmBtn").addEventListener("click", () => {
+    const raw = importJsonTextarea.value.trim();
+    if(!raw){
+      importJsonError.textContent = "Pega primero el JSON del entrenamiento.";
+      importJsonError.style.display = "block";
+      return;
+    }
+    try{
+      const data = JSON.parse(raw);
+      cargarEntrenamientoImportado(data);
+      closeImportModal();
+    }catch(err){
+      importJsonError.textContent = "No se pudo leer el JSON: " + err.message;
+      importJsonError.style.display = "block";
+    }
+  });
 
   // Mode switcher
   document.getElementById("modeAutoBtn").addEventListener("click",()=>{
@@ -4700,7 +5003,7 @@
     const now = new Date();
     const fechaStr = now.toLocaleDateString("es-ES",{day:"2-digit",month:"2-digit",year:"numeric"});
     let txt = `SESIÓN ${fechaStr} — ${total}m\n` + "=".repeat(40) + "\n\n";
-    Object.keys(manualData).forEach(b=>{
+    ordenBloquesManual().forEach(b=>{
       const items = manualData[b];
       if(!items.length) return;
       // Get display label: for extra blocks, use the rendered title
@@ -4742,7 +5045,7 @@
     const fechaStr = now.toLocaleDateString("es-ES",{day:"2-digit",month:"2-digit",year:"numeric"});
     const lines = [];
     lines.push({text:`SESIÓN ${fechaStr} — ${total}m`, type:"title"});
-    Object.keys(manualData).forEach(b=>{
+    ordenBloquesManual().forEach(b=>{
       const items = manualData[b];
       if(!items.length) return;
       let label = fixedLabels[b];
@@ -4787,7 +5090,72 @@
       else{ctx.fillStyle="#e2e8f0";ctx.font=FONT+"px 'Inter',system-ui,sans-serif";ctx.fillText(l.text,PAD,y+FONT+2);y+=LINE_H;}
     });
     ctx.fillStyle="#334155";ctx.font="12px 'Inter',system-ui,sans-serif";ctx.fillText("Generado con Generador de Sesiones de Natación",PAD,canvasH-12);
-    canvas.toBlob(blob=>{const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="entrenamiento_manual.png";a.click();URL.revokeObjectURL(a.href);});
+    canvas.toBlob(blob=>{const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=nombreArchivoEntrenamiento(manualCreadoEn)+".png";a.click();URL.revokeObjectURL(a.href);});
+  });
+
+  // ====================================================================
+  // 📥 EXPORTACIÓN JSON — MODO MANUAL
+  // Reutiliza el mismo esquema que el modo automático (ver
+  // normalizarEjercicioAuto más arriba) para que el Reproductor no
+  // tenga que distinguir el origen de la sesión.
+  // ====================================================================
+  function normalizarEjercicioManual(e){
+    const refEj = e.refId ? (ejerciciosBiblioteca.find(b => b.id === e.refId) || null) : null;
+    const desc = e.desc || (refEj ? (refEj.desc || "") : "");
+    return {
+      nombre: htmlDecode(e.nombre),
+      desc: htmlDecode(desc),
+      style: e.style || (refEj ? refEj.style || "" : ""),
+      tags: e.tags ? [...e.tags] : (refEj && refEj.tags ? [...refEj.tags] : []),
+      series: e.series,
+      metros: e.metros,
+      distanciaTotal: e.series * e.metros,
+      intensidad: (e.intensidad !== undefined && e.intensidad !== null) ? e.intensidad : null,
+      tiempoObjetivo: e.esTiempo ? e.seg : null,
+      pagina: refEj ? (refEj.pagina || null) : null
+    };
+  }
+
+  function buildExportManual(){
+    const fixedLabels = {cal:"🌅 Calentamiento", main:"🏊 Sesión principal", cool:"🌊 Vuelta a la calma"};
+    const bloques = [];
+    ordenBloquesManual().forEach(b => {
+      const items = manualData[b];
+      if(!items.length) return;
+      let titulo = fixedLabels[b];
+      if(!titulo){
+        const titleEl = document.querySelector(`.extra-block-title-display[data-bid="${b}"]`);
+        titulo = titleEl ? titleEl.childNodes[0].textContent.replace(/^📋\s*/,"").trim() : b;
+      }
+      const bTotal = items.reduce((s,e) => s + e.series * e.metros, 0);
+      bloques.push({
+        titulo,
+        distancia: bTotal + "m",
+        ejercicios: items.map(normalizarEjercicioManual)
+      });
+    });
+    const totalMetros = bloques.reduce((s,b) => s + (parseInt(b.distancia) || 0), 0);
+    const creadoEn = manualCreadoEn || new Date().toISOString();
+    return {
+      tipo: "sesion-natacion",
+      version: 1,
+      nombre: manualNombre || formatearNombreEntrenamiento(creadoEn),
+      generadoEn: creadoEn,
+      totalMetros,
+      bloques
+    };
+  }
+
+  document.getElementById("manualJsonBtn").addEventListener("click",()=>{
+    const data = buildExportManual();
+    if(!data.bloques.length) return;
+    copiarJSONPortapapeles(data, "manualJsonBtn");
+  });
+
+  document.getElementById("manualStartBtn").addEventListener("click",()=>{
+    const data = buildExportManual();
+    if(!data.bloques.length) return;
+    abrirEnReproductor(data);
   });
 
   document.getElementById("manualSummaryBtn").addEventListener("click",()=>{
@@ -4796,7 +5164,7 @@
     const fixedLabels = {cal:"🌅 Calentamiento",main:"🏊 Sesión principal",cool:"🌊 Vuelta a la calma"};
     let html = `<div class="summary-section-title">Resumen manual</div>`;
     html += `<div class="summary-row"><span class="summary-label">Total metros</span><span class="summary-val">${total}m</span></div>`;
-    Object.keys(manualData).forEach(b=>{
+    ordenBloquesManual().forEach(b=>{
       const items = manualData[b];
       if(!items.length) return;
       let label = fixedLabels[b];
