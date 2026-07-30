@@ -406,6 +406,41 @@
       font-weight:700;
     }
 
+    .fusionar-btn{
+      background:rgba(148,163,184,.08);
+      border:1px solid var(--border);
+      color:var(--muted);
+      font-size:12px;
+      font-weight:600;
+      padding:6px 12px;
+      border-radius:999px;
+      cursor:pointer;
+      transition:.2s;
+      white-space:nowrap;
+    }
+    .fusionar-btn:hover{
+      border-color:var(--primary);
+      color:var(--primary);
+      background:rgba(56,189,248,.08);
+    }
+
+    .renombrar-btn{
+      background:rgba(148,163,184,.08);
+      border:1px solid var(--border);
+      color:var(--muted);
+      font-size:13px;
+      padding:6px 9px;
+      border-radius:999px;
+      cursor:pointer;
+      transition:.2s;
+      line-height:1;
+    }
+    .renombrar-btn:hover{
+      border-color:var(--primary);
+      color:var(--primary);
+      background:rgba(56,189,248,.08);
+    }
+
     .exercise{
       padding:22px 24px;
       border-bottom:1px solid rgba(255,255,255,.05);
@@ -1733,9 +1768,14 @@
         <button class="action-btn" id="manualJsonBtn" title="Copiar JSON para el reproductor" style="flex:1;max-width:220px;justify-content:center;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;border:none;font-weight:700;">
           <span class="btn-icon">📋</span>Copiar entrenamiento (JSON)
         </button>
-        <button class="action-btn" id="manualStartBtn" title="Abrir en el Reproductor de sesiones" style="flex:1;max-width:220px;justify-content:center;background:linear-gradient(135deg,#34d399,#0d9488);color:#fff;border:none;font-weight:700;">
-          <span class="btn-icon">🏊</span>Empezar entrenamiento
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:10px;padding:20px 16px 8px;">
+        <button class="action-btn" id="manualStartBtn" title="Abrir en el Reproductor de sesiones" style="width:100%;max-width:420px;justify-content:center;gap:12px;padding:20px 28px;font-size:18px;background:linear-gradient(135deg,#34d399,#0d9488);color:#fff;border:none;font-weight:800;border-radius:999px;box-shadow:0 8px 28px rgba(52,211,153,.45);animation:pwaGlow 2s infinite;">
+          <span class="btn-icon" style="font-size:24px;">🏊</span>Empezar entrenamiento
         </button>
+        <p style="max-width:420px;text-align:center;color:var(--muted);font-size:12.5px;line-height:1.5;margin:0;">
+          Copia este entrenamiento y abre el <strong>Reproductor de sesiones</strong> en una pestaña nueva, listo para pegarlo y empezar a nadar con cronómetro guiado.
+        </p>
       </div>
 
     </div>
@@ -2500,29 +2540,43 @@
 
       let mtsR=mtsE-ejs.reduce((s,e)=>s+e.series*e.metrosSerie,0);
 
-      // Fondo + explosivo (solo difícil)
-      if(dificultadActual==="dificil"&&pctTec<80&&mtsR>=400){
-        const fondoMts=Math.min(Math.round(mtsR*0.4/100)*100,Math.round(mtsR*0.5/100)*100);
-        if(fondoMts>=300){
-          const gen=getGenericaPorStyle(bs);
-          const ns=Math.round(fondoMts/100);
-          ejs.push(mkEj(gen.id,gen.nombre+" (fondo)",bs,ns,100,80,gen.id,gen.tags,true));
-          mtsR-=ns*100;
-          if(mtsR>=100){
-            const nsHI=Math.min(Math.round(mtsR/50),6);
-            ejs.push(mkEj("hi_"+bs,"sprint "+bs,bs,nsHI,50,95,"gen_hi25",[bs],true));
-            mtsR-=nsHI*50;
-          }
-        }
+      // Relleno: varias series DISTINTAS (no un único bloque gigante), con
+      // intensidad que sube ligeramente hacia el final. Si toca fondo o
+      // explosivo (solo dificultad difícil), se reserva su hueco para
+      // colocarlo DESPUÉS del relleno aeróbico — así se llega a la parte
+      // más dura ya "caliente", en vez de al revés.
+      const reservaFondo = (dificultadActual==="dificil" && pctTec<80 && mtsR>=400)
+        ? Math.min(Math.round(mtsR*0.4/100)*100, Math.round(mtsR*0.5/100)*100)
+        : 0;
+      const mtsRelleno = mtsR - reservaFondo;
+
+      if(mtsRelleno>=50){
+        const nChunks = mtsRelleno >= 300 ? 3 : mtsRelleno >= 150 ? 2 : 1;
+        const chunkBase = Math.floor(mtsRelleno/nChunks/50)*50;
+        const chunks = Array(nChunks).fill(chunkBase);
+        chunks[chunks.length-1] += mtsRelleno - chunkBase*nChunks;
+        chunks.forEach((mtsChunk, idx)=>{
+          if(mtsChunk<50) return;
+          let gens=seriesGenericas.filter(g=>g.style===bs&&!used.has(g.id)&&!g.tags.some(t=>implementTags.has(t)));
+          if(!gens.length) gens=seriesGenericas.filter(g=>g.style===bs&&!g.tags.some(t=>implementTags.has(t)));
+          const gen=gens.length?gens[Math.floor(Math.random()*gens.length)]:getGenericaPorStyle(bs);
+          used.add(gen.id);
+          const ms=Math.min(mS(),DC.maxSerie);
+          const ns=Math.max(1,Math.round(mtsChunk/ms));
+          ejs.push(mkEj(gen.id,gen.nombre,bs,ns,ms,Math.min(95,intS()+idx*5),gen.id,gen.tags,true));
+        });
       }
 
-      // Relleno con genéricas
-      if(mtsR>=50){
-        const gens=seriesGenericas.filter(g=>g.style===bs&&!used.has(g.id)&&!g.tags.some(t=>implementTags.has(t)));
-        const gen=gens.length?gens[Math.floor(Math.random()*gens.length)]:getGenericaPorStyle(bs);
-        const ms=Math.min(mS(),DC.maxSerie);
-        const ns=Math.max(1,Math.round(mtsR/ms));
-        ejs.push(mkEj(gen.id,gen.nombre,bs,ns,ms,intS(),gen.id,gen.tags,true));
+      // Fondo + explosivo (solo difícil) — pico final del bloque de estilo
+      if(reservaFondo>=300){
+        const gen=getGenericaPorStyle(bs);
+        const ns=Math.round(reservaFondo/100);
+        ejs.push(mkEj(gen.id,gen.nombre+" (fondo)",bs,ns,100,80,gen.id,gen.tags,true));
+        const sobranteFondo=reservaFondo-ns*100;
+        if(sobranteFondo>=100){
+          const nsHI=Math.min(Math.round(sobranteFondo/50),6);
+          ejs.push(mkEj("hi_"+bs,"sprint "+bs,bs,nsHI,50,95,"gen_hi25",[bs],true));
+        }
       }
 
       // — Implementos: repartidos cíclicamente entre bloques de estilo —
@@ -3273,34 +3327,41 @@
         });
       }
 
-      // — Relleno sin implementos —
+      // — Relleno: varias series DISTINTAS en vez de un único bloque gigante —
+      // Un entrenador real no pone "12x100 lo mismo"; reparte el volumen en
+      // 2-3 sets distintos, con la intensidad subiendo ligeramente hacia el
+      // final (efecto "build"), igual que en una sesión real.
       const mtsOcupados = ejercicios.reduce((s,e) => s + e.series * e.metrosSerie, 0);
-      let mtsRestantes = mts - mtsOcupados;
+      const mtsRestantes = mts - mtsOcupados;
 
-      // Relleno final sin implementos
-      while(mtsRestantes >= distSerie){
-        const m = extrasActivos.variarMetros ? getSerieMetrosAleatorio() : distSerie;
-        let disponibles = seriesGenericas.filter(s => s.style === bibStyle && !usedRefIds.has(s.id) && !s.tags.some(t => implementTags.has(t)));
-        if(disponibles.length === 0){
-          disponibles = seriesGenericas.filter(s => s.style === bibStyle);
-          if(disponibles.length === 0) break;
-        }
-        const gen = disponibles[Math.floor(Math.random() * disponibles.length)];
-        usedRefIds.add(gen.id);
-        const nSeriesBloque = Math.max(1, Math.round(mtsRestantes / m));
-        const totalEj = nSeriesBloque * m;
-        ejercicios.push({
-          id: "ej_" + (ejercicioCounter++),
-          refId: gen.id,
-          nombre: nSeriesBloque + "x" + m + " " + gen.nombre,
-          distancia: totalEj + "m",
-          desc: "", tags: [...gen.tags], style: bibStyle,
-          series: nSeriesBloque, metrosSerie: m,
-          intensidad: getIntensidadAleatoria(), ritmo: 0,
-          bloqueado: false, editing: false, esGenerica: true
+      if(mtsRestantes >= distSerie){
+        const nChunks = mtsRestantes >= distSerie*6 ? 3 : mtsRestantes >= distSerie*3 ? 2 : 1;
+        const chunkBase = Math.floor(mtsRestantes/nChunks/distSerie)*distSerie;
+        const chunks = Array(nChunks).fill(chunkBase);
+        chunks[chunks.length-1] += mtsRestantes - chunkBase*nChunks;
+
+        chunks.forEach((mtsChunk, idx) => {
+          if(mtsChunk < distSerie) return;
+          const m = extrasActivos.variarMetros ? getSerieMetrosAleatorio() : distSerie;
+          let disponibles = seriesGenericas.filter(s => s.style === bibStyle && !usedRefIds.has(s.id) && !s.tags.some(t => implementTags.has(t)));
+          if(disponibles.length === 0) disponibles = seriesGenericas.filter(s => s.style === bibStyle && !s.tags.some(t => implementTags.has(t)));
+          if(disponibles.length === 0) disponibles = seriesGenericas.filter(s => s.style === bibStyle);
+          if(disponibles.length === 0) return;
+          const gen = disponibles[Math.floor(Math.random() * disponibles.length)];
+          usedRefIds.add(gen.id);
+          const nSeriesBloque = Math.max(1, Math.round(mtsChunk / m));
+          const totalEj = nSeriesBloque * m;
+          ejercicios.push({
+            id: "ej_" + (ejercicioCounter++),
+            refId: gen.id,
+            nombre: nSeriesBloque + "x" + m + " " + gen.nombre,
+            distancia: totalEj + "m",
+            desc: "", tags: [...gen.tags], style: bibStyle,
+            series: nSeriesBloque, metrosSerie: m,
+            intensidad: Math.min(95, getIntensidadAleatoria() + idx*5), ritmo: 0,
+            bloqueado: false, editing: false, esGenerica: true
+          });
         });
-        mtsRestantes -= totalEj;
-        break;
       }
 
       const totalReal = ejercicios.reduce((s,e) => s + e.series * e.metrosSerie, 0);
@@ -3448,6 +3509,10 @@
   // bloquear ejercicios y exportar a texto o imagen.
   // ====================================================================
 
+  // Calentamiento y Vuelta a la calma son bloques fijos: no se pueden
+  // fusionar con otro bloque ni renombrar.
+  const BLOQUES_PROTEGIDOS = ["🌅 Calentamiento", "🌊 Vuelta a la calma"];
+
   function renderEntrenamiento(){
     content.innerHTML = "";
 
@@ -3473,9 +3538,19 @@
     downloadRow.innerHTML = `
       <button class="action-btn" id="downloadTxtBtn" title="Copiar al portapapeles" style="flex:1;max-width:200px;justify-content:center;background:linear-gradient(135deg,#a78bfa,#7c3aed);color:#fff;border:none;font-weight:700;font-size:13px;">📋 Copiar en portapapeles</button>
       <button class="action-btn" id="downloadImgBtn" title="Descargar entrenamiento" style="flex:1;max-width:260px;justify-content:center;background:linear-gradient(135deg,#0ea5e9,#6366f1);color:#fff;border:none;font-weight:700;animation:pwaGlow 2s infinite;font-size:13px;">🖼️ Descargar entrenamiento</button>
-      <button class="action-btn" id="downloadJsonBtn" title="Copiar JSON para el reproductor" style="flex:1;max-width:220px;justify-content:center;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;border:none;font-weight:700;font-size:13px;">📋 Copiar entrenamiento (JSON)</button>
-      <button class="action-btn" id="downloadStartBtn" title="Abrir en el Reproductor de sesiones" style="flex:1;max-width:220px;justify-content:center;background:linear-gradient(135deg,#34d399,#0d9488);color:#fff;border:none;font-weight:700;font-size:13px;">🏊 Empezar entrenamiento</button>`;
+      <button class="action-btn" id="downloadJsonBtn" title="Copiar JSON para el reproductor" style="flex:1;max-width:220px;justify-content:center;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;border:none;font-weight:700;font-size:13px;">📋 Copiar entrenamiento (JSON)</button>`;
     content.appendChild(downloadRow);
+
+    const startSection = document.createElement("div");
+    startSection.style.cssText = "display:flex;flex-direction:column;align-items:center;gap:10px;padding:20px 16px 8px;";
+    startSection.innerHTML = `
+      <button class="action-btn" id="downloadStartBtn" title="Abrir en el Reproductor de sesiones" style="width:100%;max-width:420px;justify-content:center;gap:12px;padding:20px 28px;font-size:18px;background:linear-gradient(135deg,#34d399,#0d9488);color:#fff;border:none;font-weight:800;border-radius:999px;box-shadow:0 8px 28px rgba(52,211,153,.45);animation:pwaGlow 2s infinite;">
+        <span style="font-size:24px;">🏊</span>Empezar entrenamiento
+      </button>
+      <p style="max-width:420px;text-align:center;color:var(--muted);font-size:12.5px;line-height:1.5;margin:0;">
+        Copia este entrenamiento y abre el <strong>Reproductor de sesiones</strong> en una pestaña nueva, listo para pegarlo y empezar a nadar con cronómetro guiado.
+      </p>`;
+    content.appendChild(startSection);
 
     entrenamientoActual.bloques.forEach((bloque, bi) => {
       const block = document.createElement("div");
@@ -3484,10 +3559,16 @@
 
       let ejerciciosHTML = bloque.ejercicios.map((ej, ei) => renderEjercicioHTML(ej, bi, ei)).join("");
 
+      const esProtegido = BLOQUES_PROTEGIDOS.includes(bloque.titulo);
+      const anteriorProtegido = bi > 0 && BLOQUES_PROTEGIDOS.includes(entrenamientoActual.bloques[bi-1].titulo);
+      const puedeFusionar = bi > 0 && !esProtegido && !anteriorProtegido;
+
       block.innerHTML = `
         <div class="block-header">
           <div class="block-title">${bloque.titulo}</div>
           <div class="block-header-actions">
+            ${!esProtegido ? `<button type="button" class="renombrar-btn" data-bi="${bi}" title="Cambiar el nombre de este bloque">✏️</button>` : ""}
+            ${puedeFusionar ? `<button type="button" class="fusionar-btn" data-bi="${bi}" title="Fusiona este bloque con el anterior para poder reordenar ejercicios entre ambos">🔗 Fusionar con anterior</button>` : ""}
             <div class="block-distance">${bloque.distancia}</div>
           </div>
         </div>
@@ -3512,6 +3593,48 @@
       abrirEnReproductor(buildExportAuto());
     });
   }
+
+  // Fusiona el bloque `bi` con el bloque inmediatamente anterior: junta sus
+  // ejercicios en una sola lista (ya se pueden reordenar libremente entre
+  // ellos arrastrando), suma la distancia y pide un nombre nuevo para el
+  // bloque resultante. Calentamiento y Vuelta a la calma no se pueden tocar.
+  function fusionarBloques(bi){
+    if(!entrenamientoActual || bi <= 0 || bi >= entrenamientoActual.bloques.length) return;
+    const bloques = entrenamientoActual.bloques;
+    const prev = bloques[bi - 1];
+    const curr = bloques[bi];
+    if(BLOQUES_PROTEGIDOS.includes(prev.titulo) || BLOQUES_PROTEGIDOS.includes(curr.titulo)) return;
+
+    prev.ejercicios = prev.ejercicios.concat(curr.ejercicios);
+    const tituloSugerido = prev.titulo + " + " + curr.titulo;
+    const nuevoTitulo = prompt("Nombre para el bloque fusionado:", tituloSugerido);
+    prev.titulo = (nuevoTitulo && nuevoTitulo.trim()) ? nuevoTitulo.trim() : tituloSugerido;
+    prev.distancia = prev.ejercicios.reduce((s,e) => s + e.series * e.metrosSerie, 0) + "m";
+    bloques.splice(bi, 1);
+    renderEntrenamiento();
+  }
+
+  // Cambia el nombre de un bloque en cualquier momento (no solo al fusionar).
+  function renombrarBloque(bi){
+    if(!entrenamientoActual || bi < 0 || bi >= entrenamientoActual.bloques.length) return;
+    const bloque = entrenamientoActual.bloques[bi];
+    if(BLOQUES_PROTEGIDOS.includes(bloque.titulo)) return;
+    const nuevo = prompt("Nombre del bloque:", bloque.titulo);
+    if(nuevo === null) return;
+    const limpio = nuevo.trim();
+    if(!limpio) return;
+    bloque.titulo = limpio;
+    renderEntrenamiento();
+  }
+
+  // Delegado en `content` (que persiste entre renders) para no tener que
+  // re-vincular los listeners cada vez que se redibuja el entrenamiento.
+  content.addEventListener("click", e => {
+    const fusBtn = e.target.closest(".fusionar-btn");
+    if(fusBtn){ fusionarBloques(parseInt(fusBtn.dataset.bi)); return; }
+    const renBtn = e.target.closest(".renombrar-btn");
+    if(renBtn){ renombrarBloque(parseInt(renBtn.dataset.bi)); return; }
+  });
 
   // ====================================================================
   // DRAG & DROP — auto result exercises
