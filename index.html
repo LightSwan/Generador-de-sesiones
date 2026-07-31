@@ -1684,6 +1684,14 @@
           Configura los estilos, porcentajes e intensidad en el panel lateral
           y presiona <strong>"Generar entrenamiento"</strong> para crear tu sesión.
         </p>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:28px;">
+          <button class="action-btn" id="emptyStartBtn" title="Abrir el Reproductor de sesiones" style="width:100%;max-width:420px;justify-content:center;gap:12px;padding:20px 28px;font-size:18px;background:linear-gradient(135deg,#34d399,#0d9488);color:#fff;border:none;font-weight:800;border-radius:999px;box-shadow:0 8px 28px rgba(52,211,153,.45);animation:pwaGlow 2s infinite;">
+            <span style="font-size:24px;">🏊</span>Empezar entrenamiento
+          </button>
+          <p style="max-width:420px;text-align:center;color:var(--muted);font-size:12.5px;line-height:1.5;margin:0;">
+            Abre el <strong>Reproductor de sesiones</strong> directamente, sin generar nada aquí primero.
+          </p>
+        </div>
       </div>
     </main>
 
@@ -3589,8 +3597,7 @@
     document.getElementById("downloadImgBtn").addEventListener("click", descargarImagen);
     document.getElementById("downloadJsonBtn").addEventListener("click", descargarJSONAuto);
     document.getElementById("downloadStartBtn").addEventListener("click", () => {
-      if(!entrenamientoActual || !entrenamientoActual.bloques || entrenamientoActual.bloques.length === 0) return;
-      abrirEnReproductor(buildExportAuto());
+      irAlReproductor(entrenamientoActual ? buildExportAuto() : null);
     });
   }
 
@@ -3831,6 +3838,21 @@
       alert("Se ha copiado el entrenamiento al portapapeles. Abre el Reproductor de sesiones y pégalo ahí.");
     }
   }
+
+  // Botón "Empezar entrenamiento": lleva al Reproductor SIEMPRE, haya o no
+  // un entrenamiento creado. Si hay ejercicios, además copia su JSON para
+  // pegarlo allí; si no hay nada, simplemente abre la página vacía.
+  function irAlReproductor(data){
+    if(data && data.bloques && data.bloques.length > 0){
+      abrirEnReproductor(data);
+    } else {
+      window.open(REPRODUCTOR_URL, "_blank");
+    }
+  }
+
+  document.getElementById("emptyStartBtn").addEventListener("click", () => {
+    irAlReproductor(null);
+  });
 
   function copiarJSONPortapapeles(data, btnId){
     const json = JSON.stringify(data);
@@ -5276,9 +5298,7 @@
   });
 
   document.getElementById("manualStartBtn").addEventListener("click",()=>{
-    const data = buildExportManual();
-    if(!data.bloques.length) return;
-    abrirEnReproductor(data);
+    irAlReproductor(buildExportManual());
   });
 
   document.getElementById("manualSummaryBtn").addEventListener("click",()=>{
