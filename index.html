@@ -10,7 +10,7 @@
     · Bloque <style> con todas las variables CSS y estilos globales
   ============================================================ -->
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
   <meta name="theme-color" content="#0f172a">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -36,13 +36,50 @@
       --primary2:#0ea5e9;
       --danger:#ef4444;
       --success:#22c55e;
+      /* Color de acento del apartado activo (Automático/Manual/Física).
+         Lo cambia switchModo() vía JS; .panel/.section-title/.mode-btn
+         lo usan con transition, así que al entrar en un apartado el
+         color se desliza suavemente en vez de saltar de golpe. */
+      --mode-accent:var(--primary);
+      --mode-accent2:var(--primary2);
+      /* Azul oscuro fijo del botón desactivado: es el punto de partida
+         del pulso de color al pulsar un botón de modo (ver .mode-btn.
+         pulsing más abajo). Siempre el mismo, no depende del apartado
+         anterior. */
+      --pulse-from:#1e293b;
     }
 
     *{
       margin:0;
       padding:0;
       box-sizing:border-box;
+      /* El recuadro gris que aparece al tocar un botón en Android Chrome
+         no es el outline de CSS (ese ya se había quitado): es el
+         resaltado táctil nativo del navegador. El Reproductor y la
+         Biblioteca ya lo llevan desactivado; aquí faltaba. */
+      -webkit-tap-highlight-color:transparent;
     }
+
+    /* Quita el recuadro de selección (outline) que ponen los navegadores
+       al pulsar un botón con el ratón/dedo, pero solo en ese caso: si se
+       navega con teclado (Tab) el outline se mantiene, para no romper la
+       accesibilidad. */
+    button:focus{ outline:none; }
+    button:focus-visible{ outline:2px solid var(--mode-accent); outline-offset:2px; }
+    /* "Cargar entrenamiento" es visible en las 3 pestañas (no vive dentro
+       de ningún layout de modo), así que si depende de --mode-accent su
+       contorno cambia de color en vivo según la pestaña activa (azul en
+       Manual) aunque el usuario no lo vuelva a tocar. Se fija a un morado
+       propio, a juego con su degradado, en vez de heredar el del modo. */
+    #openImportModalBtn:focus-visible{ outline-color:#a855f7; }
+
+    /* Evita el "flash" de color al rebotar el scroll en iOS/Android: sin
+       esto, el rebote deja ver el fondo por defecto de <html> durante una
+       fracción de segundo, ya que solo <body> tenía color de fondo (y aquí
+       encima el tinte de color del modo activo se nota más que en las
+       otras dos apps, de ahí el "flick azul"). Mismo arreglo que ya lleva
+       la Biblioteca y el Reproductor. */
+    html{ background:#020617; overscroll-behavior-y:none; }
 
     body{
       background:linear-gradient(180deg,#020617 0%, #0f172a 100%);
@@ -50,11 +87,43 @@
       color:var(--text);
       min-height:100vh;
       padding:24px;
+      /* viewport-fit=cover + esto: rellena la zona del notch/barra inferior
+         con el propio fondo oscuro de la app en vez de dejar que se vea el
+         color por defecto del sistema (blanco o negro según el tema). */
+      padding-bottom:calc(24px + env(safe-area-inset-bottom));
+    }
+
+    /* Tinte de fondo del apartado activo: un color plano de base (para
+       que `background-color` se anime con transition de forma fiable;
+       los degradados no interpolan bien con transition) más un
+       degradado radial muy sutil por encima, con el mismo color, para
+       darle algo de profundidad. Va detrás de todo el contenido
+       (z-index:0) y el .container real va encima (z-index:1). */
+    #modeBgTint{
+      position:fixed;
+      inset:0;
+      z-index:0;
+      pointer-events:none;
+      background-color:var(--mode-accent);
+      background-image:radial-gradient(ellipse 90% 55% at 50% -10%, color-mix(in srgb, var(--mode-accent) 100%, white 25%) 0%, transparent 65%);
+      opacity:.11;
+      transition:background-color .6s ease;
     }
 
     .container{
       max-width:1600px;
       margin:auto;
+      position:relative;
+      z-index:1;
+    }
+
+    /* Transición suave al cambiar de apartado (Automático/Manual/Física):
+       en vez de un display:none/"" instantáneo, se desvanece el que se
+       oculta y aparece el nuevo con un fundido. Lo gestiona cambiarModo()
+       en el JS, alternando opacity y retrasando el display:none real
+       hasta que termina el fundido de salida. */
+    #autoLayout, #manualLayout, #fisicaLayout{
+      transition:opacity .35s ease;
     }
 
     .header{
@@ -82,13 +151,14 @@
 
     .panel{
       background:rgba(15,23,42,.92);
-      border:1px solid var(--border);
+      border:1px solid color-mix(in srgb, var(--mode-accent) 30%, var(--border));
       border-radius:28px;
       padding:24px;
       position:sticky;
       top:20px;
       height:fit-content;
       backdrop-filter:blur(12px);
+      transition:border-color .5s ease;
     }
 
     .section{
@@ -96,12 +166,13 @@
     }
 
     .section-title{
-      color:var(--primary);
+      color:var(--mode-accent);
       font-size:13px;
       text-transform:uppercase;
       letter-spacing:.08em;
       margin-bottom:18px;
       font-weight:700;
+      transition:color .5s ease;
     }
 
     .slider-group{
@@ -356,6 +427,46 @@
     .entrenamiento-titulo strong{
       color:var(--primary);
     }
+    .entrenamiento-nombre-row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+      padding:8px 24px 16px;
+    }
+    .entrenamiento-nombre{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+      flex:1;
+    }
+    .entrenamiento-nombre-texto{
+      font-size:22px;
+      font-weight:700;
+      line-height:1.25;
+    }
+    .entrenamiento-nombre-metros{
+      font-size:22px;
+      font-weight:700;
+    }
+    .entrenamiento-nombre-metros strong{
+      color:var(--primary);
+    }
+    .entrenamiento-nombre-input{
+      flex:1;
+      min-width:180px;
+      background:#0f172a;
+      border:1px solid var(--primary);
+      border-radius:10px;
+      color:var(--text);
+      font-size:20px;
+      font-weight:700;
+      padding:6px 12px;
+      outline:none;
+      font-family:inherit;
+    }
     .variar-metros-sub{
       margin-top:10px;
       padding:8px 10px;
@@ -392,13 +503,34 @@
       padding:22px 24px;
       border-bottom:1px solid var(--border);
       display:flex;
-      justify-content:space-between;
+      flex-direction:column;
       align-items:center;
+      justify-content:center;
+      gap:8px;
+      text-align:center;
+      position:relative;
+    }
+
+    .block-renombrar-corner{
+      position:absolute;
+      top:14px;
+      right:14px;
     }
 
     .block-title{
       font-size:20px;
       font-weight:700;
+    }
+
+    .block-title-wrap{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      min-width:0;
+    }
+    .block-title-input.block-title-input{
+      max-width:280px;
     }
 
     .block-distance{
@@ -412,11 +544,14 @@
       color:var(--muted);
       font-size:12px;
       font-weight:600;
-      padding:6px 12px;
+      padding:6px 14px;
       border-radius:999px;
       cursor:pointer;
       transition:.2s;
       white-space:nowrap;
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
     }
     .fusionar-btn:hover{
       border-color:var(--primary);
@@ -428,12 +563,14 @@
       background:rgba(148,163,184,.08);
       border:1px solid var(--border);
       color:var(--muted);
-      font-size:13px;
-      padding:6px 9px;
+      padding:7px;
       border-radius:999px;
       cursor:pointer;
       transition:.2s;
       line-height:1;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
     }
     .renombrar-btn:hover{
       border-color:var(--primary);
@@ -516,6 +653,50 @@
 
     .action-btn:hover{
       border-color:var(--primary);
+    }
+
+    /* Círculo con el triángulo de play, usado en los botones "Empezar
+       entrenamiento". El triángulo lleva un pequeño desplazamiento a la
+       derecha (margin-left) porque, al apuntar hacia ese lado, centrado
+       de forma puramente geométrica se ve visualmente descentrado hacia
+       la izquierda; este ajuste óptico lo corrige. */
+    .play-badge{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      width:26px;
+      height:26px;
+      border-radius:50%;
+      background:rgba(255,255,255,.25);
+      flex-shrink:0;
+    }
+    .play-badge svg{
+      margin-left:2px;
+    }
+    .btn-empezar{
+      width:100%;
+      max-width:260px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      padding:10px 18px;
+      font-size:14px;
+      font-weight:800;
+      background:linear-gradient(135deg,#34d399,#0d9488);
+      color:#fff;
+      border:none;
+      border-radius:999px;
+      box-shadow:0 4px 14px rgba(52,211,153,.35);
+      animation:pwaGlow 2s infinite;
+    }
+    .btn-empezar .play-badge{
+      width:20px;
+      height:20px;
+    }
+    .btn-empezar .play-badge svg{
+      width:14px;
+      height:14px;
     }
 
 
@@ -601,6 +782,14 @@
     @keyframes pwaGlow{
       0%,100%{box-shadow:0 0 0 0 rgba(99,102,241,0.5),0 4px 20px rgba(14,165,233,0.4);}
       50%{box-shadow:0 0 0 8px rgba(99,102,241,0),0 4px 20px rgba(14,165,233,0.4);}
+    }
+    /* Brillo propio (morado) solo para el botón "Cargar entrenamiento": usa
+       el mismo patrón que pwaGlow pero en el tono violeta del propio botón,
+       en vez del azul compartido con los botones de Descargar/Empezar, que
+       antes destacaba de más al cambiar de pestaña. */
+    @keyframes importBtnGlow{
+      0%,100%{box-shadow:0 0 0 0 rgba(99,102,241,0.5),0 4px 20px rgba(168,85,247,0.4);}
+      50%{box-shadow:0 0 0 8px rgba(99,102,241,0),0 4px 20px rgba(168,85,247,0.4);}
     }
     @keyframes fadeIn{
       from{opacity:0}
@@ -764,12 +953,6 @@
 
     .modal-style-filter .style-tag:hover{
       border-color:var(--primary);
-    }
-
-    .block-header-actions{
-      display:flex;
-      gap:10px;
-      align-items:center;
     }
 
     .manual-modal-overlay{
@@ -946,17 +1129,32 @@
       font-size:14px;
       font-weight:600;
       cursor:pointer;
-      transition:.2s;
+      transition:background .4s ease, border-color .4s ease, color .4s ease;
       font-family:'Inter',sans-serif;
     }
     .mode-btn.active{
-      background:linear-gradient(135deg,var(--primary),var(--primary2));
+      background:var(--mode-accent);
       color:#001018;
       border-color:transparent;
     }
     .mode-btn:not(.active):hover{
-      border-color:var(--primary);
+      border-color:var(--mode-accent);
       color:var(--text);
+    }
+    /* Pulso de color al cambiar de apartado: parte siempre del azul
+       oscuro fijo del botón desactivado (--pulse-from, definido en :root)
+       y llega hasta el color del apartado nuevo (--pulse-to, lo rellena
+       cambiarModo() justo antes de lanzar la animación). Color sólido en
+       ambos extremos (nada de degradado): así el frame final de la
+       animación coincide exactamente con el estado ya asentado de
+       .mode-btn.active y no hay "flick" al terminar. */
+    @keyframes modeBtnPulse{
+      0%{ background:var(--pulse-from); box-shadow:0 0 0 0 var(--pulse-from); transform:scale(1); }
+      45%{ transform:scale(1.045); box-shadow:0 0 0 8px transparent; }
+      100%{ background:var(--pulse-to); box-shadow:0 0 0 0 transparent; transform:scale(1); }
+    }
+    .mode-btn.pulsing{
+      animation:modeBtnPulse .55s ease;
     }
     .manual-block{
       background:rgba(17,24,39,.92);
@@ -968,17 +1166,23 @@
     .manual-block-header{
       padding:18px 24px;
       border-bottom:1px solid var(--border);
-      display:flex;
-      justify-content:space-between;
+      display:grid;
+      grid-template-columns:1fr auto 1fr;
       align-items:center;
+      gap:8px;
     }
     .manual-block-title{
       font-size:18px;
       font-weight:700;
+      grid-column:2;
+      justify-self:center;
+      text-align:center;
     }
     .manual-block-dist{
       color:var(--primary);
       font-weight:700;
+      grid-column:3;
+      justify-self:end;
     }
     .manual-exercise-row{
       padding:14px 24px;
@@ -1386,11 +1590,12 @@
 </head>
 <body>
 
+<div id="modeBgTint" aria-hidden="true"></div>
 <div class="container">
 
   <!-- ============================================================
     HEADER
-    Título, badge BETA, enlace de vuelta a la Biblioteca y selector
+    Título, enlace de vuelta a la Biblioteca y selector
     de modo (Creador automático / Creación manual).
   ============================================================ -->
   <div class="header">
@@ -1404,17 +1609,17 @@
     </div>
     <div style="display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;">
       <h1>Generador de sesiones</h1>
-      <span style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#000;font-size:11px;font-weight:800;padding:3px 10px;border-radius:999px;letter-spacing:.08em;text-transform:uppercase;vertical-align:middle;">BETA</span>
     </div>
     <p>Generador de entrenamientos desde la biblioteca de nataci&oacute;n.</p>
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;align-items:center;justify-content:center;">
       <div class="mode-switcher" style="max-width:480px;margin:0 auto;">
-        <button class="mode-btn" id="modeAutoBtn">⚙️ Creador automático</button>
-        <button class="mode-btn active" id="modeManualBtn">✏️ Creación manual</button>
+        <button class="mode-btn" id="modeAutoBtn">Creador automático</button>
+        <button class="mode-btn active" id="modeManualBtn">Creación manual</button>
+        <button class="mode-btn" id="modeFisicaBtn">Sesión física</button>
       </div>
     </div>
     <div style="display:flex;justify-content:center;margin-top:18px;">
-      <button class="action-btn" id="openImportModalBtn" style="justify-content:center;gap:10px;padding:14px 32px;font-size:15px;font-weight:800;color:#fff;border:none;background:linear-gradient(135deg,#a855f7,#6366f1);box-shadow:0 4px 20px rgba(168,85,247,0.4);animation:pwaGlow 2s infinite;border-radius:999px;">📋 Cargar entrenamiento</button>
+      <button class="action-btn" id="openImportModalBtn" style="justify-content:center;gap:10px;padding:14px 32px;font-size:15px;font-weight:800;color:#fff;border:none;background:linear-gradient(135deg,#a855f7,#6366f1);box-shadow:0 4px 20px rgba(168,85,247,0.4);animation:importBtnGlow 2s infinite;border-radius:999px;">📋 Cargar entrenamiento</button>
     </div>
   </div>
 
@@ -1678,15 +1883,258 @@
     <!-- CONTENIDO -->
     <main class="content" id="content">
       <div class="empty-state" id="emptyState">
-        <div class="empty-state-icon">🏊</div>
+        <div class="empty-state-icon"><svg viewBox="0 0 2551 2551" width="64" height="64" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="logoGradientEmpty" gradientUnits="userSpaceOnUse" x1="12755" y1="19570" x2="12755" y2="7200">
+      <stop offset="0%" stop-color="#00dfff"/>
+      <stop offset="30%" stop-color="#00aef3"/>
+      <stop offset="55%" stop-color="#0089e2"/>
+      <stop offset="80%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#a78bfa"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(0.000000,2551.000000) scale(0.100000,-0.100000)"
+fill="url(#logoGradientEmpty)" stroke="none">
+<path d="M6085 19564 c-369 -29 -842 -107 -943 -155 -66 -32 -89 -96 -58 -158
+18 -35 45 -46 163 -72 53 -11 172 -45 265 -75 229 -73 294 -83 623 -94 154 -6
+323 -15 375 -21 268 -30 495 -100 773 -240 225 -113 410 -234 897 -584 380
+-273 648 -445 1080 -693 421 -241 645 -384 905 -579 501 -376 877 -769 1202
+-1258 242 -365 602 -1035 803 -1495 74 -170 97 -198 143 -181 41 16 45 53 13
+146 -114 331 -198 529 -368 871 -430 863 -868 1422 -1530 1951 -298 238 -544
+401 -1043 690 -533 309 -711 423 -1190 768 -154 110 -320 228 -370 261 -410
+275 -771 439 -1108 503 -144 27 -292 40 -602 51 -161 6 -300 16 -345 25 -78
+16 -229 62 -243 75 -8 7 212 39 408 60 572 61 1077 12 1562 -150 336 -111 600
+-255 1223 -664 372 -244 494 -318 675 -406 225 -110 420 -167 652 -190 54 -5
+208 -14 343 -20 135 -6 288 -17 340 -25 373 -60 709 -244 1035 -570 219 -218
+441 -511 553 -731 l21 -42 -62 -6 c-133 -15 -277 -38 -387 -63 -63 -14 -127
+-28 -142 -31 -39 -6 -67 -42 -78 -101 -13 -68 0 -119 39 -154 16 -14 46 -56
+67 -94 75 -135 256 -406 559 -838 170 -242 317 -452 328 -467 25 -34 79 -60
+109 -53 13 4 33 14 45 24 26 22 640 896 762 1086 123 192 126 195 161 259 18
+32 46 70 61 84 37 33 48 74 38 147 -5 41 -15 65 -31 80 -36 34 -319 93 -576
+121 l-62 7 41 76 c214 393 603 817 940 1026 162 101 353 183 499 216 111 25
+252 40 475 49 132 6 285 15 340 21 367 38 640 150 1115 459 91 59 262 170 380
+247 482 314 738 449 1049 553 550 183 1097 219 1824 118 86 -12 154 -25 150
+-29 -14 -12 -167 -59 -243 -74 -45 -9 -184 -19 -345 -25 -428 -15 -593 -37
+-822 -106 -362 -110 -649 -272 -1268 -715 -492 -353 -654 -458 -1210 -779
+-466 -270 -702 -426 -995 -659 -566 -450 -959 -909 -1335 -1561 -93 -160 -269
+-506 -344 -675 -29 -66 -66 -147 -81 -181 -41 -89 -180 -480 -180 -507 0 -29
+18 -53 47 -61 32 -10 68 29 99 109 41 107 233 507 351 729 528 1002 897 1474
+1573 2011 290 230 478 354 1020 667 512 297 701 420 1215 789 540 388 810 540
+1146 648 213 67 364 87 759 101 334 11 398 20 628 94 93 30 213 64 267 76 109
+23 148 42 164 77 34 73 -11 139 -116 172 -140 43 -499 99 -818 127 -264 23
+-700 15 -900 -15 -290 -45 -575 -120 -810 -213 -294 -117 -530 -252 -1130
+-645 -435 -285 -596 -376 -790 -448 -209 -78 -347 -100 -718 -115 -368 -15
+-533 -41 -734 -116 -246 -92 -484 -241 -708 -443 -255 -231 -515 -563 -680
+-869 l-60 -112 -210 0 -210 0 -64 118 c-230 418 -576 816 -921 1058 -160 113
+-297 186 -463 248 -201 75 -363 101 -730 116 -462 19 -646 60 -942 214 -160
+83 -221 121 -620 381 -375 245 -581 371 -755 463 -334 177 -714 298 -1135 363
+-117 18 -192 22 -460 24 -176 1 -342 1 -370 -1z m7245 -3192 c58 -6 157 -13
+220 -17 71 -4 117 -11 122 -18 21 -33 7 -71 -50 -136 -94 -107 -302 -389 -590
+-801 -148 -212 -273 -384 -278 -383 -5 0 -135 181 -289 401 -298 425 -483 676
+-577 783 -57 65 -71 103 -50 135 4 7 49 15 102 18 252 17 399 27 435 30 79 7
+852 -3 955 -12z"/>
+<path d="M4964 17561 c-52 -24 -74 -55 -74 -104 0 -59 23 -90 110 -151 217
+-153 382 -362 634 -806 193 -340 336 -639 606 -1270 142 -331 170 -415 270
+-795 84 -322 178 -515 357 -737 245 -302 887 -751 1660 -1161 237 -126 418
+-212 793 -377 485 -213 637 -292 877 -457 521 -357 795 -631 1124 -1125 68
+-102 143 -220 167 -262 45 -81 71 -99 117 -78 54 25 46 68 -52 292 -71 162
+-108 229 -206 375 -106 158 -174 241 -337 408 -151 156 -291 277 -491 425
+-350 259 -571 385 -1004 572 -825 358 -1391 668 -1960 1073 -328 234 -479 375
+-611 573 -116 174 -168 305 -253 634 -53 205 -102 359 -169 525 -70 175 -347
+805 -431 978 l-79 167 56 -46 c31 -26 161 -136 287 -244 221 -190 588 -502
+799 -679 56 -47 279 -226 496 -399 626 -499 686 -548 845 -687 83 -72 222
+-191 310 -265 256 -214 385 -334 821 -767 480 -477 1040 -1057 1152 -1194 107
+-130 220 -293 472 -679 672 -1027 666 -1013 896 -1818 57 -199 111 -374 121
+-388 41 -62 151 -56 181 11 17 36 15 70 -8 145 -29 96 -68 282 -95 464 -65
+437 -93 569 -186 881 -120 405 -376 1079 -591 1555 -144 317 -512 1034 -686
+1335 -138 239 -295 454 -473 651 -365 400 -735 782 -914 942 -122 110 -364
+331 -375 342 -22 22 -201 180 -270 237 -338 280 -1068 756 -1635 1065 -889
+485 -1568 764 -2056 843 -120 19 -145 19 -195 -4z m524 -296 c260 -80 436
+-149 782 -307 610 -280 1164 -589 1811 -1014 393 -256 594 -411 890 -680 102
+-93 275 -250 384 -349 109 -99 293 -281 409 -405 115 -124 272 -290 347 -370
+409 -434 525 -613 970 -1485 262 -513 374 -763 571 -1270 124 -317 252 -675
+244 -682 -2 -2 -16 18 -32 44 -68 117 -691 1064 -784 1190 -135 187 -231 295
+-549 623 -147 151 -349 362 -450 468 -102 106 -192 199 -202 205 -9 7 -149
+143 -311 302 -162 160 -376 360 -477 445 -101 85 -284 241 -405 345 -269 231
+-357 304 -506 420 -331 257 -855 680 -1040 840 -58 50 -186 159 -285 242 -99
+83 -241 203 -315 268 -74 64 -227 193 -340 287 -277 232 -434 391 -602 613
+-76 100 -162 209 -193 243 -31 34 -51 62 -43 62 7 0 64 -16 126 -35z"/>
+<path d="M20325 17560 c-218 -38 -489 -119 -755 -225 -348 -138 -856 -381
+-1255 -601 -300 -165 -431 -243 -860 -514 -402 -254 -746 -510 -1007 -747 -53
+-48 -179 -162 -280 -253 -248 -223 -401 -373 -656 -645 -119 -126 -246 -261
+-283 -300 -414 -437 -581 -699 -1073 -1683 -242 -481 -353 -739 -578 -1332
+-225 -594 -316 -923 -393 -1412 -54 -346 -67 -418 -106 -561 -33 -122 -35
+-147 -14 -186 30 -58 130 -67 172 -15 11 15 38 86 58 158 294 1041 280 1011
+919 1987 329 502 425 639 551 787 130 152 638 677 1119 1155 422 420 564 552
+816 763 80 67 224 190 320 274 96 83 234 198 305 255 72 57 310 248 530 423
+220 175 448 359 506 408 290 244 574 485 758 643 232 200 365 311 369 307 1
+-2 -32 -74 -74 -162 -111 -230 -386 -861 -459 -1054 -35 -91 -79 -223 -98
+-295 -19 -71 -49 -184 -67 -250 -56 -212 -97 -316 -176 -452 -153 -261 -346
+-439 -844 -778 -440 -300 -1034 -620 -1660 -894 -562 -246 -692 -317 -1025
+-554 -496 -354 -839 -715 -1044 -1097 -66 -123 -171 -378 -171 -414 0 -38 25
+-66 61 -66 38 0 53 16 115 125 73 127 246 383 338 500 224 286 428 484 716
+696 386 284 528 364 1095 612 641 280 1142 548 1635 873 439 289 695 505 854
+719 175 234 234 368 340 770 85 326 113 400 339 921 184 422 270 607 383 819
+323 606 527 881 771 1047 40 26 80 62 88 78 34 66 9 140 -58 171 -51 23 -92
+23 -222 -1z m-220 -322 c-31 -35 -105 -126 -163 -203 -206 -272 -328 -401
+-538 -572 -54 -44 -173 -144 -264 -223 -158 -136 -565 -482 -864 -734 -159
+-134 -701 -570 -936 -753 -169 -131 -276 -221 -571 -474 -107 -92 -275 -236
+-374 -320 -99 -84 -299 -271 -445 -415 -146 -144 -289 -284 -319 -311 -29 -26
+-130 -129 -224 -228 -94 -99 -294 -306 -443 -460 -288 -296 -379 -398 -501
+-560 -71 -94 -287 -414 -432 -640 -36 -55 -136 -209 -222 -342 -87 -133 -165
+-255 -173 -272 -82 -158 55 232 297 849 151 382 348 800 635 1345 244 464 370
+673 524 867 92 117 101 127 368 413 403 432 512 544 651 670 79 72 220 200
+314 285 274 250 334 302 443 389 345 273 1038 717 1582 1014 154 83 672 347
+683 347 3 0 51 22 108 49 237 111 510 220 714 285 66 21 131 42 145 46 61 21
+62 11 5 -52z"/>
+<path d="M9745 10469 c-115 -4 -298 -10 -405 -13 -364 -12 -769 -34 -1280 -70
+-561 -41 -793 -59 -985 -77 -115 -11 -262 -24 -325 -29 -101 -9 -457 -50 -680
+-80 -41 -5 -133 -17 -205 -25 -218 -27 -632 -85 -785 -110 -538 -89 -707 -120
+-955 -179 -99 -24 -225 -53 -280 -66 -55 -12 -127 -30 -160 -40 -33 -10 -125
+-37 -205 -60 -326 -94 -636 -215 -790 -309 -19 -11 -42 -24 -50 -28 -25 -11
+-131 -92 -196 -150 -79 -69 -136 -175 -142 -262 -5 -67 16 -142 56 -206 52
+-81 205 -215 312 -272 30 -16 80 -43 110 -61 54 -30 290 -136 340 -152 14 -5
+50 -18 80 -30 97 -37 394 -130 560 -175 36 -9 85 -23 110 -31 152 -45 597
+-147 825 -189 44 -8 112 -22 150 -30 39 -9 154 -29 257 -45 102 -16 206 -34
+230 -39 42 -10 252 -42 398 -62 41 -5 140 -21 220 -34 80 -13 276 -40 435 -60
+160 -20 315 -40 345 -45 30 -5 172 -21 315 -35 143 -14 316 -32 385 -40 69 -8
+188 -20 265 -25 131 -10 200 -16 605 -55 85 -8 259 -21 385 -30 127 -9 289
+-20 360 -25 274 -20 620 -40 860 -50 138 -5 315 -15 395 -20 581 -40 2029 -71
+3170 -68 969 3 1631 13 2115 33 61 3 178 7 260 10 212 8 1289 64 1355 70 30 3
+134 10 230 16 200 11 687 52 895 74 77 8 239 24 359 35 228 21 594 60 801 85
+66 8 159 19 207 25 87 10 276 39 560 85 84 14 198 32 253 40 263 40 760 138
+1045 205 180 43 580 156 635 180 11 5 94 36 185 70 91 34 176 68 190 75 14 8
+70 36 125 63 221 110 377 243 440 375 12 27 18 62 18 125 0 79 -3 92 -32 145
+-17 32 -43 70 -57 85 -96 101 -130 130 -219 186 -257 162 -609 307 -1045 430
+-69 20 -138 40 -155 45 -80 24 -436 107 -675 158 -261 55 -327 68 -450 88 -52
+8 -151 26 -220 40 -69 13 -213 38 -320 55 -107 17 -235 37 -285 45 -141 23
+-364 54 -472 65 -54 6 -138 17 -188 25 -88 14 -257 34 -480 55 -60 6 -159 18
+-220 26 -132 17 -425 47 -665 69 -96 8 -213 19 -260 25 -116 13 -301 28 -575
+45 -126 8 -284 19 -350 24 -66 6 -205 15 -310 21 -104 5 -320 17 -480 26 -159
+9 -365 14 -458 12 l-167 -4 -35 -34 c-19 -19 -35 -37 -35 -41 0 -3 28 -12 63
+-20 l62 -14 -84 -7 c-79 -6 -87 -9 -119 -41 l-34 -35 88 -15 c49 -9 253 -28
+454 -41 201 -14 448 -32 550 -41 102 -8 275 -22 385 -31 110 -8 261 -22 335
+-30 235 -25 320 -34 530 -54 113 -12 252 -27 310 -35 58 -8 220 -28 360 -45
+448 -55 788 -106 1115 -170 235 -46 470 -93 520 -105 33 -7 132 -30 220 -50
+88 -20 171 -40 185 -45 14 -5 39 -11 55 -15 45 -9 151 -41 325 -97 158 -51
+167 -54 232 -82 21 -9 66 -27 100 -40 53 -20 111 -49 223 -110 89 -49 204
+-152 238 -213 24 -44 25 -141 1 -180 -28 -44 -119 -130 -182 -170 -167 -107
+-478 -220 -897 -327 -146 -37 -470 -108 -565 -124 -30 -5 -135 -24 -232 -41
+-360 -64 -638 -105 -958 -141 -531 -59 -783 -84 -995 -100 -82 -6 -159 -13
+-170 -15 -78 -17 -918 -69 -1530 -95 -132 -5 -350 -15 -485 -20 -478 -21
+-1005 -29 -1785 -29 -1026 -1 -1821 19 -2805 69 -107 6 -283 15 -390 20 -408
+21 -1368 100 -2010 166 -337 34 -1052 128 -1315 173 -60 11 -132 22 -160 25
+-77 10 -364 62 -645 117 -448 89 -823 190 -1163 313 -105 38 -127 47 -257 109
+-234 110 -374 252 -357 360 9 55 12 61 46 109 59 82 211 182 401 263 80 34
+349 127 450 155 25 7 65 18 90 26 72 21 405 101 535 128 224 47 666 117 1100
+176 160 21 308 41 330 44 22 3 105 13 185 21 80 8 253 26 385 40 325 34 321
+34 565 50 118 8 305 21 415 30 110 8 364 24 565 35 201 11 374 22 385 25 11 3
+162 9 335 15 324 10 481 22 537 41 l33 10 -28 35 c-16 20 -36 34 -49 34 -12 0
+-29 3 -38 7 -15 5 -15 7 4 17 21 12 21 12 -7 45 -25 31 -34 34 -107 42 -92 9
+-291 9 -590 -2z m6648 -236 c-7 -2 -19 -2 -25 0 -7 3 -2 5 12 5 14 0 19 -2 13
+-5z m135 -10 c-16 -2 -40 -2 -55 0 -16 2 -3 4 27 4 30 0 43 -2 28 -4z m115
+-10 c-13 -2 -35 -2 -50 0 -16 2 -5 4 22 4 28 0 40 -2 28 -4z m110 -10 c-7 -2
+-21 -2 -30 0 -10 3 -4 5 12 5 17 0 24 -2 18 -5z m130 -10 c-7 -2 -21 -2 -30 0
+-10 3 -4 5 12 5 17 0 24 -2 18 -5z m120 -10 c-13 -2 -33 -2 -45 0 -13 2 -3 4
+22 4 25 0 35 -2 23 -4z m267 -18 c174 -14 255 -21 475 -45 50 -5 196 -19 325
+-30 129 -11 285 -27 345 -35 61 -8 209 -26 330 -40 121 -14 297 -37 390 -50
+94 -14 224 -32 290 -41 245 -32 817 -123 939 -148 39 -8 114 -22 166 -31 212
+-38 620 -126 770 -167 41 -11 120 -31 175 -44 178 -44 542 -157 725 -226 204
+-77 425 -189 510 -257 25 -20 54 -43 65 -51 35 -27 91 -89 103 -115 7 -14 17
+-36 24 -50 23 -49 8 -167 -27 -214 -14 -19 -75 -81 -116 -116 -106 -94 -417
+-243 -684 -328 -174 -56 -466 -138 -575 -162 -123 -28 -225 -52 -385 -90 -156
+-37 -837 -155 -1126 -195 -85 -11 -201 -27 -259 -35 -104 -15 -333 -42 -585
+-70 -71 -8 -202 -23 -290 -35 -192 -24 -504 -54 -710 -69 -82 -6 -262 -20
+-400 -31 -137 -10 -295 -22 -350 -25 -55 -3 -163 -10 -240 -15 -370 -25 -1064
+-60 -1460 -74 -1117 -39 -1214 -41 -2435 -39 -1141 2 -1482 8 -2125 33 -137 6
+-389 15 -560 20 -170 6 -386 14 -480 20 -93 5 -251 14 -350 20 -587 35 -911
+57 -949 65 -12 3 -136 12 -276 20 -423 25 -1262 108 -1920 189 -284 35 -668
+86 -752 100 -51 8 -142 23 -203 32 -232 34 -794 135 -945 169 -36 8 -143 31
+-238 50 -96 19 -177 37 -181 39 -3 3 -60 16 -126 31 -66 14 -183 45 -260 67
+-77 22 -171 48 -210 58 -83 21 -408 131 -451 153 -16 8 -60 27 -99 42 -110 43
+-262 122 -354 184 -46 31 -93 62 -105 70 -27 17 -91 98 -117 146 -11 20 -23
+59 -26 85 -11 90 71 217 188 294 24 16 63 42 86 58 48 33 180 99 256 129 46
+18 71 29 142 60 46 20 424 140 513 163 321 83 625 149 1012 221 41 7 138 25
+215 39 426 79 1465 213 1860 240 44 3 -55 -15 -220 -39 -436 -64 -443 -65
+-530 -80 -189 -34 -515 -97 -570 -110 -497 -117 -677 -170 -935 -271 -334
+-130 -533 -283 -566 -434 -13 -61 -12 -78 1 -124 21 -70 30 -83 113 -169 194
+-201 668 -399 1337 -558 44 -11 136 -33 205 -49 298 -71 783 -162 1140 -215
+96 -14 218 -32 270 -40 52 -8 156 -22 230 -30 74 -9 142 -18 150 -20 8 -2 85
+-11 170 -20 85 -9 241 -27 345 -40 255 -32 919 -96 1185 -115 74 -5 200 -14
+280 -20 240 -17 911 -59 1130 -70 529 -26 654 -31 1075 -40 248 -6 628 -15
+845 -20 387 -9 603 -8 1695 5 712 8 1649 42 2055 74 69 6 184 13 255 16 250
+12 963 68 1195 94 47 6 112 13 145 16 96 9 311 34 430 50 61 8 166 21 235 30
+569 72 979 142 1386 234 119 27 216 52 430 110 292 79 647 225 793 327 142 99
+227 222 225 324 -2 88 -39 157 -134 246 -268 251 -1040 507 -2090 693 -63 12
+-164 30 -225 41 -383 69 -1155 175 -1605 221 -304 30 -292 39 20 14z m-10233
+-11 c-3 -3 -12 -4 -19 -1 -8 3 -5 6 6 6 11 1 17 -2 13 -5z m-89 -11 c-10 -2
+-28 -2 -40 0 -13 2 -5 4 17 4 22 1 32 -1 23 -4z"/>
+<path d="M10275 10095 c-11 -2 -148 -9 -305 -15 -277 -10 -605 -30 -840 -50
+-63 -5 -176 -14 -250 -20 -197 -16 -577 -56 -795 -85 -104 -14 -246 -32 -315
+-40 -237 -28 -788 -115 -830 -131 -8 -3 -49 -12 -90 -19 -108 -20 -403 -91
+-505 -122 -142 -43 -182 -55 -200 -63 -11 -4 -49 -18 -85 -30 -61 -21 -135
+-51 -170 -69 -117 -60 -160 -85 -160 -93 0 -4 -6 -8 -13 -8 -19 0 -129 -109
+-149 -148 -28 -53 -24 -143 8 -195 104 -166 394 -313 889 -452 233 -65 556
+-136 800 -175 33 -5 112 -19 174 -30 63 -12 147 -25 185 -30 39 -5 132 -19
+206 -30 242 -37 263 -40 430 -60 294 -36 413 -50 525 -60 61 -5 155 -14 210
+-20 111 -11 514 -43 760 -60 88 -6 246 -17 350 -25 326 -25 851 -50 1250 -60
+121 -3 279 -8 350 -10 403 -14 1396 -17 1955 -6 594 11 1347 35 1455 46 28 3
+138 10 245 15 205 10 309 18 710 50 135 11 304 25 375 30 188 14 623 60 765
+81 36 5 99 14 140 19 330 41 736 109 1020 170 52 12 128 27 168 35 373 73 816
+237 985 366 111 85 158 161 150 246 -7 81 -51 142 -158 218 -53 38 -233 135
+-250 135 -4 0 -21 6 -38 14 -49 22 -283 101 -367 125 -371 104 -903 213 -1360
+280 -280 42 -569 80 -670 90 -58 6 -163 17 -235 25 -71 9 -184 20 -250 26 -66
+6 -165 15 -220 20 -482 47 -921 75 -1186 75 l-246 0 -36 -32 -36 -31 87 -16
+c48 -9 152 -20 232 -26 80 -6 199 -15 265 -21 180 -14 336 -26 580 -44 270
+-20 577 -48 801 -75 339 -39 740 -90 794 -100 81 -14 304 -49 390 -61 41 -5
+109 -16 150 -24 41 -8 122 -24 180 -35 58 -11 134 -27 170 -35 36 -8 88 -20
+115 -25 163 -33 533 -141 673 -196 116 -46 265 -124 328 -172 207 -157 154
+-298 -170 -451 -152 -71 -569 -195 -793 -236 -43 -8 -163 -30 -268 -49 -104
+-19 -235 -42 -290 -51 -55 -8 -127 -20 -160 -25 -71 -12 -483 -69 -540 -75
+-22 -2 -78 -9 -125 -14 -276 -33 -592 -63 -850 -81 -162 -11 -353 -25 -425
+-30 -479 -36 -1202 -70 -1692 -79 -554 -11 -2065 -7 -2498 7 -586 18 -1520 66
+-1790 92 -94 8 -152 13 -480 40 -332 27 -942 92 -1180 125 -60 9 -171 24 -245
+35 -194 27 -499 81 -905 161 -77 15 -448 107 -500 124 -22 7 -83 27 -135 43
+-274 88 -450 181 -535 280 -25 30 -30 45 -32 96 -1 54 2 65 30 99 17 22 49 52
+71 68 23 16 46 32 51 37 19 15 171 90 240 117 116 47 414 134 600 175 44 10
+122 27 174 39 51 12 119 26 150 30 31 5 103 18 161 29 136 27 400 69 515 82
+50 6 135 17 190 25 114 17 300 38 525 60 85 8 196 20 245 25 100 11 167 16
+300 25 50 4 124 10 165 16 41 5 183 16 315 24 132 9 305 20 385 25 80 5 237
+14 350 20 328 17 491 30 549 43 l55 12 -44 35 -44 35 -230 1 c-127 2 -240 1
+-251 -1z"/>
+<path d="M10535 9940 c-76 -8 -234 -20 -535 -40 -74 -5 -171 -14 -215 -19 -44
+-6 -132 -15 -195 -21 -382 -37 -911 -127 -1235 -211 -388 -101 -584 -183 -715
+-298 -19 -17 -38 -31 -42 -31 -5 0 -8 -7 -8 -15 0 -9 -7 -18 -15 -21 -24 -10
+-35 -82 -22 -154 18 -108 249 -260 557 -366 98 -34 350 -107 430 -124 47 -10
+139 -31 205 -45 66 -15 171 -35 234 -45 62 -11 121 -22 130 -25 16 -5 197 -32
+406 -61 230 -31 795 -95 1000 -113 385 -33 421 -35 930 -61 931 -46 1734 -51
+2835 -15 536 18 1219 71 1670 130 63 9 185 25 270 36 399 52 678 104 935 172
+218 58 249 67 270 76 11 6 49 19 85 31 80 27 222 97 293 144 77 51 135 117
+153 175 15 46 15 52 -2 97 -25 64 -102 139 -203 197 -46 26 -86 47 -90 47 -3
+0 -19 7 -34 15 -92 48 -381 141 -592 190 -60 14 -150 35 -200 46 -113 27 -165
+37 -560 103 -374 63 -662 101 -1006 132 -569 50 -740 54 -799 17 -18 -11 -28
+-23 -22 -27 6 -3 52 -13 104 -20 96 -15 166 -22 548 -57 380 -34 977 -107
+1230 -149 208 -35 504 -96 708 -145 426 -105 745 -253 807 -377 19 -39 20
+-105 0 -124 -8 -8 -20 -23 -27 -32 -39 -53 -176 -132 -318 -183 -47 -17 -94
+-34 -105 -39 -61 -25 -366 -100 -570 -140 -303 -59 -403 -76 -510 -86 -27 -3
+-84 -9 -125 -15 -80 -11 -301 -35 -620 -68 -423 -43 -1058 -81 -1535 -91 -440
+-9 -1667 -8 -1880 2 -447 19 -987 50 -1205 68 -69 5 -210 17 -315 25 -394 32
+-1006 105 -1250 150 -44 8 -114 19 -155 25 -41 5 -104 16 -140 24 -36 8 -108
+22 -160 32 -146 26 -477 108 -616 153 -309 99 -486 204 -514 305 -7 25 -9 53
+-5 63 5 10 8 21 7 25 -1 3 25 31 58 61 137 124 457 239 917 327 87 17 190 37
+228 46 71 15 181 32 380 59 61 9 157 22 215 30 124 18 447 52 610 65 63 5 158
+14 210 19 52 6 142 13 200 16 134 8 335 33 378 46 l34 11 -37 25 c-20 14 -49
+27 -63 29 -60 9 -322 11 -397 4z"/>
+</g>
+</svg></div>
         <h2>Sin entrenamiento generado</h2>
         <p>
           Configura los estilos, porcentajes e intensidad en el panel lateral
           y presiona <strong>"Generar entrenamiento"</strong> para crear tu sesión.
         </p>
         <div style="display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:28px;">
-          <button class="action-btn" id="emptyStartBtn" title="Abrir el Reproductor de sesiones" style="width:100%;max-width:420px;justify-content:center;gap:12px;padding:20px 28px;font-size:18px;background:linear-gradient(135deg,#34d399,#0d9488);color:#fff;border:none;font-weight:800;border-radius:999px;box-shadow:0 8px 28px rgba(52,211,153,.45);animation:pwaGlow 2s infinite;">
-            <span style="font-size:24px;">🏊</span>Empezar entrenamiento
+          <button class="action-btn btn-empezar" id="emptyStartBtn" title="Abrir el Reproductor de sesiones">
+            <span class="play-badge"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true" focusable="false"><path d="M8 5v14l11-7z"/></svg></span>Empezar entrenamiento
           </button>
           <p style="max-width:420px;text-align:center;color:var(--muted);font-size:12.5px;line-height:1.5;margin:0;">
             Abre el <strong>Reproductor de sesiones</strong> directamente, sin generar nada aquí primero.
@@ -1709,7 +2157,7 @@
 
       <div id="manualBloque_cal" class="manual-block">
         <div class="manual-block-header">
-          <div class="manual-block-title">🌅 Calentamiento</div>
+          <div class="manual-block-title">Calentamiento</div>
           <div class="manual-block-dist" id="manualDist_cal">0m</div>
         </div>
         <div id="manualExList_cal"></div>
@@ -1721,11 +2169,11 @@
       <div id="manualBloque_main" class="manual-block">
         <div class="manual-block-header">
           <div class="manual-block-title" id="mainBlockTitleDisplay" style="cursor:pointer;display:flex;align-items:center;gap:8px;" title="Haz clic para editar el nombre">
-            🏊 Sesión principal
+            Sesión principal
             <span style="font-size:12px;color:var(--muted);font-weight:400;opacity:0.7;">✎</span>
           </div>
           <input type="text" id="mainBlockTitleInput" value="Sesión principal"
-            style="display:none;background:#0f172a;border:1px solid var(--primary);border-radius:10px;color:var(--text);font-size:16px;font-weight:700;padding:4px 10px;outline:none;flex:1;max-width:260px;">
+            style="display:none;grid-column:2;justify-self:center;background:#0f172a;border:1px solid var(--primary);border-radius:10px;color:var(--text);font-size:16px;font-weight:700;padding:4px 10px;outline:none;flex:1;max-width:260px;">
           <div class="manual-block-dist" id="manualDist_main">0m</div>
         </div>
         <div id="manualExList_main"></div>
@@ -1745,7 +2193,7 @@
 
       <div id="manualBloque_cool" class="manual-block">
         <div class="manual-block-header">
-          <div class="manual-block-title">🌊 Vuelta a la calma</div>
+          <div class="manual-block-title">Vuelta a la calma</div>
           <div class="manual-block-dist" id="manualDist_cool">0m</div>
         </div>
         <div id="manualExList_cool"></div>
@@ -1768,18 +2216,18 @@
       </div>
       <div style="display:flex;gap:10px;justify-content:center;padding:12px 16px 4px;flex-wrap:wrap;">
         <button class="action-btn" id="manualCopyBtn" title="Copiar al portapapeles" style="flex:1;max-width:200px;justify-content:center;background:linear-gradient(135deg,#a78bfa,#7c3aed);color:#fff;border:none;font-weight:700;">
-          <span class="btn-icon">📋</span>Copiar
+          Copiar entrenamiento (Resumen)
         </button>
         <button class="action-btn" id="manualImgBtn" title="Descargar entrenamiento" style="flex:1;max-width:200px;justify-content:center;background:linear-gradient(135deg,#0ea5e9,#6366f1);color:#fff;border:none;font-weight:700;animation:pwaGlow 2s infinite;">
-          <span class="btn-icon">🖼️</span>Descargar entrenamiento
+          Descargar entrenamiento (Imagen)
         </button>
         <button class="action-btn" id="manualJsonBtn" title="Copiar JSON para el reproductor" style="flex:1;max-width:220px;justify-content:center;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;border:none;font-weight:700;">
-          <span class="btn-icon">📋</span>Copiar entrenamiento (JSON)
+          Copiar entrenamiento (JSON)
         </button>
       </div>
       <div style="display:flex;flex-direction:column;align-items:center;gap:10px;padding:20px 16px 8px;">
-        <button class="action-btn" id="manualStartBtn" title="Abrir en el Reproductor de sesiones" style="width:100%;max-width:420px;justify-content:center;gap:12px;padding:20px 28px;font-size:18px;background:linear-gradient(135deg,#34d399,#0d9488);color:#fff;border:none;font-weight:800;border-radius:999px;box-shadow:0 8px 28px rgba(52,211,153,.45);animation:pwaGlow 2s infinite;">
-          <span class="btn-icon" style="font-size:24px;">🏊</span>Empezar entrenamiento
+        <button class="action-btn btn-empezar" id="manualStartBtn" title="Abrir en el Reproductor de sesiones">
+          <span class="play-badge"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true" focusable="false"><path d="M8 5v14l11-7z"/></svg></span>Empezar entrenamiento
         </button>
         <p style="max-width:420px;text-align:center;color:var(--muted);font-size:12.5px;line-height:1.5;margin:0;">
           Copia este entrenamiento y abre el <strong>Reproductor de sesiones</strong> en una pestaña nueva, listo para pegarlo y empezar a nadar con cronómetro guiado.
@@ -1788,7 +2236,59 @@
 
     </div>
   </div><!-- /manualLayout -->
-</div>
+
+  <!-- ============================================================
+    MODO SESIÓN FÍSICA (#fisicaLayout)
+    Igual patrón que el modo manual de natación: una sola columna
+    centrada, y el selector de ejercicios de la Biblioteca vive en un
+    modal aparte (#fisicaPickerModalOverlay) que solo se abre al pulsar
+    "+ Añadir ejercicio" — no está visible de primeras.
+    Oculto por defecto; se activa al pulsar "🏋️ Sesión física".
+  ============================================================ -->
+  <div id="fisicaLayout" style="display:none;">
+    <div style="display:flex;flex-direction:column;gap:24px;max-width:700px;margin:auto;">
+
+      <div class="panel" style="position:static;">
+        <div class="section-title">Sesión física</div>
+        <p style="color:var(--muted);font-size:13px;margin:-4px 0 18px;">
+          Sesión de ejercicios fuera del agua (fuerza, movilidad, core...), con el mismo formato que las rutinas de la Biblioteca.
+        </p>
+
+        <label style="display:block;font-size:11.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">Nombre de la sesión</label>
+        <input type="text" id="fisicaNombreInput" placeholder="Rutina de Fuerza y Movilidad" style="width:100%;margin-bottom:18px;padding:12px 14px;background:var(--card2);border:1px solid var(--border);border-radius:12px;color:var(--text);font-family:inherit;font-size:14px;box-sizing:border-box;">
+
+        <div id="fisicaExerciseList" style="display:flex;flex-direction:column;gap:10px;margin-bottom:12px;"></div>
+        <p id="fisicaListaVacia" style="color:var(--muted);font-size:13px;text-align:center;padding:26px 10px;border:1px dashed var(--border);border-radius:14px;margin-bottom:12px;">Todavía no has añadido ningún ejercicio.</p>
+
+        <div style="display:flex;justify-content:center;">
+          <button type="button" class="manual-add-btn" id="fisicaAddExerciseBtn" style="width:100%;max-width:320px;">+ Añadir ejercicio</button>
+        </div>
+
+        <p id="fisicaError" style="color:#f87171;font-size:13px;margin-top:10px;display:none;"></p>
+
+        <div style="display:flex;gap:10px;margin-top:24px;flex-wrap:wrap;">
+          <button class="action-btn" id="fisicaCopyBtn" title="Copiar al portapapeles" style="flex:1;min-width:150px;justify-content:center;background:linear-gradient(135deg,#a78bfa,#7c3aed);color:#fff;border:none;font-weight:700;">
+            Copiar entrenamiento (Resumen)
+          </button>
+          <button class="action-btn" id="fisicaImgBtn" title="Descargar entrenamiento" style="flex:1;min-width:150px;justify-content:center;background:linear-gradient(135deg,#0ea5e9,#6366f1);color:#fff;border:none;font-weight:700;">
+            Descargar entrenamiento (Imagen)
+          </button>
+          <button class="action-btn" id="fisicaJsonBtn" title="Copiar JSON para el reproductor" style="flex:1;min-width:150px;justify-content:center;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;border:none;font-weight:700;">
+            Copiar entrenamiento (JSON)
+          </button>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:10px;padding:20px 0 8px;">
+          <button class="action-btn btn-empezar" id="fisicaGenerarBtn" title="Abrir en el Reproductor de sesiones">
+            <span class="play-badge"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true" focusable="false"><path d="M8 5v14l11-7z"/></svg></span>Empezar entrenamiento
+          </button>
+          <p style="max-width:420px;text-align:center;color:var(--muted);font-size:12.5px;line-height:1.5;margin:0;">
+            Copia este entrenamiento y abre el <strong>Reproductor de sesiones</strong> en una pestaña nueva, listo para pegarlo y empezar.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div><!-- /fisicaLayout -->
+</div><!-- /container -->
 
 <!-- ============================================================
   PANEL RESUMEN (Summary Sidebar)
@@ -1921,13 +2421,38 @@
       <h2>📋 Cargar entrenamiento</h2>
       <button class="modal-close" id="importModalClose">&times;</button>
     </div>
-    <p style="color:var(--muted);font-size:14px;margin-bottom:14px;">Pega aquí el JSON copiado desde "📋 Copiar entrenamiento (JSON)" para cargarlo y seguir editándolo.</p>
+    <p style="color:var(--muted);font-size:14px;margin-bottom:14px;">Pega aquí el JSON copiado desde "Copiar entrenamiento (JSON)" para cargarlo y seguir editándolo.</p>
     <textarea id="importJsonTextarea" placeholder='{"tipo":"sesion-natacion", ...}' style="width:100%;min-height:220px;background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:14px;color:var(--text);font-family:monospace;font-size:13px;resize:vertical;"></textarea>
     <p id="importJsonError" style="color:#f87171;font-size:13px;margin-top:8px;display:none;"></p>
     <div style="display:flex;gap:10px;margin-top:18px;">
       <button class="action-btn" id="importJsonCancelBtn" style="flex:1;justify-content:center;">Cancelar</button>
       <button class="action-btn" id="importJsonConfirmBtn" style="flex:1;justify-content:center;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;border:none;font-weight:700;">✓ Cargar</button>
     </div>
+  </div>
+</div>
+
+<!-- ============================================================
+  MODAL: SELECCIONAR EJERCICIO FÍSICO
+  Mismo patrón que #modalOverlay (selector de ejercicios de natación
+  del modo manual): buscador + filtro de categoría + lista, oculto
+  hasta que se pulsa "+ Añadir ejercicio". Al elegir uno se añade a la
+  sesión y el modal se cierra; también se puede añadir uno libre que
+  no esté en la lista.
+============================================================ -->
+<div class="modal-overlay" id="fisicaPickerModalOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Añadir ejercicio</h2>
+      <button class="modal-close" id="fisicaPickerModalClose">&times;</button>
+    </div>
+    <div class="modal-search">
+      <input type="text" id="fisicaPickerBuscar" placeholder="Buscar ejercicio por nombre...">
+    </div>
+    <div class="modal-style-filter" id="fisicaPickerCategorias"></div>
+    <div class="modal-exercise-list" id="fisicaPickerList"></div>
+    <p style="text-align:center;margin-top:16px;">
+      <button type="button" id="fisicaPickerLibreBtn" style="background:none;border:none;color:var(--primary);font-size:13px;font-weight:700;cursor:pointer;text-decoration:underline;">¿No está en la lista? Añadir un ejercicio libre</button>
+    </p>
   </div>
 </div>
 
@@ -2610,7 +3135,7 @@
       }
 
       const tR=ejs.reduce((s,e)=>s+e.series*e.metrosSerie,0);
-      entrenamientoActual.bloques.push({titulo:`🏊 ${style.label}`,distancia:tR+"m",ejercicios:ejs});
+      entrenamientoActual.bloques.push({titulo:style.label,distancia:tR+"m",ejercicios:ejs});
     });
 
     // VUELTA A LA CALMA
@@ -3521,44 +4046,97 @@
   // fusionar con otro bloque ni renombrar.
   const BLOQUES_PROTEGIDOS = ["🌅 Calentamiento", "🌊 Vuelta a la calma"];
 
+  function escapeHtmlTexto(str){
+    return String(str)
+      .replace(/&/g,"&amp;")
+      .replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;");
+  }
+
+  function nombreVisibleEntrenamiento(){
+    if(!entrenamientoActual) return "";
+    return entrenamientoActual.nombre || formatearNombreEntrenamiento(entrenamientoActual.creadoEn);
+  }
+
+  let editandoNombreEntrenamiento = false;
+
+  function aplicarNombreEntrenamiento(nuevo){
+    const limpio = (nuevo || "").trim();
+    if(!limpio || !entrenamientoActual) return;
+    entrenamientoActual.nombre = limpio;
+    const texto = document.getElementById("entrenoNombreTexto");
+    if(texto) texto.textContent = limpio;
+  }
+
+  function empezarEdicionNombreEntrenamiento(){
+    const display = document.getElementById("entrenoNombreDisplay");
+    const input = document.getElementById("entrenoNombreInput");
+    if(!display || !input || editandoNombreEntrenamiento) return;
+    editandoNombreEntrenamiento = true;
+    input.value = nombreVisibleEntrenamiento();
+    display.style.display = "none";
+    input.style.display = "block";
+    setTimeout(() => {
+      input.focus();
+      input.select();
+    }, 0);
+  }
+
+  function cerrarEdicionNombreEntrenamiento(guardar){
+    const display = document.getElementById("entrenoNombreDisplay");
+    const input = document.getElementById("entrenoNombreInput");
+    if(!display || !input || !editandoNombreEntrenamiento) return;
+    if(guardar) aplicarNombreEntrenamiento(input.value);
+    input.value = nombreVisibleEntrenamiento();
+    input.style.display = "none";
+    display.style.display = "";
+    editandoNombreEntrenamiento = false;
+  }
+
   function renderEntrenamiento(){
     content.innerHTML = "";
+    editandoNombreEntrenamiento = false;
 
     const totalFinal = entrenamientoActual.bloques.reduce((s, b) => {
       const m = parseInt(b.distancia);
       return s + (isNaN(m) ? 0 : m);
     }, 0);
 
-    // Header con botones de descarga
-    const tituloTotal = document.createElement("div");
-    tituloTotal.className = "entrenamiento-titulo";
-    tituloTotal.style.cssText = "display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;";
-    tituloTotal.innerHTML = `
-      <div>
-        <div>🏊 Entrenamiento &mdash; <strong>${totalFinal}m</strong></div>
-        <div style="font-size:12px;color:var(--muted);font-weight:500;margin-top:2px;">${entrenamientoActual.nombre || formatearNombreEntrenamiento(entrenamientoActual.creadoEn)}</div>
-      </div>`;
-    content.appendChild(tituloTotal);
+    const nombreActual = nombreVisibleEntrenamiento();
+    const nombreRow = document.createElement("div");
+    nombreRow.className = "entrenamiento-nombre-row";
+    nombreRow.innerHTML = `
+      <div class="entrenamiento-nombre" id="entrenoNombreDisplay" title="Haz clic para cambiar el nombre">
+        <span class="entrenamiento-nombre-texto" id="entrenoNombreTexto">${escapeHtmlTexto(nombreActual)}</span>
+        <button type="button" class="renombrar-btn renombrar-entreno-btn" id="renombrarEntrenoBtn" title="Cambiar el nombre del entrenamiento"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true" focusable="false"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg></button>
+      </div>
+      <input type="text" class="entrenamiento-nombre-input" id="entrenoNombreInput" value="${escapeHtmlTexto(nombreActual)}" maxlength="80" aria-label="Nombre del entrenamiento" style="display:none;">
+      <div class="entrenamiento-nombre-metros"><strong>${totalFinal}m</strong></div>`;
+    content.appendChild(nombreRow);
 
-    // Botones de acción — centrados debajo del total
-    const downloadRow = document.createElement("div");
-    downloadRow.style.cssText = "display:flex;gap:10px;justify-content:center;padding:4px 16px 16px;flex-wrap:wrap;";
-    downloadRow.innerHTML = `
-      <button class="action-btn" id="downloadTxtBtn" title="Copiar al portapapeles" style="flex:1;max-width:200px;justify-content:center;background:linear-gradient(135deg,#a78bfa,#7c3aed);color:#fff;border:none;font-weight:700;font-size:13px;">📋 Copiar en portapapeles</button>
-      <button class="action-btn" id="downloadImgBtn" title="Descargar entrenamiento" style="flex:1;max-width:260px;justify-content:center;background:linear-gradient(135deg,#0ea5e9,#6366f1);color:#fff;border:none;font-weight:700;animation:pwaGlow 2s infinite;font-size:13px;">🖼️ Descargar entrenamiento</button>
-      <button class="action-btn" id="downloadJsonBtn" title="Copiar JSON para el reproductor" style="flex:1;max-width:220px;justify-content:center;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;border:none;font-weight:700;font-size:13px;">📋 Copiar entrenamiento (JSON)</button>`;
-    content.appendChild(downloadRow);
+    const nombreDisplay = document.getElementById("entrenoNombreDisplay");
+    const nombreInput = document.getElementById("entrenoNombreInput");
+    const abrirNombre = e => {
+      e.preventDefault();
+      e.stopPropagation();
+      empezarEdicionNombreEntrenamiento();
+    };
+    nombreDisplay.addEventListener("mousedown", e => e.preventDefault());
+    nombreDisplay.addEventListener("click", abrirNombre);
+    nombreInput.addEventListener("blur", () => cerrarEdicionNombreEntrenamiento(true));
+    nombreInput.addEventListener("keydown", e => {
+      if(e.key === "Enter"){ e.preventDefault(); nombreInput.blur(); }
+      if(e.key === "Escape"){ e.preventDefault(); cerrarEdicionNombreEntrenamiento(false); }
+    });
 
-    const startSection = document.createElement("div");
-    startSection.style.cssText = "display:flex;flex-direction:column;align-items:center;gap:10px;padding:20px 16px 8px;";
-    startSection.innerHTML = `
-      <button class="action-btn" id="downloadStartBtn" title="Abrir en el Reproductor de sesiones" style="width:100%;max-width:420px;justify-content:center;gap:12px;padding:20px 28px;font-size:18px;background:linear-gradient(135deg,#34d399,#0d9488);color:#fff;border:none;font-weight:800;border-radius:999px;box-shadow:0 8px 28px rgba(52,211,153,.45);animation:pwaGlow 2s infinite;">
-        <span style="font-size:24px;">🏊</span>Empezar entrenamiento
-      </button>
-      <p style="max-width:420px;text-align:center;color:var(--muted);font-size:12.5px;line-height:1.5;margin:0;">
-        Copia este entrenamiento y abre el <strong>Reproductor de sesiones</strong> en una pestaña nueva, listo para pegarlo y empezar a nadar con cronómetro guiado.
-      </p>`;
-    content.appendChild(startSection);
+    const numPrincipales = entrenamientoActual.bloques.filter(b => !BLOQUES_PROTEGIDOS.includes(b.titulo)).length;
+    if(numPrincipales > 1){
+      const mezclarRow = document.createElement("div");
+      mezclarRow.style.cssText = "display:flex;justify-content:center;padding:0 16px 14px;";
+      mezclarRow.innerHTML = `<button type="button" class="fusionar-btn mezclar-todo-btn" id="mezclarTodoBtn" title="Combina todos los bloques principales en uno solo, alternando los ejercicios entre ellos">Mezclar y fusionar todo</button>`;
+      content.appendChild(mezclarRow);
+    }
 
     entrenamientoActual.bloques.forEach((bloque, bi) => {
       const block = document.createElement("div");
@@ -3573,18 +4151,51 @@
 
       block.innerHTML = `
         <div class="block-header">
-          <div class="block-title">${bloque.titulo}</div>
-          <div class="block-header-actions">
-            ${!esProtegido ? `<button type="button" class="renombrar-btn" data-bi="${bi}" title="Cambiar el nombre de este bloque">✏️</button>` : ""}
-            ${puedeFusionar ? `<button type="button" class="fusionar-btn" data-bi="${bi}" title="Fusiona este bloque con el anterior para poder reordenar ejercicios entre ambos">🔗 Fusionar con anterior</button>` : ""}
-            <div class="block-distance">${bloque.distancia}</div>
+          ${!esProtegido ? `<button type="button" class="renombrar-btn block-renombrar-corner" data-bi="${bi}" title="Cambiar el nombre de este bloque"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true" focusable="false"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg></button>` : ""}
+          <div class="block-title-wrap">
+            <div class="block-title" id="blockTitleDisplay-${bi}">
+              <span id="blockTitleTexto-${bi}">${escapeHtmlTexto(bloque.titulo)}</span>
+            </div>
+            <input type="text" class="entrenamiento-nombre-input block-title-input" id="blockTitleInput-${bi}" value="${escapeHtmlTexto(bloque.titulo)}" maxlength="60" style="display:none;font-size:18px;">
           </div>
+          <div class="block-distance">${bloque.distancia}</div>
+          ${puedeFusionar ? `<button type="button" class="fusionar-btn" data-bi="${bi}" title="Fusiona este bloque con el anterior para poder reordenar ejercicios entre ambos"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true" focusable="false"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>Fusionar con anterior</button>` : ""}
         </div>
         ${ejerciciosHTML}
       `;
 
       content.appendChild(block);
+
+      if(!esProtegido){
+        const input = block.querySelector("#blockTitleInput-" + bi);
+        if(input){
+          input.addEventListener("blur", () => cerrarEdicionBloque(bi, true));
+          input.addEventListener("keydown", e => {
+            if(e.key === "Enter"){ e.preventDefault(); input.blur(); }
+            if(e.key === "Escape"){ e.preventDefault(); cerrarEdicionBloque(bi, false); }
+          });
+        }
+      }
     });
+
+    const downloadRow = document.createElement("div");
+    downloadRow.style.cssText = "display:flex;gap:10px;justify-content:center;padding:20px 16px 8px;flex-wrap:wrap;";
+    downloadRow.innerHTML = `
+      <button class="action-btn" id="downloadTxtBtn" title="Copiar al portapapeles" style="flex:1;max-width:200px;justify-content:center;background:linear-gradient(135deg,#a78bfa,#7c3aed);color:#fff;border:none;font-weight:700;font-size:13px;">Copiar entrenamiento (Resumen)</button>
+      <button class="action-btn" id="downloadImgBtn" title="Descargar entrenamiento" style="flex:1;max-width:260px;justify-content:center;background:linear-gradient(135deg,#0ea5e9,#6366f1);color:#fff;border:none;font-weight:700;animation:pwaGlow 2s infinite;font-size:13px;">Descargar entrenamiento (Imagen)</button>
+      <button class="action-btn" id="downloadJsonBtn" title="Copiar JSON para el reproductor" style="flex:1;max-width:220px;justify-content:center;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;border:none;font-weight:700;font-size:13px;">Copiar entrenamiento (JSON)</button>`;
+    content.appendChild(downloadRow);
+
+    const startSection = document.createElement("div");
+    startSection.style.cssText = "display:flex;flex-direction:column;align-items:center;gap:10px;padding:20px 16px 8px;";
+    startSection.innerHTML = `
+      <button class="action-btn btn-empezar" id="downloadStartBtn" title="Abrir en el Reproductor de sesiones">
+        <span class="play-badge"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true" focusable="false"><path d="M8 5v14l11-7z"/></svg></span>Empezar entrenamiento
+      </button>
+      <p style="max-width:420px;text-align:center;color:var(--muted);font-size:12.5px;line-height:1.5;margin:0;">
+        Copia este entrenamiento y abre el <strong>Reproductor de sesiones</strong> en una pestaña nueva, listo para pegarlo y empezar a nadar con cronómetro guiado.
+      </p>`;
+    content.appendChild(startSection);
 
     content.scrollIntoView({ behavior: "smooth", block: "start" });
     showSummaryToggle(true);
@@ -3613,34 +4224,93 @@
     if(BLOQUES_PROTEGIDOS.includes(prev.titulo) || BLOQUES_PROTEGIDOS.includes(curr.titulo)) return;
 
     prev.ejercicios = prev.ejercicios.concat(curr.ejercicios);
-    const tituloSugerido = prev.titulo + " + " + curr.titulo;
-    const nuevoTitulo = prompt("Nombre para el bloque fusionado:", tituloSugerido);
-    prev.titulo = (nuevoTitulo && nuevoTitulo.trim()) ? nuevoTitulo.trim() : tituloSugerido;
+    prev.titulo = prev.titulo + " + " + curr.titulo;
     prev.distancia = prev.ejercicios.reduce((s,e) => s + e.series * e.metrosSerie, 0) + "m";
     bloques.splice(bi, 1);
     renderEntrenamiento();
   }
 
-  // Cambia el nombre de un bloque en cualquier momento (no solo al fusionar).
-  function renombrarBloque(bi){
-    if(!entrenamientoActual || bi < 0 || bi >= entrenamientoActual.bloques.length) return;
-    const bloque = entrenamientoActual.bloques[bi];
-    if(BLOQUES_PROTEGIDOS.includes(bloque.titulo)) return;
-    const nuevo = prompt("Nombre del bloque:", bloque.titulo);
-    if(nuevo === null) return;
-    const limpio = nuevo.trim();
-    if(!limpio) return;
-    bloque.titulo = limpio;
+  // Combina TODOS los bloques principales (no protegidos) en uno solo,
+  // intercalando sus ejercicios (round-robin) en vez de concatenarlos en
+  // bloque. Calentamiento y Vuelta a la calma mantienen su posición.
+  function mezclarYFusionarTodo(){
+    if(!entrenamientoActual) return;
+    const bloques = entrenamientoActual.bloques;
+    const principales = bloques.filter(b => !BLOQUES_PROTEGIDOS.includes(b.titulo));
+    if(principales.length < 2) return;
+
+    const listas = principales.map(b => b.ejercicios.slice());
+    const intercalados = [];
+    let quedan = true;
+    while(quedan){
+      quedan = false;
+      for(const lista of listas){
+        if(lista.length){ intercalados.push(lista.shift()); quedan = true; }
+      }
+    }
+
+    const bloqueFusionado = {
+      titulo: principales.map(b => b.titulo).join(" + "),
+      distancia: intercalados.reduce((s,e) => s + e.series * e.metrosSerie, 0) + "m",
+      ejercicios: intercalados
+    };
+
+    const nuevos = [];
+    let insertado = false;
+    bloques.forEach(b => {
+      if(BLOQUES_PROTEGIDOS.includes(b.titulo)){ nuevos.push(b); }
+      else if(!insertado){ nuevos.push(bloqueFusionado); insertado = true; }
+    });
+    entrenamientoActual.bloques = nuevos;
     renderEntrenamiento();
+  }
+
+  // ---- Edición inline del nombre de bloque (sin prompt()) ----
+  let editandoBloqueIndex = null;
+
+  function empezarEdicionBloque(bi){
+    if(!entrenamientoActual) return;
+    const bloque = entrenamientoActual.bloques[bi];
+    if(!bloque || BLOQUES_PROTEGIDOS.includes(bloque.titulo)) return;
+    const display = document.getElementById("blockTitleDisplay-" + bi);
+    const input = document.getElementById("blockTitleInput-" + bi);
+    if(!display || !input || editandoBloqueIndex !== null) return;
+    editandoBloqueIndex = bi;
+    input.value = bloque.titulo;
+    display.style.display = "none";
+    input.style.display = "block";
+    setTimeout(() => { input.focus(); input.select(); }, 0);
+  }
+
+  function cerrarEdicionBloque(bi, guardar){
+    if(!entrenamientoActual || editandoBloqueIndex !== bi) return;
+    const bloque = entrenamientoActual.bloques[bi];
+    const display = document.getElementById("blockTitleDisplay-" + bi);
+    const input = document.getElementById("blockTitleInput-" + bi);
+    if(!bloque || !display || !input) return;
+    if(guardar){
+      const limpio = (input.value || "").trim();
+      if(limpio){
+        bloque.titulo = limpio;
+        const texto = document.getElementById("blockTitleTexto-" + bi);
+        if(texto) texto.textContent = limpio;
+      }
+    }
+    input.value = bloque.titulo;
+    input.style.display = "none";
+    display.style.display = "";
+    editandoBloqueIndex = null;
   }
 
   // Delegado en `content` (que persiste entre renders) para no tener que
   // re-vincular los listeners cada vez que se redibuja el entrenamiento.
   content.addEventListener("click", e => {
+    if(e.target.closest("#mezclarTodoBtn")){ mezclarYFusionarTodo(); return; }
     const fusBtn = e.target.closest(".fusionar-btn");
     if(fusBtn){ fusionarBloques(parseInt(fusBtn.dataset.bi)); return; }
+    if(e.target.closest(".renombrar-entreno-btn")) return;
     const renBtn = e.target.closest(".renombrar-btn");
-    if(renBtn){ renombrarBloque(parseInt(renBtn.dataset.bi)); return; }
+    if(renBtn){ empezarEdicionBloque(parseInt(renBtn.dataset.bi)); return; }
   });
 
   // ====================================================================
@@ -3728,7 +4398,7 @@
 
   function buildTextoPlano(){
     const totalFinal = entrenamientoActual.bloques.reduce((s,b)=>s+(parseInt(b.distancia)||0),0);
-    let txt = "ENTRENAMIENTO — " + totalFinal + "m\n";
+    let txt = nombreVisibleEntrenamiento() + " — " + totalFinal + "m\n";
     txt += "=".repeat(40) + "\n\n";
     entrenamientoActual.bloques.forEach(b => {
       txt += htmlDecode(b.titulo) + "  (" + b.distancia + ")\n";
@@ -3827,6 +4497,10 @@
     // usuario) para que el navegador no la bloquee como popup; el copiado
     // al portapapeles va en paralelo.
     const win = window.open(REPRODUCTOR_URL, "_blank");
+    // Igual que en la Biblioteca: respaldo por localStorage (mismo origen
+    // lightswan.github.io) para que el Reproductor la cargue solo al
+    // entrar, aunque el copiado al portapapeles falle.
+    try{ localStorage.setItem("lightswan_sesion_pendiente", json); }catch(e){ /* localStorage no disponible */ }
     navigator.clipboard.writeText(json).catch(() => {
       const ta = document.createElement("textarea");
       ta.value = json; ta.style.position = "fixed"; ta.style.opacity = "0";
@@ -3853,6 +4527,331 @@
   document.getElementById("emptyStartBtn").addEventListener("click", () => {
     irAlReproductor(null);
   });
+
+  // ====================================================================
+  // 🏋️ SESIÓN FÍSICA (fuera del agua) — pantalla completa, tercer modo
+  // Genera el mismo esquema "sesion-fisica" que produce
+  // extraerSesionFisica() en la Biblioteca, para que ambos sitios creen
+  // entrenamientos coherentes entre sí.
+  //
+  // BIBLIOTECA_EJERCICIOS_FISICOS: copia estática de los ejercicios
+  // individuales de la Biblioteca (categorías Espalda y Tracción, Core y
+  // Abdominales, Piernas, Pecho y Brazos, Movilidad y Estiramientos,
+  // Ejercicios Con Gomas). Sirve para poder elegirlos aquí con un clic en
+  // vez de escribir el nombre a mano; si añades ejercicios nuevos a esas
+  // categorías en la Biblioteca, añádelos también aquí para que aparezcan.
+  // ====================================================================
+  const BIBLIOTECA_EJERCICIOS_FISICOS = [
+    { nombre: "Dominadas (Barra)", categoria: "Espalda y Tracción", tags: ["Espalda","Tracción"] },
+    { nombre: "Paralelas (Barras)", categoria: "Espalda y Tracción", tags: ["Tríceps","Pecho"] },
+    { nombre: "Plancha", categoria: "Core y Abdominales", tags: ["Core","Resistencia"] },
+    { nombre: "Superman", categoria: "Core y Abdominales", tags: ["Lumbar","Core"] },
+    { nombre: "Elevación de rodillas (barra)", categoria: "Core y Abdominales", tags: ["Core","Abdominales"] },
+    { nombre: "Lanzamiento de pelota medicinal", categoria: "Core y Abdominales", tags: ["Core","Potencia"] },
+    { nombre: "Patadas en el aire", categoria: "Core y Abdominales", tags: ["Core","Crol"] },
+    { nombre: "Flexiones con codos a las rodillas", categoria: "Core y Abdominales", tags: ["Core","Estabilización"] },
+    { nombre: "Giro de oblicuos", categoria: "Core y Abdominales", tags: ["Core","Oblicuos"] },
+    { nombre: "Abdominales con peso (Hollow Hold)", categoria: "Core y Abdominales", tags: ["Core","Espalda"] },
+    { nombre: "Sentadillas Frontales", categoria: "Piernas", tags: ["Piernas","Potencia"] },
+    { nombre: "Zancadas", categoria: "Piernas", tags: ["Piernas","Equilibrio"] },
+    { nombre: "Elevación de pantorrilla", categoria: "Piernas", tags: ["Piernas","Pantorrillas"] },
+    { nombre: "Flexiones", categoria: "Pecho y Brazos", tags: ["Pecho","Tríceps"] },
+    { nombre: "Flexiones verticales (Pike Press)", categoria: "Pecho y Brazos", tags: ["Hombros","Pecho"] },
+    { nombre: "Cobra", categoria: "Movilidad y Estiramientos", tags: ["Movilidad","Espalda"] },
+    { nombre: "Gato-vaca (Flexión Torácica)", categoria: "Movilidad y Estiramientos", tags: ["Movilidad","Espalda"] },
+    { nombre: "Tracción Alta (Simulación Dominada)", categoria: "Ejercicios Con Gomas", tags: ["Gomas","Tracción"] },
+    { nombre: "Elevación Lateral de Hombros", categoria: "Ejercicios Con Gomas", tags: ["Gomas","Hombros"] },
+    { nombre: "Elevación Frontal de Hombros", categoria: "Ejercicios Con Gomas", tags: ["Gomas","Hombros"] }
+  ];
+
+  function normalizarTextoGifFisica(texto){
+    return texto
+      .toLowerCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // quitar acentos
+      .replace(/\([^)]*\)/g, "") // quitar aclaraciones entre paréntesis
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+  }
+
+  function fisicaCrearFila(datosIniciales){
+    const d = datosIniciales || {};
+    const row = document.createElement("div");
+    row.className = "fisica-row";
+    row.style.cssText = "background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px;";
+    row.innerHTML = `
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input type="text" class="fisica-nombre" placeholder="Nombre del ejercicio" style="flex:1;min-width:0;padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:inherit;font-size:13.5px;box-sizing:border-box;">
+        <button type="button" class="fisica-remove" title="Quitar ejercicio" style="background:none;border:none;color:#f87171;cursor:pointer;padding:4px 8px;flex-shrink:0;display:flex;align-items:center;"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true" focusable="false"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+        <select class="fisica-tipo" style="padding:9px 10px;background:var(--bg);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:inherit;font-size:13px;">
+          <option value="reps">Repeticiones</option>
+          <option value="tiempo">Tiempo (segundos)</option>
+        </select>
+        <input type="number" class="fisica-series" min="1" value="3" placeholder="Series" style="width:64px;padding:9px 10px;background:var(--bg);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:inherit;font-size:13px;">
+        <span style="color:var(--muted);font-size:13px;">×</span>
+        <input type="number" class="fisica-cantidad" min="1" value="12" placeholder="Reps/seg" style="width:78px;padding:9px 10px;background:var(--bg);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:inherit;font-size:13px;">
+        <label style="display:flex;align-items:center;gap:5px;color:var(--muted);font-size:12.5px;cursor:pointer;">
+          <input type="checkbox" class="fisica-porlado"> por lado
+        </label>
+      </div>
+      <input type="text" class="fisica-desc" placeholder="Explicación breve (opcional)" style="padding:9px 12px;background:var(--bg);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:inherit;font-size:13px;box-sizing:border-box;">
+    `;
+    if(d.nombre) row.querySelector(".fisica-nombre").value = d.nombre;
+    if(d.tipo) row.querySelector(".fisica-tipo").value = d.tipo;
+    document.getElementById("fisicaExerciseList").appendChild(row);
+    row.querySelector(".fisica-remove").addEventListener("click", () => row.remove());
+    fisicaActualizarVacio();
+    return row;
+  }
+
+  function fisicaActualizarVacio(){
+    const vacio = document.getElementById("fisicaListaVacia");
+    const hayFilas = document.querySelectorAll("#fisicaExerciseList .fisica-row").length > 0;
+    vacio.style.display = hayFilas ? "none" : "block";
+  }
+
+  function fisicaMostrarError(msg){
+    const el = document.getElementById("fisicaError");
+    el.textContent = msg;
+    el.style.display = "block";
+  }
+  function fisicaOcultarError(){
+    document.getElementById("fisicaError").style.display = "none";
+  }
+
+  function fisicaGenerarJSON(){
+    fisicaOcultarError();
+    const nombre = document.getElementById("fisicaNombreInput").value.trim() || "Sesión física";
+    const filas = [...document.querySelectorAll("#fisicaExerciseList .fisica-row")];
+    if(filas.length === 0){
+      fisicaMostrarError("Añade al menos un ejercicio, desde la lista de la izquierda o escribiéndolo a mano.");
+      return null;
+    }
+    const ejercicios = [];
+    for(const fila of filas){
+      const nombreEj = fila.querySelector(".fisica-nombre").value.trim();
+      if(!nombreEj){
+        fisicaMostrarError("Todos los ejercicios necesitan un nombre.");
+        return null;
+      }
+      const tipo = fila.querySelector(".fisica-tipo").value;
+      const series = Math.max(1, parseInt(fila.querySelector(".fisica-series").value, 10) || 1);
+      const cantidad = Math.max(1, parseInt(fila.querySelector(".fisica-cantidad").value, 10) || 1);
+      const porLado = fila.querySelector(".fisica-porlado").checked;
+      const desc = fila.querySelector(".fisica-desc").value.trim();
+      ejercicios.push({
+        nombre: nombreEj,
+        desc,
+        tags: [],
+        series,
+        repeticiones: tipo === "reps" ? cantidad : null,
+        duracionSegundos: tipo === "tiempo" ? cantidad : null,
+        porLado,
+        gifQuery: normalizarTextoGifFisica(nombreEj),
+        info: null
+      });
+    }
+    return {
+      tipo: "sesion-fisica",
+      version: 1,
+      nombre,
+      generadoEn: new Date().toISOString(),
+      totalEjercicios: ejercicios.length,
+      bloques: [{ titulo: nombre, ejercicios }]
+    };
+  }
+
+  // ---------- Selector de ejercicios de la Biblioteca (columna izquierda) ----------
+  function fisicaRenderPicker(filtroCategoria, filtroTexto){
+    const cont = document.getElementById("fisicaPickerList");
+    cont.innerHTML = "";
+    const texto = (filtroTexto || "").toLowerCase();
+    const lista = BIBLIOTECA_EJERCICIOS_FISICOS.filter(ex => {
+      const okCategoria = !filtroCategoria || filtroCategoria === "Todos" || ex.categoria === filtroCategoria;
+      const okTexto = !texto || ex.nombre.toLowerCase().includes(texto);
+      return okCategoria && okTexto;
+    });
+    if(lista.length === 0){
+      cont.innerHTML = `<p style="color:var(--muted);font-size:13px;text-align:center;padding:20px 0;">No hay ejercicios con ese filtro.</p>`;
+      return;
+    }
+    lista.forEach(ex => {
+      const card = document.createElement("button");
+      card.type = "button";
+      card.className = "fisica-picker-card";
+      card.style.cssText = "width:100%;text-align:left;background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:10px 12px;cursor:pointer;transition:.15s;display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;";
+      card.innerHTML = `
+        <span>
+          <span style="display:block;font-size:13.5px;font-weight:700;color:var(--text);">${ex.nombre}</span>
+          <span style="display:block;font-size:11px;color:var(--muted);margin-top:2px;">${ex.tags.join(" · ")}</span>
+        </span>
+        <span style="font-size:20px;color:var(--primary);flex-shrink:0;">+</span>`;
+      card.addEventListener("mouseover", () => { card.style.borderColor = "var(--primary)"; });
+      card.addEventListener("mouseout", () => { card.style.borderColor = "var(--border)"; });
+      card.addEventListener("click", () => {
+        fisicaCrearFila({ nombre: ex.nombre });
+        cerrarFisicaPickerModal();
+      });
+      cont.appendChild(card);
+    });
+  }
+
+  let fisicaCategoriaActiva = "Todos";
+
+  function abrirFisicaPickerModal(){
+    document.getElementById("fisicaPickerBuscar").value = "";
+    fisicaCategoriaActiva = "Todos";
+    [...document.getElementById("fisicaPickerCategorias").children].forEach(c => {
+      c.classList.toggle("active", c.textContent === "Todos");
+    });
+    fisicaRenderPicker("Todos", "");
+    document.getElementById("fisicaPickerModalOverlay").classList.add("open");
+    // Sin .focus() aquí a propósito: si se enfoca el buscador al abrir el
+    // modal, en móvil salta el teclado automáticamente. Solo debe abrirse
+    // si el usuario toca el campo explícitamente.
+  }
+  function cerrarFisicaPickerModal(){
+    document.getElementById("fisicaPickerModalOverlay").classList.remove("open");
+  }
+
+  (function initFisicaPicker(){
+    const categorias = ["Todos", ...new Set(BIBLIOTECA_EJERCICIOS_FISICOS.map(e => e.categoria))];
+    const chipsCont = document.getElementById("fisicaPickerCategorias");
+    categorias.forEach(cat => {
+      const chip = document.createElement("button");
+      chip.type = "button";
+      chip.textContent = cat;
+      chip.className = "manual-modal-tab" + (cat === "Todos" ? " active" : "");
+      chip.addEventListener("click", () => {
+        fisicaCategoriaActiva = cat;
+        [...chipsCont.children].forEach(c => c.classList.remove("active"));
+        chip.classList.add("active");
+        fisicaRenderPicker(fisicaCategoriaActiva, document.getElementById("fisicaPickerBuscar").value);
+      });
+      chipsCont.appendChild(chip);
+    });
+    document.getElementById("fisicaPickerBuscar").addEventListener("input", (e) => {
+      fisicaRenderPicker(fisicaCategoriaActiva, e.target.value);
+    });
+  })();
+
+  document.getElementById("fisicaAddExerciseBtn").addEventListener("click", () => {
+    abrirFisicaPickerModal();
+  });
+  document.getElementById("fisicaPickerModalClose").addEventListener("click", cerrarFisicaPickerModal);
+  document.getElementById("fisicaPickerModalOverlay").addEventListener("click", (e) => {
+    if(e.target === document.getElementById("fisicaPickerModalOverlay")) cerrarFisicaPickerModal();
+  });
+  document.getElementById("fisicaPickerLibreBtn").addEventListener("click", () => {
+    fisicaCrearFila();
+    cerrarFisicaPickerModal();
+  });
+
+  document.getElementById("fisicaGenerarBtn").addEventListener("click", () => {
+    const data = fisicaGenerarJSON();
+    if(!data) return;
+    abrirEnReproductor(data);
+  });
+  document.getElementById("fisicaJsonBtn").addEventListener("click", () => {
+    const data = fisicaGenerarJSON();
+    if(!data) return;
+    copiarJSONPortapapeles(data, "fisicaJsonBtn");
+  });
+
+  // ---------- Copiar entrenamiento (Resumen) — mismo patrón que buildManualTexto ----------
+  function buildFisicaTexto(data){
+    const now = new Date();
+    const fechaStr = now.toLocaleDateString("es-ES",{day:"2-digit",month:"2-digit",year:"numeric"});
+    let txt = `${data.nombre.toUpperCase()} — ${fechaStr}\n` + "=".repeat(40) + "\n\n";
+    data.bloques[0].ejercicios.forEach(e=>{
+      const cantidad = e.duracionSegundos != null
+        ? `${e.duracionSegundos}s`
+        : `${e.repeticiones} rep${e.porLado ? " (por lado)" : ""}`;
+      txt += `• ${e.nombre}  —  ${e.series} × ${cantidad}\n`;
+      if(e.desc) txt += `  ${e.desc}\n`;
+    });
+    return txt;
+  }
+  document.getElementById("fisicaCopyBtn").addEventListener("click", () => {
+    const data = fisicaGenerarJSON();
+    if(!data) return;
+    const txt = buildFisicaTexto(data);
+    const btn = document.getElementById("fisicaCopyBtn");
+    navigator.clipboard.writeText(txt).then(()=>{
+      const orig = btn.innerHTML;
+      btn.innerHTML = "✅ Copiado";
+      btn.style.color = "var(--success)";
+      setTimeout(()=>{ btn.innerHTML=orig; btn.style.color=""; }, 2000);
+    }).catch(()=>{
+      const ta = document.createElement("textarea");
+      ta.value = txt; ta.style.position="fixed"; ta.style.opacity="0";
+      document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta);
+    });
+  });
+  document.getElementById("fisicaImgBtn").addEventListener("click", () => {
+    const data = fisicaGenerarJSON();
+    if(!data) return;
+    descargarImagenFisica(data);
+  });
+
+  // ====================================================================
+  // 🖼️ DESCARGAR ENTRENAMIENTO (imagen) — SESIÓN FÍSICA
+  // Mismo patrón visual que descargarImagen() (modo automático) y el
+  // canvas de manualImgBtn, adaptado a series×reps / series×tiempo en
+  // vez de series×metros.
+  // ====================================================================
+  function descargarImagenFisica(data){
+    const lines = [];
+    lines.push({ text: data.nombre.toUpperCase(), type: "title" });
+    data.bloques.forEach(b => {
+      lines.push({ text: b.titulo + "  (" + b.ejercicios.length + " ejercicios)", type: "block" });
+      b.ejercicios.forEach(ej => {
+        lines.push({ text: "  • " + ej.nombre, type: "ej" });
+        const cantidadTxt = ej.duracionSegundos != null
+          ? `${ej.series} × ${ej.duracionSegundos}s`
+          : `${ej.series} × ${ej.repeticiones}${ej.porLado ? " (por lado)" : ""} reps`;
+        lines.push({ text: "    " + cantidadTxt, type: "desc" });
+        if(ej.desc) lines.push({ text: "    " + ej.desc, type: "desc" });
+      });
+    });
+
+    const PAD = 40, FONT = 15, LINE_H = 26, TITLE_H = 42, DESC_FONT = 12, DESC_LINE_H = 18;
+    const BASE_W = 700, SCALE = 2;
+    const MAX_TEXT_W = BASE_W - PAD * 2;
+    const ctx0 = document.createElement("canvas").getContext("2d");
+    ctx0.font = DESC_FONT + "px 'Inter',system-ui,sans-serif";
+    const expanded = [];
+    lines.forEach(l => {
+      if(l.type === "desc"){
+        wrapText(ctx0, "    " + l.text, MAX_TEXT_W).forEach(w => expanded.push({ text: w, type: "desc" }));
+      } else { expanded.push(l); }
+    });
+    let canvasH = PAD;
+    expanded.forEach(l => { canvasH += l.type === "title" ? TITLE_H : l.type === "desc" ? DESC_LINE_H : LINE_H; });
+    canvasH += PAD;
+    const canvas = document.createElement("canvas");
+    canvas.width = BASE_W * SCALE; canvas.height = canvasH * SCALE;
+    const ctx = canvas.getContext("2d");
+    ctx.scale(SCALE, SCALE);
+    ctx.fillStyle = "#0f172a"; ctx.fillRect(0, 0, BASE_W, canvasH);
+    let y = PAD;
+    expanded.forEach(l => {
+      if(l.type === "title"){ ctx.fillStyle = "#34d399"; ctx.font = "bold 22px 'Inter',system-ui,sans-serif"; ctx.fillText(l.text, PAD, y+28); y += TITLE_H; }
+      else if(l.type === "block"){ ctx.fillStyle = "#34d399"; ctx.font = "bold "+FONT+"px 'Inter',system-ui,sans-serif"; ctx.fillText(l.text, PAD, y+FONT+4); ctx.strokeStyle = "#1e3a2f"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(PAD,y+FONT+8); ctx.lineTo(BASE_W-PAD,y+FONT+8); ctx.stroke(); y += LINE_H; }
+      else if(l.type === "desc"){ ctx.fillStyle = "#64748b"; ctx.font = DESC_FONT+"px 'Inter',system-ui,sans-serif"; ctx.fillText(l.text, PAD, y+DESC_FONT+2); y += DESC_LINE_H; }
+      else{ ctx.fillStyle = "#e2e8f0"; ctx.font = FONT+"px 'Inter',system-ui,sans-serif"; ctx.fillText(l.text, PAD, y+FONT+2); y += LINE_H; }
+    });
+    ctx.fillStyle = "#334155"; ctx.font = "12px 'Inter',system-ui,sans-serif";
+    ctx.fillText("Generado con Generador de Sesiones", PAD, canvasH-12);
+    canvas.toBlob(blob => {
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = nombreArchivoEntrenamiento(data.generadoEn) + ".png";
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
+  }
 
   function copiarJSONPortapapeles(data, btnId){
     const json = JSON.stringify(data);
@@ -3925,7 +4924,7 @@
 
     // Build lines
     const lines = [];
-    lines.push({ text:"🏊 ENTRENAMIENTO — " + totalFinal + "m", type:"title" });
+    lines.push({ text: nombreVisibleEntrenamiento() + " — " + totalFinal + "m", type:"title" });
     entrenamientoActual.bloques.forEach(b => {
       lines.push({ text: htmlDecode(b.titulo) + "  (" + b.distancia + ")", type:"block" });
       b.ejercicios.forEach(ej => {
@@ -4408,14 +5407,14 @@
     function applyTitle(){
       const val = input.value.trim() || "Sesión principal";
       input.value = val;
-      display.childNodes[0].textContent = "🏊 " + val;
+      display.childNodes[0].textContent = val;
       addBtn.textContent = "+ Añadir ejercicio a " + val;
       display.style.display = "";
       input.style.display = "none";
     }
     display.addEventListener("click", showInput);
     input.addEventListener("blur", applyTitle);
-    input.addEventListener("keydown", e => { if(e.key === "Enter") applyTitle(); if(e.key === "Escape") { input.value = display.childNodes[0].textContent.replace(/^🏊\s*/, ""); applyTitle(); } });
+    input.addEventListener("keydown", e => { if(e.key === "Enter") applyTitle(); if(e.key === "Escape") { input.value = display.childNodes[0].textContent.trim(); applyTitle(); } });
     addBtn.addEventListener("click", () => openManualModal("main"));
   })();
 
@@ -4433,12 +5432,12 @@
     blockEl.innerHTML = `
       <div class="manual-block-header">
         <div class="manual-block-title extra-block-title-display" data-bid="${bid}" style="cursor:pointer;display:flex;align-items:center;gap:8px;" title="Haz clic para editar el nombre">
-          📋 Bloque extra ${extraBlockCounter}
+          Bloque extra ${extraBlockCounter}
           <span style="font-size:12px;color:var(--muted);font-weight:400;opacity:0.7;">✎</span>
         </div>
         <input type="text" class="extra-block-title-input" data-bid="${bid}" value="Bloque extra ${extraBlockCounter}"
-          style="display:none;background:#0f172a;border:1px solid var(--primary);border-radius:10px;color:var(--text);font-size:16px;font-weight:700;padding:4px 10px;outline:none;flex:1;max-width:260px;">
-        <div style="display:flex;align-items:center;gap:8px;">
+          style="display:none;grid-column:2;justify-self:center;background:#0f172a;border:1px solid var(--primary);border-radius:10px;color:var(--text);font-size:16px;font-weight:700;padding:4px 10px;outline:none;flex:1;max-width:260px;">
+        <div style="display:flex;align-items:center;gap:8px;grid-column:3;justify-self:end;">
           <div class="manual-block-dist" id="manualDist_${bid}">0m</div>
           <button onclick="removeExtraBlock('${bid}')" style="background:transparent;border:1px solid var(--danger);color:var(--danger);border-radius:8px;padding:4px 10px;cursor:pointer;font-size:13px;" title="Eliminar bloque">✕</button>
         </div>
@@ -4463,13 +5462,13 @@
     function applyExtraTitle(){
       const val = inp.value.trim() || ("Bloque extra " + extraBlockCounter);
       inp.value = val;
-      disp.childNodes[0].textContent = "📋 " + val;
+      disp.childNodes[0].textContent = val;
       addB.textContent = "+ Añadir ejercicio a " + val;
       disp.style.display=""; inp.style.display="none";
     }
     disp.addEventListener("click", showExtraInput);
     inp.addEventListener("blur", applyExtraTitle);
-    inp.addEventListener("keydown", e => { if(e.key==="Enter") applyExtraTitle(); if(e.key==="Escape"){ inp.value=disp.childNodes[0].textContent.replace(/^📋\s*/,""); applyExtraTitle(); } });
+    inp.addEventListener("keydown", e => { if(e.key==="Enter") applyExtraTitle(); if(e.key==="Escape"){ inp.value=disp.childNodes[0].textContent.trim(); applyExtraTitle(); } });
   }
 
   function removeExtraBlock(bid){
@@ -5051,7 +6050,7 @@
       const inp = blockEl.querySelector(".extra-block-title-input");
       const addB = blockEl.querySelector(".extra-block-add-btn");
       const nombreLimpio = (titulo || "Bloque").replace(/^[\u{1F300}-\u{1FFFF}⬜🟢🟡🟠🔴💀📋]\s*/u, "").trim() || "Bloque";
-      if(disp) disp.childNodes[0].textContent = "📋 " + nombreLimpio;
+      if(disp) disp.childNodes[0].textContent = nombreLimpio;
       if(inp) inp.value = nombreLimpio;
       if(addB) addB.textContent = "+ Añadir ejercicio a " + nombreLimpio;
     }
@@ -5121,19 +6120,74 @@
   });
 
   // Mode switcher
-  document.getElementById("modeAutoBtn").addEventListener("click",()=>{
-    document.getElementById("autoLayout").style.display="";
-    document.getElementById("manualLayout").style.display="none";
-    document.getElementById("modeAutoBtn").classList.add("active");
-    document.getElementById("modeManualBtn").classList.remove("active");
-  });
-  document.getElementById("modeManualBtn").addEventListener("click",()=>{
-    document.getElementById("autoLayout").style.display="none";
-    document.getElementById("manualLayout").style.display="";
-    document.getElementById("modeManualBtn").classList.add("active");
-    document.getElementById("modeAutoBtn").classList.remove("active");
-    showSummaryToggle(false);
-  });
+  // Cada apartado tiene su propio color de acento (violeta = automático,
+  // azul = manual, verde = física). cambiarModo() hace tres cosas a la
+  // vez, todas suaves: (1) cambia --mode-accent/--mode-accent2, que ya
+  // tienen transition puesto en .panel/.section-title/.mode-btn/
+  // #modeBgTint, así que el color (incluido el fondo) se desliza en vez
+  // de saltar; (2) hace un fundido cruzado entre el layout que se oculta
+  // y el que aparece, en vez de un display:none/"" instantáneo; (3)
+  // actualiza qué botón queda "active".
+  const MODO_COLORES = {
+    auto:   { accent: "#a855f7", accent2: "#6366f1" },
+    manual: { accent: "#38bdf8", accent2: "#0ea5e9" },
+    fisica: { accent: "#fb923c", accent2: "#f97316" }
+  };
+  const MODO_LAYOUTS = { auto: "autoLayout", manual: "manualLayout", fisica: "fisicaLayout" };
+  const MODO_BOTONES = { auto: "modeAutoBtn", manual: "modeManualBtn", fisica: "modeFisicaBtn" };
+  let modoActivo = "manual";
+
+  function aplicarModoColor(modo){
+    const c = MODO_COLORES[modo];
+    document.documentElement.style.setProperty("--mode-accent", c.accent);
+    document.documentElement.style.setProperty("--mode-accent2", c.accent2);
+  }
+
+  function cambiarModo(modo){
+    if(modo === modoActivo) return;
+    const anteriorId = MODO_LAYOUTS[modoActivo];
+    const nuevoId = MODO_LAYOUTS[modo];
+    const anteriorEl = document.getElementById(anteriorId);
+    const nuevoEl = document.getElementById(nuevoId);
+    const colorNuevo = MODO_COLORES[modo].accent;
+
+    aplicarModoColor(modo);
+    Object.entries(MODO_BOTONES).forEach(([m, id]) => {
+      document.getElementById(id).classList.toggle("active", m === modo);
+    });
+
+    // Pulso de color en el botón recién activado: parte siempre del azul
+    // oscuro fijo del botón desactivado (--pulse-from, en :root) y llega
+    // hasta el color del apartado nuevo.
+    const btnNuevo = document.getElementById(MODO_BOTONES[modo]);
+    btnNuevo.style.setProperty("--pulse-to", colorNuevo);
+    btnNuevo.classList.remove("pulsing");
+    void btnNuevo.offsetWidth; // fuerza reflow para poder relanzar la animación
+    btnNuevo.classList.add("pulsing");
+    btnNuevo.addEventListener("animationend", () => btnNuevo.classList.remove("pulsing"), { once: true });
+
+    // Fundido de salida del layout anterior
+    anteriorEl.style.opacity = "0";
+    setTimeout(() => {
+      anteriorEl.style.display = "none";
+      // Fundido de entrada del nuevo layout
+      nuevoEl.style.display = "";
+      nuevoEl.style.opacity = "0";
+      requestAnimationFrame(() => { requestAnimationFrame(() => {
+        nuevoEl.style.opacity = "1";
+      }); });
+    }, 300);
+
+    modoActivo = modo;
+    if(modo !== "auto") showSummaryToggle(false);
+  }
+
+  document.getElementById("modeAutoBtn").addEventListener("click", () => cambiarModo("auto"));
+  document.getElementById("modeManualBtn").addEventListener("click", () => cambiarModo("manual"));
+  document.getElementById("modeFisicaBtn").addEventListener("click", () => cambiarModo("fisica"));
+
+  aplicarModoColor("manual"); // el modo manual es el que empieza activo
+  document.getElementById("manualLayout").style.opacity = "1";
 
   // Manual mode download/summary buttons
   // ====================================================================
@@ -5304,7 +6358,7 @@
   document.getElementById("manualSummaryBtn").addEventListener("click",()=>{
     // Build manual summary
     const total = Object.keys(manualData).reduce((s,b)=>s+manualData[b].reduce((ss,e)=>ss+e.series*e.metros,0),0);
-    const fixedLabels = {cal:"🌅 Calentamiento",main:"🏊 Sesión principal",cool:"🌊 Vuelta a la calma"};
+    const fixedLabels = {cal:"Calentamiento",main:"Sesión principal",cool:"Vuelta a la calma"};
     let html = `<div class="summary-section-title">Resumen manual</div>`;
     html += `<div class="summary-row"><span class="summary-label">Total metros</span><span class="summary-val">${total}m</span></div>`;
     ordenBloquesManual().forEach(b=>{
@@ -5313,7 +6367,7 @@
       let label = fixedLabels[b];
       if(!label){
         const titleEl = document.querySelector(`.extra-block-title-display[data-bid="${b}"]`);
-        label = "📋 " + (titleEl ? titleEl.childNodes[0].textContent.replace(/^📋\s*/,"") : b);
+        label = titleEl ? titleEl.childNodes[0].textContent.replace(/^📋\s*/,"").trim() : b;
       }
       html += `<div class="summary-section-title">${label}</div>`;
       items.forEach(e=>{
@@ -5606,9 +6660,252 @@
   // source: https://github.com/LightSwan — Kevin
 </script>
 
-  <footer style="text-align:center;padding:40px 24px 32px;border-top:1px solid var(--border);margin-top:48px;">
+  <footer style="text-align:center;padding:40px 24px 32px;border-top:1px solid var(--border);margin-top:48px;position:relative;z-index:1;">
     <div style="display:flex;flex-direction:column;align-items:center;gap:12px;max-width:480px;margin:auto;">
-      <div style="font-size:28px;">🏊</div>
+      <svg viewBox="0 0 2551 2551" width="44" height="44" role="img" aria-label="Biblioteca de la Natación">
+  <defs>
+    <linearGradient id="logoGradientHeader" gradientUnits="userSpaceOnUse" x1="12755" y1="19570" x2="12755" y2="7200">
+      <stop offset="0%" stop-color="#00dfff"/>
+      <stop offset="30%" stop-color="#00aef3"/>
+      <stop offset="55%" stop-color="#0089e2"/>
+      <stop offset="80%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#a78bfa"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(0.000000,2551.000000) scale(0.100000,-0.100000)"
+fill="url(#logoGradientHeader)" stroke="none">
+<path d="M6085 19564 c-369 -29 -842 -107 -943 -155 -66 -32 -89 -96 -58 -158
+18 -35 45 -46 163 -72 53 -11 172 -45 265 -75 229 -73 294 -83 623 -94 154 -6
+323 -15 375 -21 268 -30 495 -100 773 -240 225 -113 410 -234 897 -584 380
+-273 648 -445 1080 -693 421 -241 645 -384 905 -579 501 -376 877 -769 1202
+-1258 242 -365 602 -1035 803 -1495 74 -170 97 -198 143 -181 41 16 45 53 13
+146 -114 331 -198 529 -368 871 -430 863 -868 1422 -1530 1951 -298 238 -544
+401 -1043 690 -533 309 -711 423 -1190 768 -154 110 -320 228 -370 261 -410
+275 -771 439 -1108 503 -144 27 -292 40 -602 51 -161 6 -300 16 -345 25 -78
+16 -229 62 -243 75 -8 7 212 39 408 60 572 61 1077 12 1562 -150 336 -111 600
+-255 1223 -664 372 -244 494 -318 675 -406 225 -110 420 -167 652 -190 54 -5
+208 -14 343 -20 135 -6 288 -17 340 -25 373 -60 709 -244 1035 -570 219 -218
+441 -511 553 -731 l21 -42 -62 -6 c-133 -15 -277 -38 -387 -63 -63 -14 -127
+-28 -142 -31 -39 -6 -67 -42 -78 -101 -13 -68 0 -119 39 -154 16 -14 46 -56
+67 -94 75 -135 256 -406 559 -838 170 -242 317 -452 328 -467 25 -34 79 -60
+109 -53 13 4 33 14 45 24 26 22 640 896 762 1086 123 192 126 195 161 259 18
+32 46 70 61 84 37 33 48 74 38 147 -5 41 -15 65 -31 80 -36 34 -319 93 -576
+121 l-62 7 41 76 c214 393 603 817 940 1026 162 101 353 183 499 216 111 25
+252 40 475 49 132 6 285 15 340 21 367 38 640 150 1115 459 91 59 262 170 380
+247 482 314 738 449 1049 553 550 183 1097 219 1824 118 86 -12 154 -25 150
+-29 -14 -12 -167 -59 -243 -74 -45 -9 -184 -19 -345 -25 -428 -15 -593 -37
+-822 -106 -362 -110 -649 -272 -1268 -715 -492 -353 -654 -458 -1210 -779
+-466 -270 -702 -426 -995 -659 -566 -450 -959 -909 -1335 -1561 -93 -160 -269
+-506 -344 -675 -29 -66 -66 -147 -81 -181 -41 -89 -180 -480 -180 -507 0 -29
+18 -53 47 -61 32 -10 68 29 99 109 41 107 233 507 351 729 528 1002 897 1474
+1573 2011 290 230 478 354 1020 667 512 297 701 420 1215 789 540 388 810 540
+1146 648 213 67 364 87 759 101 334 11 398 20 628 94 93 30 213 64 267 76 109
+23 148 42 164 77 34 73 -11 139 -116 172 -140 43 -499 99 -818 127 -264 23
+-700 15 -900 -15 -290 -45 -575 -120 -810 -213 -294 -117 -530 -252 -1130
+-645 -435 -285 -596 -376 -790 -448 -209 -78 -347 -100 -718 -115 -368 -15
+-533 -41 -734 -116 -246 -92 -484 -241 -708 -443 -255 -231 -515 -563 -680
+-869 l-60 -112 -210 0 -210 0 -64 118 c-230 418 -576 816 -921 1058 -160 113
+-297 186 -463 248 -201 75 -363 101 -730 116 -462 19 -646 60 -942 214 -160
+83 -221 121 -620 381 -375 245 -581 371 -755 463 -334 177 -714 298 -1135 363
+-117 18 -192 22 -460 24 -176 1 -342 1 -370 -1z m7245 -3192 c58 -6 157 -13
+220 -17 71 -4 117 -11 122 -18 21 -33 7 -71 -50 -136 -94 -107 -302 -389 -590
+-801 -148 -212 -273 -384 -278 -383 -5 0 -135 181 -289 401 -298 425 -483 676
+-577 783 -57 65 -71 103 -50 135 4 7 49 15 102 18 252 17 399 27 435 30 79 7
+852 -3 955 -12z"/>
+<path d="M4964 17561 c-52 -24 -74 -55 -74 -104 0 -59 23 -90 110 -151 217
+-153 382 -362 634 -806 193 -340 336 -639 606 -1270 142 -331 170 -415 270
+-795 84 -322 178 -515 357 -737 245 -302 887 -751 1660 -1161 237 -126 418
+-212 793 -377 485 -213 637 -292 877 -457 521 -357 795 -631 1124 -1125 68
+-102 143 -220 167 -262 45 -81 71 -99 117 -78 54 25 46 68 -52 292 -71 162
+-108 229 -206 375 -106 158 -174 241 -337 408 -151 156 -291 277 -491 425
+-350 259 -571 385 -1004 572 -825 358 -1391 668 -1960 1073 -328 234 -479 375
+-611 573 -116 174 -168 305 -253 634 -53 205 -102 359 -169 525 -70 175 -347
+805 -431 978 l-79 167 56 -46 c31 -26 161 -136 287 -244 221 -190 588 -502
+799 -679 56 -47 279 -226 496 -399 626 -499 686 -548 845 -687 83 -72 222
+-191 310 -265 256 -214 385 -334 821 -767 480 -477 1040 -1057 1152 -1194 107
+-130 220 -293 472 -679 672 -1027 666 -1013 896 -1818 57 -199 111 -374 121
+-388 41 -62 151 -56 181 11 17 36 15 70 -8 145 -29 96 -68 282 -95 464 -65
+437 -93 569 -186 881 -120 405 -376 1079 -591 1555 -144 317 -512 1034 -686
+1335 -138 239 -295 454 -473 651 -365 400 -735 782 -914 942 -122 110 -364
+331 -375 342 -22 22 -201 180 -270 237 -338 280 -1068 756 -1635 1065 -889
+485 -1568 764 -2056 843 -120 19 -145 19 -195 -4z m524 -296 c260 -80 436
+-149 782 -307 610 -280 1164 -589 1811 -1014 393 -256 594 -411 890 -680 102
+-93 275 -250 384 -349 109 -99 293 -281 409 -405 115 -124 272 -290 347 -370
+409 -434 525 -613 970 -1485 262 -513 374 -763 571 -1270 124 -317 252 -675
+244 -682 -2 -2 -16 18 -32 44 -68 117 -691 1064 -784 1190 -135 187 -231 295
+-549 623 -147 151 -349 362 -450 468 -102 106 -192 199 -202 205 -9 7 -149
+143 -311 302 -162 160 -376 360 -477 445 -101 85 -284 241 -405 345 -269 231
+-357 304 -506 420 -331 257 -855 680 -1040 840 -58 50 -186 159 -285 242 -99
+83 -241 203 -315 268 -74 64 -227 193 -340 287 -277 232 -434 391 -602 613
+-76 100 -162 209 -193 243 -31 34 -51 62 -43 62 7 0 64 -16 126 -35z"/>
+<path d="M20325 17560 c-218 -38 -489 -119 -755 -225 -348 -138 -856 -381
+-1255 -601 -300 -165 -431 -243 -860 -514 -402 -254 -746 -510 -1007 -747 -53
+-48 -179 -162 -280 -253 -248 -223 -401 -373 -656 -645 -119 -126 -246 -261
+-283 -300 -414 -437 -581 -699 -1073 -1683 -242 -481 -353 -739 -578 -1332
+-225 -594 -316 -923 -393 -1412 -54 -346 -67 -418 -106 -561 -33 -122 -35
+-147 -14 -186 30 -58 130 -67 172 -15 11 15 38 86 58 158 294 1041 280 1011
+919 1987 329 502 425 639 551 787 130 152 638 677 1119 1155 422 420 564 552
+816 763 80 67 224 190 320 274 96 83 234 198 305 255 72 57 310 248 530 423
+220 175 448 359 506 408 290 244 574 485 758 643 232 200 365 311 369 307 1
+-2 -32 -74 -74 -162 -111 -230 -386 -861 -459 -1054 -35 -91 -79 -223 -98
+-295 -19 -71 -49 -184 -67 -250 -56 -212 -97 -316 -176 -452 -153 -261 -346
+-439 -844 -778 -440 -300 -1034 -620 -1660 -894 -562 -246 -692 -317 -1025
+-554 -496 -354 -839 -715 -1044 -1097 -66 -123 -171 -378 -171 -414 0 -38 25
+-66 61 -66 38 0 53 16 115 125 73 127 246 383 338 500 224 286 428 484 716
+696 386 284 528 364 1095 612 641 280 1142 548 1635 873 439 289 695 505 854
+719 175 234 234 368 340 770 85 326 113 400 339 921 184 422 270 607 383 819
+323 606 527 881 771 1047 40 26 80 62 88 78 34 66 9 140 -58 171 -51 23 -92
+23 -222 -1z m-220 -322 c-31 -35 -105 -126 -163 -203 -206 -272 -328 -401
+-538 -572 -54 -44 -173 -144 -264 -223 -158 -136 -565 -482 -864 -734 -159
+-134 -701 -570 -936 -753 -169 -131 -276 -221 -571 -474 -107 -92 -275 -236
+-374 -320 -99 -84 -299 -271 -445 -415 -146 -144 -289 -284 -319 -311 -29 -26
+-130 -129 -224 -228 -94 -99 -294 -306 -443 -460 -288 -296 -379 -398 -501
+-560 -71 -94 -287 -414 -432 -640 -36 -55 -136 -209 -222 -342 -87 -133 -165
+-255 -173 -272 -82 -158 55 232 297 849 151 382 348 800 635 1345 244 464 370
+673 524 867 92 117 101 127 368 413 403 432 512 544 651 670 79 72 220 200
+314 285 274 250 334 302 443 389 345 273 1038 717 1582 1014 154 83 672 347
+683 347 3 0 51 22 108 49 237 111 510 220 714 285 66 21 131 42 145 46 61 21
+62 11 5 -52z"/>
+<path d="M9745 10469 c-115 -4 -298 -10 -405 -13 -364 -12 -769 -34 -1280 -70
+-561 -41 -793 -59 -985 -77 -115 -11 -262 -24 -325 -29 -101 -9 -457 -50 -680
+-80 -41 -5 -133 -17 -205 -25 -218 -27 -632 -85 -785 -110 -538 -89 -707 -120
+-955 -179 -99 -24 -225 -53 -280 -66 -55 -12 -127 -30 -160 -40 -33 -10 -125
+-37 -205 -60 -326 -94 -636 -215 -790 -309 -19 -11 -42 -24 -50 -28 -25 -11
+-131 -92 -196 -150 -79 -69 -136 -175 -142 -262 -5 -67 16 -142 56 -206 52
+-81 205 -215 312 -272 30 -16 80 -43 110 -61 54 -30 290 -136 340 -152 14 -5
+50 -18 80 -30 97 -37 394 -130 560 -175 36 -9 85 -23 110 -31 152 -45 597
+-147 825 -189 44 -8 112 -22 150 -30 39 -9 154 -29 257 -45 102 -16 206 -34
+230 -39 42 -10 252 -42 398 -62 41 -5 140 -21 220 -34 80 -13 276 -40 435 -60
+160 -20 315 -40 345 -45 30 -5 172 -21 315 -35 143 -14 316 -32 385 -40 69 -8
+188 -20 265 -25 131 -10 200 -16 605 -55 85 -8 259 -21 385 -30 127 -9 289
+-20 360 -25 274 -20 620 -40 860 -50 138 -5 315 -15 395 -20 581 -40 2029 -71
+3170 -68 969 3 1631 13 2115 33 61 3 178 7 260 10 212 8 1289 64 1355 70 30 3
+134 10 230 16 200 11 687 52 895 74 77 8 239 24 359 35 228 21 594 60 801 85
+66 8 159 19 207 25 87 10 276 39 560 85 84 14 198 32 253 40 263 40 760 138
+1045 205 180 43 580 156 635 180 11 5 94 36 185 70 91 34 176 68 190 75 14 8
+70 36 125 63 221 110 377 243 440 375 12 27 18 62 18 125 0 79 -3 92 -32 145
+-17 32 -43 70 -57 85 -96 101 -130 130 -219 186 -257 162 -609 307 -1045 430
+-69 20 -138 40 -155 45 -80 24 -436 107 -675 158 -261 55 -327 68 -450 88 -52
+8 -151 26 -220 40 -69 13 -213 38 -320 55 -107 17 -235 37 -285 45 -141 23
+-364 54 -472 65 -54 6 -138 17 -188 25 -88 14 -257 34 -480 55 -60 6 -159 18
+-220 26 -132 17 -425 47 -665 69 -96 8 -213 19 -260 25 -116 13 -301 28 -575
+45 -126 8 -284 19 -350 24 -66 6 -205 15 -310 21 -104 5 -320 17 -480 26 -159
+9 -365 14 -458 12 l-167 -4 -35 -34 c-19 -19 -35 -37 -35 -41 0 -3 28 -12 63
+-20 l62 -14 -84 -7 c-79 -6 -87 -9 -119 -41 l-34 -35 88 -15 c49 -9 253 -28
+454 -41 201 -14 448 -32 550 -41 102 -8 275 -22 385 -31 110 -8 261 -22 335
+-30 235 -25 320 -34 530 -54 113 -12 252 -27 310 -35 58 -8 220 -28 360 -45
+448 -55 788 -106 1115 -170 235 -46 470 -93 520 -105 33 -7 132 -30 220 -50
+88 -20 171 -40 185 -45 14 -5 39 -11 55 -15 45 -9 151 -41 325 -97 158 -51
+167 -54 232 -82 21 -9 66 -27 100 -40 53 -20 111 -49 223 -110 89 -49 204
+-152 238 -213 24 -44 25 -141 1 -180 -28 -44 -119 -130 -182 -170 -167 -107
+-478 -220 -897 -327 -146 -37 -470 -108 -565 -124 -30 -5 -135 -24 -232 -41
+-360 -64 -638 -105 -958 -141 -531 -59 -783 -84 -995 -100 -82 -6 -159 -13
+-170 -15 -78 -17 -918 -69 -1530 -95 -132 -5 -350 -15 -485 -20 -478 -21
+-1005 -29 -1785 -29 -1026 -1 -1821 19 -2805 69 -107 6 -283 15 -390 20 -408
+21 -1368 100 -2010 166 -337 34 -1052 128 -1315 173 -60 11 -132 22 -160 25
+-77 10 -364 62 -645 117 -448 89 -823 190 -1163 313 -105 38 -127 47 -257 109
+-234 110 -374 252 -357 360 9 55 12 61 46 109 59 82 211 182 401 263 80 34
+349 127 450 155 25 7 65 18 90 26 72 21 405 101 535 128 224 47 666 117 1100
+176 160 21 308 41 330 44 22 3 105 13 185 21 80 8 253 26 385 40 325 34 321
+34 565 50 118 8 305 21 415 30 110 8 364 24 565 35 201 11 374 22 385 25 11 3
+162 9 335 15 324 10 481 22 537 41 l33 10 -28 35 c-16 20 -36 34 -49 34 -12 0
+-29 3 -38 7 -15 5 -15 7 4 17 21 12 21 12 -7 45 -25 31 -34 34 -107 42 -92 9
+-291 9 -590 -2z m6648 -236 c-7 -2 -19 -2 -25 0 -7 3 -2 5 12 5 14 0 19 -2 13
+-5z m135 -10 c-16 -2 -40 -2 -55 0 -16 2 -3 4 27 4 30 0 43 -2 28 -4z m115
+-10 c-13 -2 -35 -2 -50 0 -16 2 -5 4 22 4 28 0 40 -2 28 -4z m110 -10 c-7 -2
+-21 -2 -30 0 -10 3 -4 5 12 5 17 0 24 -2 18 -5z m130 -10 c-7 -2 -21 -2 -30 0
+-10 3 -4 5 12 5 17 0 24 -2 18 -5z m120 -10 c-13 -2 -33 -2 -45 0 -13 2 -3 4
+22 4 25 0 35 -2 23 -4z m267 -18 c174 -14 255 -21 475 -45 50 -5 196 -19 325
+-30 129 -11 285 -27 345 -35 61 -8 209 -26 330 -40 121 -14 297 -37 390 -50
+94 -14 224 -32 290 -41 245 -32 817 -123 939 -148 39 -8 114 -22 166 -31 212
+-38 620 -126 770 -167 41 -11 120 -31 175 -44 178 -44 542 -157 725 -226 204
+-77 425 -189 510 -257 25 -20 54 -43 65 -51 35 -27 91 -89 103 -115 7 -14 17
+-36 24 -50 23 -49 8 -167 -27 -214 -14 -19 -75 -81 -116 -116 -106 -94 -417
+-243 -684 -328 -174 -56 -466 -138 -575 -162 -123 -28 -225 -52 -385 -90 -156
+-37 -837 -155 -1126 -195 -85 -11 -201 -27 -259 -35 -104 -15 -333 -42 -585
+-70 -71 -8 -202 -23 -290 -35 -192 -24 -504 -54 -710 -69 -82 -6 -262 -20
+-400 -31 -137 -10 -295 -22 -350 -25 -55 -3 -163 -10 -240 -15 -370 -25 -1064
+-60 -1460 -74 -1117 -39 -1214 -41 -2435 -39 -1141 2 -1482 8 -2125 33 -137 6
+-389 15 -560 20 -170 6 -386 14 -480 20 -93 5 -251 14 -350 20 -587 35 -911
+57 -949 65 -12 3 -136 12 -276 20 -423 25 -1262 108 -1920 189 -284 35 -668
+86 -752 100 -51 8 -142 23 -203 32 -232 34 -794 135 -945 169 -36 8 -143 31
+-238 50 -96 19 -177 37 -181 39 -3 3 -60 16 -126 31 -66 14 -183 45 -260 67
+-77 22 -171 48 -210 58 -83 21 -408 131 -451 153 -16 8 -60 27 -99 42 -110 43
+-262 122 -354 184 -46 31 -93 62 -105 70 -27 17 -91 98 -117 146 -11 20 -23
+59 -26 85 -11 90 71 217 188 294 24 16 63 42 86 58 48 33 180 99 256 129 46
+18 71 29 142 60 46 20 424 140 513 163 321 83 625 149 1012 221 41 7 138 25
+215 39 426 79 1465 213 1860 240 44 3 -55 -15 -220 -39 -436 -64 -443 -65
+-530 -80 -189 -34 -515 -97 -570 -110 -497 -117 -677 -170 -935 -271 -334
+-130 -533 -283 -566 -434 -13 -61 -12 -78 1 -124 21 -70 30 -83 113 -169 194
+-201 668 -399 1337 -558 44 -11 136 -33 205 -49 298 -71 783 -162 1140 -215
+96 -14 218 -32 270 -40 52 -8 156 -22 230 -30 74 -9 142 -18 150 -20 8 -2 85
+-11 170 -20 85 -9 241 -27 345 -40 255 -32 919 -96 1185 -115 74 -5 200 -14
+280 -20 240 -17 911 -59 1130 -70 529 -26 654 -31 1075 -40 248 -6 628 -15
+845 -20 387 -9 603 -8 1695 5 712 8 1649 42 2055 74 69 6 184 13 255 16 250
+12 963 68 1195 94 47 6 112 13 145 16 96 9 311 34 430 50 61 8 166 21 235 30
+569 72 979 142 1386 234 119 27 216 52 430 110 292 79 647 225 793 327 142 99
+227 222 225 324 -2 88 -39 157 -134 246 -268 251 -1040 507 -2090 693 -63 12
+-164 30 -225 41 -383 69 -1155 175 -1605 221 -304 30 -292 39 20 14z m-10233
+-11 c-3 -3 -12 -4 -19 -1 -8 3 -5 6 6 6 11 1 17 -2 13 -5z m-89 -11 c-10 -2
+-28 -2 -40 0 -13 2 -5 4 17 4 22 1 32 -1 23 -4z"/>
+<path d="M10275 10095 c-11 -2 -148 -9 -305 -15 -277 -10 -605 -30 -840 -50
+-63 -5 -176 -14 -250 -20 -197 -16 -577 -56 -795 -85 -104 -14 -246 -32 -315
+-40 -237 -28 -788 -115 -830 -131 -8 -3 -49 -12 -90 -19 -108 -20 -403 -91
+-505 -122 -142 -43 -182 -55 -200 -63 -11 -4 -49 -18 -85 -30 -61 -21 -135
+-51 -170 -69 -117 -60 -160 -85 -160 -93 0 -4 -6 -8 -13 -8 -19 0 -129 -109
+-149 -148 -28 -53 -24 -143 8 -195 104 -166 394 -313 889 -452 233 -65 556
+-136 800 -175 33 -5 112 -19 174 -30 63 -12 147 -25 185 -30 39 -5 132 -19
+206 -30 242 -37 263 -40 430 -60 294 -36 413 -50 525 -60 61 -5 155 -14 210
+-20 111 -11 514 -43 760 -60 88 -6 246 -17 350 -25 326 -25 851 -50 1250 -60
+121 -3 279 -8 350 -10 403 -14 1396 -17 1955 -6 594 11 1347 35 1455 46 28 3
+138 10 245 15 205 10 309 18 710 50 135 11 304 25 375 30 188 14 623 60 765
+81 36 5 99 14 140 19 330 41 736 109 1020 170 52 12 128 27 168 35 373 73 816
+237 985 366 111 85 158 161 150 246 -7 81 -51 142 -158 218 -53 38 -233 135
+-250 135 -4 0 -21 6 -38 14 -49 22 -283 101 -367 125 -371 104 -903 213 -1360
+280 -280 42 -569 80 -670 90 -58 6 -163 17 -235 25 -71 9 -184 20 -250 26 -66
+6 -165 15 -220 20 -482 47 -921 75 -1186 75 l-246 0 -36 -32 -36 -31 87 -16
+c48 -9 152 -20 232 -26 80 -6 199 -15 265 -21 180 -14 336 -26 580 -44 270
+-20 577 -48 801 -75 339 -39 740 -90 794 -100 81 -14 304 -49 390 -61 41 -5
+109 -16 150 -24 41 -8 122 -24 180 -35 58 -11 134 -27 170 -35 36 -8 88 -20
+115 -25 163 -33 533 -141 673 -196 116 -46 265 -124 328 -172 207 -157 154
+-298 -170 -451 -152 -71 -569 -195 -793 -236 -43 -8 -163 -30 -268 -49 -104
+-19 -235 -42 -290 -51 -55 -8 -127 -20 -160 -25 -71 -12 -483 -69 -540 -75
+-22 -2 -78 -9 -125 -14 -276 -33 -592 -63 -850 -81 -162 -11 -353 -25 -425
+-30 -479 -36 -1202 -70 -1692 -79 -554 -11 -2065 -7 -2498 7 -586 18 -1520 66
+-1790 92 -94 8 -152 13 -480 40 -332 27 -942 92 -1180 125 -60 9 -171 24 -245
+35 -194 27 -499 81 -905 161 -77 15 -448 107 -500 124 -22 7 -83 27 -135 43
+-274 88 -450 181 -535 280 -25 30 -30 45 -32 96 -1 54 2 65 30 99 17 22 49 52
+71 68 23 16 46 32 51 37 19 15 171 90 240 117 116 47 414 134 600 175 44 10
+122 27 174 39 51 12 119 26 150 30 31 5 103 18 161 29 136 27 400 69 515 82
+50 6 135 17 190 25 114 17 300 38 525 60 85 8 196 20 245 25 100 11 167 16
+300 25 50 4 124 10 165 16 41 5 183 16 315 24 132 9 305 20 385 25 80 5 237
+14 350 20 328 17 491 30 549 43 l55 12 -44 35 -44 35 -230 1 c-127 2 -240 1
+-251 -1z"/>
+<path d="M10535 9940 c-76 -8 -234 -20 -535 -40 -74 -5 -171 -14 -215 -19 -44
+-6 -132 -15 -195 -21 -382 -37 -911 -127 -1235 -211 -388 -101 -584 -183 -715
+-298 -19 -17 -38 -31 -42 -31 -5 0 -8 -7 -8 -15 0 -9 -7 -18 -15 -21 -24 -10
+-35 -82 -22 -154 18 -108 249 -260 557 -366 98 -34 350 -107 430 -124 47 -10
+139 -31 205 -45 66 -15 171 -35 234 -45 62 -11 121 -22 130 -25 16 -5 197 -32
+406 -61 230 -31 795 -95 1000 -113 385 -33 421 -35 930 -61 931 -46 1734 -51
+2835 -15 536 18 1219 71 1670 130 63 9 185 25 270 36 399 52 678 104 935 172
+218 58 249 67 270 76 11 6 49 19 85 31 80 27 222 97 293 144 77 51 135 117
+153 175 15 46 15 52 -2 97 -25 64 -102 139 -203 197 -46 26 -86 47 -90 47 -3
+0 -19 7 -34 15 -92 48 -381 141 -592 190 -60 14 -150 35 -200 46 -113 27 -165
+37 -560 103 -374 63 -662 101 -1006 132 -569 50 -740 54 -799 17 -18 -11 -28
+-23 -22 -27 6 -3 52 -13 104 -20 96 -15 166 -22 548 -57 380 -34 977 -107
+1230 -149 208 -35 504 -96 708 -145 426 -105 745 -253 807 -377 19 -39 20
+-105 0 -124 -8 -8 -20 -23 -27 -32 -39 -53 -176 -132 -318 -183 -47 -17 -94
+-34 -105 -39 -61 -25 -366 -100 -570 -140 -303 -59 -403 -76 -510 -86 -27 -3
+-84 -9 -125 -15 -80 -11 -301 -35 -620 -68 -423 -43 -1058 -81 -1535 -91 -440
+-9 -1667 -8 -1880 2 -447 19 -987 50 -1205 68 -69 5 -210 17 -315 25 -394 32
+-1006 105 -1250 150 -44 8 -114 19 -155 25 -41 5 -104 16 -140 24 -36 8 -108
+22 -160 32 -146 26 -477 108 -616 153 -309 99 -486 204 -514 305 -7 25 -9 53
+-5 63 5 10 8 21 7 25 -1 3 25 31 58 61 137 124 457 239 917 327 87 17 190 37
+228 46 71 15 181 32 380 59 61 9 157 22 215 30 124 18 447 52 610 65 63 5 158
+14 210 19 52 6 142 13 200 16 134 8 335 33 378 46 l34 11 -37 25 c-20 14 -49
+27 -63 29 -60 9 -322 11 -397 4z"/>
+</g>
+</svg>
       <div style="font-size:18px;font-weight:700;color:var(--text);">Biblioteca de la Natación</div>
       <div style="font-size:13px;color:var(--muted);">Centro de Recursos Didácticos y Entrenamiento</div>
       <div style="font-size:13px;color:var(--muted);">Copyright © 2026 Todos los derechos reservados.</div>
@@ -5630,7 +6927,250 @@
       <a href="https://lightswan.github.io/biblioteca-natacion/" target="_blank"
         style="display:inline-flex;align-items:center;gap:6px;color:var(--primary);text-decoration:none;font-size:13px;font-weight:600;padding:8px 18px;border:1px solid var(--primary);border-radius:999px;transition:.2s;margin-top:4px;"
         onmouseover="this.style.background='rgba(56,189,248,.1)'" onmouseout="this.style.background='transparent'">
-        📚 Ir a la Biblioteca de Natación ↗
+        <svg viewBox="0 0 2551 2551" width="18" height="18" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="logoGradient" gradientUnits="userSpaceOnUse" x1="12755" y1="19570" x2="12755" y2="7200">
+      <stop offset="0%" stop-color="#00dfff"/>
+      <stop offset="30%" stop-color="#00aef3"/>
+      <stop offset="55%" stop-color="#0089e2"/>
+      <stop offset="80%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#a78bfa"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(0.000000,2551.000000) scale(0.100000,-0.100000)"
+fill="url(#logoGradient)" stroke="none">
+<path d="M6085 19564 c-369 -29 -842 -107 -943 -155 -66 -32 -89 -96 -58 -158
+18 -35 45 -46 163 -72 53 -11 172 -45 265 -75 229 -73 294 -83 623 -94 154 -6
+323 -15 375 -21 268 -30 495 -100 773 -240 225 -113 410 -234 897 -584 380
+-273 648 -445 1080 -693 421 -241 645 -384 905 -579 501 -376 877 -769 1202
+-1258 242 -365 602 -1035 803 -1495 74 -170 97 -198 143 -181 41 16 45 53 13
+146 -114 331 -198 529 -368 871 -430 863 -868 1422 -1530 1951 -298 238 -544
+401 -1043 690 -533 309 -711 423 -1190 768 -154 110 -320 228 -370 261 -410
+275 -771 439 -1108 503 -144 27 -292 40 -602 51 -161 6 -300 16 -345 25 -78
+16 -229 62 -243 75 -8 7 212 39 408 60 572 61 1077 12 1562 -150 336 -111 600
+-255 1223 -664 372 -244 494 -318 675 -406 225 -110 420 -167 652 -190 54 -5
+208 -14 343 -20 135 -6 288 -17 340 -25 373 -60 709 -244 1035 -570 219 -218
+441 -511 553 -731 l21 -42 -62 -6 c-133 -15 -277 -38 -387 -63 -63 -14 -127
+-28 -142 -31 -39 -6 -67 -42 -78 -101 -13 -68 0 -119 39 -154 16 -14 46 -56
+67 -94 75 -135 256 -406 559 -838 170 -242 317 -452 328 -467 25 -34 79 -60
+109 -53 13 4 33 14 45 24 26 22 640 896 762 1086 123 192 126 195 161 259 18
+32 46 70 61 84 37 33 48 74 38 147 -5 41 -15 65 -31 80 -36 34 -319 93 -576
+121 l-62 7 41 76 c214 393 603 817 940 1026 162 101 353 183 499 216 111 25
+252 40 475 49 132 6 285 15 340 21 367 38 640 150 1115 459 91 59 262 170 380
+247 482 314 738 449 1049 553 550 183 1097 219 1824 118 86 -12 154 -25 150
+-29 -14 -12 -167 -59 -243 -74 -45 -9 -184 -19 -345 -25 -428 -15 -593 -37
+-822 -106 -362 -110 -649 -272 -1268 -715 -492 -353 -654 -458 -1210 -779
+-466 -270 -702 -426 -995 -659 -566 -450 -959 -909 -1335 -1561 -93 -160 -269
+-506 -344 -675 -29 -66 -66 -147 -81 -181 -41 -89 -180 -480 -180 -507 0 -29
+18 -53 47 -61 32 -10 68 29 99 109 41 107 233 507 351 729 528 1002 897 1474
+1573 2011 290 230 478 354 1020 667 512 297 701 420 1215 789 540 388 810 540
+1146 648 213 67 364 87 759 101 334 11 398 20 628 94 93 30 213 64 267 76 109
+23 148 42 164 77 34 73 -11 139 -116 172 -140 43 -499 99 -818 127 -264 23
+-700 15 -900 -15 -290 -45 -575 -120 -810 -213 -294 -117 -530 -252 -1130
+-645 -435 -285 -596 -376 -790 -448 -209 -78 -347 -100 -718 -115 -368 -15
+-533 -41 -734 -116 -246 -92 -484 -241 -708 -443 -255 -231 -515 -563 -680
+-869 l-60 -112 -210 0 -210 0 -64 118 c-230 418 -576 816 -921 1058 -160 113
+-297 186 -463 248 -201 75 -363 101 -730 116 -462 19 -646 60 -942 214 -160
+83 -221 121 -620 381 -375 245 -581 371 -755 463 -334 177 -714 298 -1135 363
+-117 18 -192 22 -460 24 -176 1 -342 1 -370 -1z m7245 -3192 c58 -6 157 -13
+220 -17 71 -4 117 -11 122 -18 21 -33 7 -71 -50 -136 -94 -107 -302 -389 -590
+-801 -148 -212 -273 -384 -278 -383 -5 0 -135 181 -289 401 -298 425 -483 676
+-577 783 -57 65 -71 103 -50 135 4 7 49 15 102 18 252 17 399 27 435 30 79 7
+852 -3 955 -12z"/>
+<path d="M4964 17561 c-52 -24 -74 -55 -74 -104 0 -59 23 -90 110 -151 217
+-153 382 -362 634 -806 193 -340 336 -639 606 -1270 142 -331 170 -415 270
+-795 84 -322 178 -515 357 -737 245 -302 887 -751 1660 -1161 237 -126 418
+-212 793 -377 485 -213 637 -292 877 -457 521 -357 795 -631 1124 -1125 68
+-102 143 -220 167 -262 45 -81 71 -99 117 -78 54 25 46 68 -52 292 -71 162
+-108 229 -206 375 -106 158 -174 241 -337 408 -151 156 -291 277 -491 425
+-350 259 -571 385 -1004 572 -825 358 -1391 668 -1960 1073 -328 234 -479 375
+-611 573 -116 174 -168 305 -253 634 -53 205 -102 359 -169 525 -70 175 -347
+805 -431 978 l-79 167 56 -46 c31 -26 161 -136 287 -244 221 -190 588 -502
+799 -679 56 -47 279 -226 496 -399 626 -499 686 -548 845 -687 83 -72 222
+-191 310 -265 256 -214 385 -334 821 -767 480 -477 1040 -1057 1152 -1194 107
+-130 220 -293 472 -679 672 -1027 666 -1013 896 -1818 57 -199 111 -374 121
+-388 41 -62 151 -56 181 11 17 36 15 70 -8 145 -29 96 -68 282 -95 464 -65
+437 -93 569 -186 881 -120 405 -376 1079 -591 1555 -144 317 -512 1034 -686
+1335 -138 239 -295 454 -473 651 -365 400 -735 782 -914 942 -122 110 -364
+331 -375 342 -22 22 -201 180 -270 237 -338 280 -1068 756 -1635 1065 -889
+485 -1568 764 -2056 843 -120 19 -145 19 -195 -4z m524 -296 c260 -80 436
+-149 782 -307 610 -280 1164 -589 1811 -1014 393 -256 594 -411 890 -680 102
+-93 275 -250 384 -349 109 -99 293 -281 409 -405 115 -124 272 -290 347 -370
+409 -434 525 -613 970 -1485 262 -513 374 -763 571 -1270 124 -317 252 -675
+244 -682 -2 -2 -16 18 -32 44 -68 117 -691 1064 -784 1190 -135 187 -231 295
+-549 623 -147 151 -349 362 -450 468 -102 106 -192 199 -202 205 -9 7 -149
+143 -311 302 -162 160 -376 360 -477 445 -101 85 -284 241 -405 345 -269 231
+-357 304 -506 420 -331 257 -855 680 -1040 840 -58 50 -186 159 -285 242 -99
+83 -241 203 -315 268 -74 64 -227 193 -340 287 -277 232 -434 391 -602 613
+-76 100 -162 209 -193 243 -31 34 -51 62 -43 62 7 0 64 -16 126 -35z"/>
+<path d="M20325 17560 c-218 -38 -489 -119 -755 -225 -348 -138 -856 -381
+-1255 -601 -300 -165 -431 -243 -860 -514 -402 -254 -746 -510 -1007 -747 -53
+-48 -179 -162 -280 -253 -248 -223 -401 -373 -656 -645 -119 -126 -246 -261
+-283 -300 -414 -437 -581 -699 -1073 -1683 -242 -481 -353 -739 -578 -1332
+-225 -594 -316 -923 -393 -1412 -54 -346 -67 -418 -106 -561 -33 -122 -35
+-147 -14 -186 30 -58 130 -67 172 -15 11 15 38 86 58 158 294 1041 280 1011
+919 1987 329 502 425 639 551 787 130 152 638 677 1119 1155 422 420 564 552
+816 763 80 67 224 190 320 274 96 83 234 198 305 255 72 57 310 248 530 423
+220 175 448 359 506 408 290 244 574 485 758 643 232 200 365 311 369 307 1
+-2 -32 -74 -74 -162 -111 -230 -386 -861 -459 -1054 -35 -91 -79 -223 -98
+-295 -19 -71 -49 -184 -67 -250 -56 -212 -97 -316 -176 -452 -153 -261 -346
+-439 -844 -778 -440 -300 -1034 -620 -1660 -894 -562 -246 -692 -317 -1025
+-554 -496 -354 -839 -715 -1044 -1097 -66 -123 -171 -378 -171 -414 0 -38 25
+-66 61 -66 38 0 53 16 115 125 73 127 246 383 338 500 224 286 428 484 716
+696 386 284 528 364 1095 612 641 280 1142 548 1635 873 439 289 695 505 854
+719 175 234 234 368 340 770 85 326 113 400 339 921 184 422 270 607 383 819
+323 606 527 881 771 1047 40 26 80 62 88 78 34 66 9 140 -58 171 -51 23 -92
+23 -222 -1z m-220 -322 c-31 -35 -105 -126 -163 -203 -206 -272 -328 -401
+-538 -572 -54 -44 -173 -144 -264 -223 -158 -136 -565 -482 -864 -734 -159
+-134 -701 -570 -936 -753 -169 -131 -276 -221 -571 -474 -107 -92 -275 -236
+-374 -320 -99 -84 -299 -271 -445 -415 -146 -144 -289 -284 -319 -311 -29 -26
+-130 -129 -224 -228 -94 -99 -294 -306 -443 -460 -288 -296 -379 -398 -501
+-560 -71 -94 -287 -414 -432 -640 -36 -55 -136 -209 -222 -342 -87 -133 -165
+-255 -173 -272 -82 -158 55 232 297 849 151 382 348 800 635 1345 244 464 370
+673 524 867 92 117 101 127 368 413 403 432 512 544 651 670 79 72 220 200
+314 285 274 250 334 302 443 389 345 273 1038 717 1582 1014 154 83 672 347
+683 347 3 0 51 22 108 49 237 111 510 220 714 285 66 21 131 42 145 46 61 21
+62 11 5 -52z"/>
+<path d="M9745 10469 c-115 -4 -298 -10 -405 -13 -364 -12 -769 -34 -1280 -70
+-561 -41 -793 -59 -985 -77 -115 -11 -262 -24 -325 -29 -101 -9 -457 -50 -680
+-80 -41 -5 -133 -17 -205 -25 -218 -27 -632 -85 -785 -110 -538 -89 -707 -120
+-955 -179 -99 -24 -225 -53 -280 -66 -55 -12 -127 -30 -160 -40 -33 -10 -125
+-37 -205 -60 -326 -94 -636 -215 -790 -309 -19 -11 -42 -24 -50 -28 -25 -11
+-131 -92 -196 -150 -79 -69 -136 -175 -142 -262 -5 -67 16 -142 56 -206 52
+-81 205 -215 312 -272 30 -16 80 -43 110 -61 54 -30 290 -136 340 -152 14 -5
+50 -18 80 -30 97 -37 394 -130 560 -175 36 -9 85 -23 110 -31 152 -45 597
+-147 825 -189 44 -8 112 -22 150 -30 39 -9 154 -29 257 -45 102 -16 206 -34
+230 -39 42 -10 252 -42 398 -62 41 -5 140 -21 220 -34 80 -13 276 -40 435 -60
+160 -20 315 -40 345 -45 30 -5 172 -21 315 -35 143 -14 316 -32 385 -40 69 -8
+188 -20 265 -25 131 -10 200 -16 605 -55 85 -8 259 -21 385 -30 127 -9 289
+-20 360 -25 274 -20 620 -40 860 -50 138 -5 315 -15 395 -20 581 -40 2029 -71
+3170 -68 969 3 1631 13 2115 33 61 3 178 7 260 10 212 8 1289 64 1355 70 30 3
+134 10 230 16 200 11 687 52 895 74 77 8 239 24 359 35 228 21 594 60 801 85
+66 8 159 19 207 25 87 10 276 39 560 85 84 14 198 32 253 40 263 40 760 138
+1045 205 180 43 580 156 635 180 11 5 94 36 185 70 91 34 176 68 190 75 14 8
+70 36 125 63 221 110 377 243 440 375 12 27 18 62 18 125 0 79 -3 92 -32 145
+-17 32 -43 70 -57 85 -96 101 -130 130 -219 186 -257 162 -609 307 -1045 430
+-69 20 -138 40 -155 45 -80 24 -436 107 -675 158 -261 55 -327 68 -450 88 -52
+8 -151 26 -220 40 -69 13 -213 38 -320 55 -107 17 -235 37 -285 45 -141 23
+-364 54 -472 65 -54 6 -138 17 -188 25 -88 14 -257 34 -480 55 -60 6 -159 18
+-220 26 -132 17 -425 47 -665 69 -96 8 -213 19 -260 25 -116 13 -301 28 -575
+45 -126 8 -284 19 -350 24 -66 6 -205 15 -310 21 -104 5 -320 17 -480 26 -159
+9 -365 14 -458 12 l-167 -4 -35 -34 c-19 -19 -35 -37 -35 -41 0 -3 28 -12 63
+-20 l62 -14 -84 -7 c-79 -6 -87 -9 -119 -41 l-34 -35 88 -15 c49 -9 253 -28
+454 -41 201 -14 448 -32 550 -41 102 -8 275 -22 385 -31 110 -8 261 -22 335
+-30 235 -25 320 -34 530 -54 113 -12 252 -27 310 -35 58 -8 220 -28 360 -45
+448 -55 788 -106 1115 -170 235 -46 470 -93 520 -105 33 -7 132 -30 220 -50
+88 -20 171 -40 185 -45 14 -5 39 -11 55 -15 45 -9 151 -41 325 -97 158 -51
+167 -54 232 -82 21 -9 66 -27 100 -40 53 -20 111 -49 223 -110 89 -49 204
+-152 238 -213 24 -44 25 -141 1 -180 -28 -44 -119 -130 -182 -170 -167 -107
+-478 -220 -897 -327 -146 -37 -470 -108 -565 -124 -30 -5 -135 -24 -232 -41
+-360 -64 -638 -105 -958 -141 -531 -59 -783 -84 -995 -100 -82 -6 -159 -13
+-170 -15 -78 -17 -918 -69 -1530 -95 -132 -5 -350 -15 -485 -20 -478 -21
+-1005 -29 -1785 -29 -1026 -1 -1821 19 -2805 69 -107 6 -283 15 -390 20 -408
+21 -1368 100 -2010 166 -337 34 -1052 128 -1315 173 -60 11 -132 22 -160 25
+-77 10 -364 62 -645 117 -448 89 -823 190 -1163 313 -105 38 -127 47 -257 109
+-234 110 -374 252 -357 360 9 55 12 61 46 109 59 82 211 182 401 263 80 34
+349 127 450 155 25 7 65 18 90 26 72 21 405 101 535 128 224 47 666 117 1100
+176 160 21 308 41 330 44 22 3 105 13 185 21 80 8 253 26 385 40 325 34 321
+34 565 50 118 8 305 21 415 30 110 8 364 24 565 35 201 11 374 22 385 25 11 3
+162 9 335 15 324 10 481 22 537 41 l33 10 -28 35 c-16 20 -36 34 -49 34 -12 0
+-29 3 -38 7 -15 5 -15 7 4 17 21 12 21 12 -7 45 -25 31 -34 34 -107 42 -92 9
+-291 9 -590 -2z m6648 -236 c-7 -2 -19 -2 -25 0 -7 3 -2 5 12 5 14 0 19 -2 13
+-5z m135 -10 c-16 -2 -40 -2 -55 0 -16 2 -3 4 27 4 30 0 43 -2 28 -4z m115
+-10 c-13 -2 -35 -2 -50 0 -16 2 -5 4 22 4 28 0 40 -2 28 -4z m110 -10 c-7 -2
+-21 -2 -30 0 -10 3 -4 5 12 5 17 0 24 -2 18 -5z m130 -10 c-7 -2 -21 -2 -30 0
+-10 3 -4 5 12 5 17 0 24 -2 18 -5z m120 -10 c-13 -2 -33 -2 -45 0 -13 2 -3 4
+22 4 25 0 35 -2 23 -4z m267 -18 c174 -14 255 -21 475 -45 50 -5 196 -19 325
+-30 129 -11 285 -27 345 -35 61 -8 209 -26 330 -40 121 -14 297 -37 390 -50
+94 -14 224 -32 290 -41 245 -32 817 -123 939 -148 39 -8 114 -22 166 -31 212
+-38 620 -126 770 -167 41 -11 120 -31 175 -44 178 -44 542 -157 725 -226 204
+-77 425 -189 510 -257 25 -20 54 -43 65 -51 35 -27 91 -89 103 -115 7 -14 17
+-36 24 -50 23 -49 8 -167 -27 -214 -14 -19 -75 -81 -116 -116 -106 -94 -417
+-243 -684 -328 -174 -56 -466 -138 -575 -162 -123 -28 -225 -52 -385 -90 -156
+-37 -837 -155 -1126 -195 -85 -11 -201 -27 -259 -35 -104 -15 -333 -42 -585
+-70 -71 -8 -202 -23 -290 -35 -192 -24 -504 -54 -710 -69 -82 -6 -262 -20
+-400 -31 -137 -10 -295 -22 -350 -25 -55 -3 -163 -10 -240 -15 -370 -25 -1064
+-60 -1460 -74 -1117 -39 -1214 -41 -2435 -39 -1141 2 -1482 8 -2125 33 -137 6
+-389 15 -560 20 -170 6 -386 14 -480 20 -93 5 -251 14 -350 20 -587 35 -911
+57 -949 65 -12 3 -136 12 -276 20 -423 25 -1262 108 -1920 189 -284 35 -668
+86 -752 100 -51 8 -142 23 -203 32 -232 34 -794 135 -945 169 -36 8 -143 31
+-238 50 -96 19 -177 37 -181 39 -3 3 -60 16 -126 31 -66 14 -183 45 -260 67
+-77 22 -171 48 -210 58 -83 21 -408 131 -451 153 -16 8 -60 27 -99 42 -110 43
+-262 122 -354 184 -46 31 -93 62 -105 70 -27 17 -91 98 -117 146 -11 20 -23
+59 -26 85 -11 90 71 217 188 294 24 16 63 42 86 58 48 33 180 99 256 129 46
+18 71 29 142 60 46 20 424 140 513 163 321 83 625 149 1012 221 41 7 138 25
+215 39 426 79 1465 213 1860 240 44 3 -55 -15 -220 -39 -436 -64 -443 -65
+-530 -80 -189 -34 -515 -97 -570 -110 -497 -117 -677 -170 -935 -271 -334
+-130 -533 -283 -566 -434 -13 -61 -12 -78 1 -124 21 -70 30 -83 113 -169 194
+-201 668 -399 1337 -558 44 -11 136 -33 205 -49 298 -71 783 -162 1140 -215
+96 -14 218 -32 270 -40 52 -8 156 -22 230 -30 74 -9 142 -18 150 -20 8 -2 85
+-11 170 -20 85 -9 241 -27 345 -40 255 -32 919 -96 1185 -115 74 -5 200 -14
+280 -20 240 -17 911 -59 1130 -70 529 -26 654 -31 1075 -40 248 -6 628 -15
+845 -20 387 -9 603 -8 1695 5 712 8 1649 42 2055 74 69 6 184 13 255 16 250
+12 963 68 1195 94 47 6 112 13 145 16 96 9 311 34 430 50 61 8 166 21 235 30
+569 72 979 142 1386 234 119 27 216 52 430 110 292 79 647 225 793 327 142 99
+227 222 225 324 -2 88 -39 157 -134 246 -268 251 -1040 507 -2090 693 -63 12
+-164 30 -225 41 -383 69 -1155 175 -1605 221 -304 30 -292 39 20 14z m-10233
+-11 c-3 -3 -12 -4 -19 -1 -8 3 -5 6 6 6 11 1 17 -2 13 -5z m-89 -11 c-10 -2
+-28 -2 -40 0 -13 2 -5 4 17 4 22 1 32 -1 23 -4z"/>
+<path d="M10275 10095 c-11 -2 -148 -9 -305 -15 -277 -10 -605 -30 -840 -50
+-63 -5 -176 -14 -250 -20 -197 -16 -577 -56 -795 -85 -104 -14 -246 -32 -315
+-40 -237 -28 -788 -115 -830 -131 -8 -3 -49 -12 -90 -19 -108 -20 -403 -91
+-505 -122 -142 -43 -182 -55 -200 -63 -11 -4 -49 -18 -85 -30 -61 -21 -135
+-51 -170 -69 -117 -60 -160 -85 -160 -93 0 -4 -6 -8 -13 -8 -19 0 -129 -109
+-149 -148 -28 -53 -24 -143 8 -195 104 -166 394 -313 889 -452 233 -65 556
+-136 800 -175 33 -5 112 -19 174 -30 63 -12 147 -25 185 -30 39 -5 132 -19
+206 -30 242 -37 263 -40 430 -60 294 -36 413 -50 525 -60 61 -5 155 -14 210
+-20 111 -11 514 -43 760 -60 88 -6 246 -17 350 -25 326 -25 851 -50 1250 -60
+121 -3 279 -8 350 -10 403 -14 1396 -17 1955 -6 594 11 1347 35 1455 46 28 3
+138 10 245 15 205 10 309 18 710 50 135 11 304 25 375 30 188 14 623 60 765
+81 36 5 99 14 140 19 330 41 736 109 1020 170 52 12 128 27 168 35 373 73 816
+237 985 366 111 85 158 161 150 246 -7 81 -51 142 -158 218 -53 38 -233 135
+-250 135 -4 0 -21 6 -38 14 -49 22 -283 101 -367 125 -371 104 -903 213 -1360
+280 -280 42 -569 80 -670 90 -58 6 -163 17 -235 25 -71 9 -184 20 -250 26 -66
+6 -165 15 -220 20 -482 47 -921 75 -1186 75 l-246 0 -36 -32 -36 -31 87 -16
+c48 -9 152 -20 232 -26 80 -6 199 -15 265 -21 180 -14 336 -26 580 -44 270
+-20 577 -48 801 -75 339 -39 740 -90 794 -100 81 -14 304 -49 390 -61 41 -5
+109 -16 150 -24 41 -8 122 -24 180 -35 58 -11 134 -27 170 -35 36 -8 88 -20
+115 -25 163 -33 533 -141 673 -196 116 -46 265 -124 328 -172 207 -157 154
+-298 -170 -451 -152 -71 -569 -195 -793 -236 -43 -8 -163 -30 -268 -49 -104
+-19 -235 -42 -290 -51 -55 -8 -127 -20 -160 -25 -71 -12 -483 -69 -540 -75
+-22 -2 -78 -9 -125 -14 -276 -33 -592 -63 -850 -81 -162 -11 -353 -25 -425
+-30 -479 -36 -1202 -70 -1692 -79 -554 -11 -2065 -7 -2498 7 -586 18 -1520 66
+-1790 92 -94 8 -152 13 -480 40 -332 27 -942 92 -1180 125 -60 9 -171 24 -245
+35 -194 27 -499 81 -905 161 -77 15 -448 107 -500 124 -22 7 -83 27 -135 43
+-274 88 -450 181 -535 280 -25 30 -30 45 -32 96 -1 54 2 65 30 99 17 22 49 52
+71 68 23 16 46 32 51 37 19 15 171 90 240 117 116 47 414 134 600 175 44 10
+122 27 174 39 51 12 119 26 150 30 31 5 103 18 161 29 136 27 400 69 515 82
+50 6 135 17 190 25 114 17 300 38 525 60 85 8 196 20 245 25 100 11 167 16
+300 25 50 4 124 10 165 16 41 5 183 16 315 24 132 9 305 20 385 25 80 5 237
+14 350 20 328 17 491 30 549 43 l55 12 -44 35 -44 35 -230 1 c-127 2 -240 1
+-251 -1z"/>
+<path d="M10535 9940 c-76 -8 -234 -20 -535 -40 -74 -5 -171 -14 -215 -19 -44
+-6 -132 -15 -195 -21 -382 -37 -911 -127 -1235 -211 -388 -101 -584 -183 -715
+-298 -19 -17 -38 -31 -42 -31 -5 0 -8 -7 -8 -15 0 -9 -7 -18 -15 -21 -24 -10
+-35 -82 -22 -154 18 -108 249 -260 557 -366 98 -34 350 -107 430 -124 47 -10
+139 -31 205 -45 66 -15 171 -35 234 -45 62 -11 121 -22 130 -25 16 -5 197 -32
+406 -61 230 -31 795 -95 1000 -113 385 -33 421 -35 930 -61 931 -46 1734 -51
+2835 -15 536 18 1219 71 1670 130 63 9 185 25 270 36 399 52 678 104 935 172
+218 58 249 67 270 76 11 6 49 19 85 31 80 27 222 97 293 144 77 51 135 117
+153 175 15 46 15 52 -2 97 -25 64 -102 139 -203 197 -46 26 -86 47 -90 47 -3
+0 -19 7 -34 15 -92 48 -381 141 -592 190 -60 14 -150 35 -200 46 -113 27 -165
+37 -560 103 -374 63 -662 101 -1006 132 -569 50 -740 54 -799 17 -18 -11 -28
+-23 -22 -27 6 -3 52 -13 104 -20 96 -15 166 -22 548 -57 380 -34 977 -107
+1230 -149 208 -35 504 -96 708 -145 426 -105 745 -253 807 -377 19 -39 20
+-105 0 -124 -8 -8 -20 -23 -27 -32 -39 -53 -176 -132 -318 -183 -47 -17 -94
+-34 -105 -39 -61 -25 -366 -100 -570 -140 -303 -59 -403 -76 -510 -86 -27 -3
+-84 -9 -125 -15 -80 -11 -301 -35 -620 -68 -423 -43 -1058 -81 -1535 -91 -440
+-9 -1667 -8 -1880 2 -447 19 -987 50 -1205 68 -69 5 -210 17 -315 25 -394 32
+-1006 105 -1250 150 -44 8 -114 19 -155 25 -41 5 -104 16 -140 24 -36 8 -108
+22 -160 32 -146 26 -477 108 -616 153 -309 99 -486 204 -514 305 -7 25 -9 53
+-5 63 5 10 8 21 7 25 -1 3 25 31 58 61 137 124 457 239 917 327 87 17 190 37
+228 46 71 15 181 32 380 59 61 9 157 22 215 30 124 18 447 52 610 65 63 5 158
+14 210 19 52 6 142 13 200 16 134 8 335 33 378 46 l34 11 -37 25 c-20 14 -49
+27 -63 29 -60 9 -322 11 -397 4z"/>
+</g>
+</svg> Ir a la Biblioteca de Natación &#8599;
       </a>
     </div>
   </footer>
