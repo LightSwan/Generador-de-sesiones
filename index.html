@@ -1452,6 +1452,7 @@
     .exercise-desc-small{ font-size:11px; color:var(--muted); line-height:1.5; margin-top:2px; margin-bottom:3px; display:none; white-space:normal; word-break:break-word; }
     .exercise-desc-small.visible{ display:block; }
     .exercise-info-line{ font-size:11px; color:var(--muted); margin-top:3px; }
+    .exercise-ritmo{ font-size:11px; color:var(--muted); white-space:nowrap; }
     .exercise-bottom-row{ display:flex; align-items:center; justify-content:flex-end; gap:5px; padding:6px 14px 10px 36px; flex-wrap:wrap; }
     .exercise-distance{ color:var(--primary); font-weight:700; font-size:13px; white-space:nowrap; margin-right:auto; }
     .exercise-action-icon{ width:28px; height:28px; border-radius:8px; border:1px solid var(--border); background:transparent; color:var(--muted); font-size:13px; cursor:pointer; transition:.15s; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
@@ -1462,6 +1463,14 @@
     .exercise-expand.open{ display:flex; }
     .pagina-btn{ display:inline-flex; align-items:center; gap:4px; padding:3px 8px; border-radius:6px; background:rgba(56,189,248,.1); border:1px solid rgba(56,189,248,.2); color:var(--primary); font-size:11px; font-weight:600; text-decoration:none; white-space:nowrap; transition:.15s; flex-shrink:0; }
     .pagina-btn:hover{ background:rgba(56,189,248,.2); }
+    /* Chip de intensidad: sustituye al emoji ⬜🟢🟡🟠🔴💀 por una franja
+       de color continua (verde→color real del %), generada por
+       intensidadGradiente(). */
+    .intensidad-chip{
+      display:inline-flex; align-items:center; padding:2px 8px; border-radius:999px;
+      color:#0b1120; font-weight:800; font-size:11.5px; letter-spacing:.01em;
+      text-shadow:0 1px 1px rgba(255,255,255,.15);
+    }
 
     @media(max-width:500px){
       .exercise-main-row{ padding:10px 12px 4px; }
@@ -1470,56 +1479,6 @@
       .exercise-action-icon{ width:26px; height:26px; font-size:12px; }
     }
 
-    .summary-sidebar{
-      position:fixed;
-      right:0;
-      top:0;
-      height:100vh;
-      width:300px;
-      background:rgba(15,23,42,.97);
-      border-left:1px solid var(--border);
-      backdrop-filter:blur(16px);
-      z-index:500;
-      display:none;
-      flex-direction:column;
-      transform:translateX(100%);
-      transition:transform .3s cubic-bezier(.4,0,.2,1);
-      overflow:hidden;
-    }
-    .summary-sidebar.open{
-      display:flex;
-      transform:translateX(0);
-    }
-    .summary-sidebar-header{
-      padding:18px 20px 14px;
-      border-bottom:1px solid var(--border);
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      flex-shrink:0;
-    }
-    .summary-sidebar-header h3{
-      font-size:15px;
-      font-weight:700;
-      color:var(--primary);
-    }
-    .summary-sidebar-close{
-      width:32px;height:32px;
-      border-radius:50%;
-      border:1px solid var(--border);
-      background:transparent;
-      color:var(--text);
-      font-size:16px;
-      cursor:pointer;
-      transition:.2s;
-    }
-    .summary-sidebar-close:hover{ background:var(--card2); }
-    .summary-sidebar-body{
-      overflow-y:auto;
-      padding:16px 20px;
-      flex:1;
-      font-size:13px;
-    }
     .summary-row{
       display:flex;
       justify-content:space-between;
@@ -1583,7 +1542,6 @@
       .modal-overlay{
         padding:16px;
       }
-      .summary-sidebar{ width:260px; }
     }
 
   </style>
@@ -2167,13 +2125,10 @@ c48 -9 152 -20 232 -26 80 -6 199 -15 265 -21 180 -14 336 -26 580 -44 270
       </div>
 
       <div id="manualBloque_main" class="manual-block">
-        <div class="manual-block-header">
-          <div class="manual-block-title" id="mainBlockTitleDisplay" style="cursor:pointer;display:flex;align-items:center;gap:8px;" title="Haz clic para editar el nombre">
-            Sesión principal
-            <span style="font-size:12px;color:var(--muted);font-weight:400;opacity:0.7;">✎</span>
+        <div class="manual-block-header" style="position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;padding:18px 24px;">
+          <div id="mainBlockTitleDisplay" title="Haz clic para editar el nombre" style="position:relative;display:flex;align-items:center;justify-content:center;width:100%;font-size:18px;color:var(--text);font-weight:700;line-height:1.2;cursor:pointer;padding:0 26px;box-sizing:border-box;text-align:center;">
+            <span>Sesión principal</span><svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true" focusable="false" style="position:absolute;right:0;top:50%;transform:translateY(-50%);opacity:.65;flex-shrink:0;"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
           </div>
-          <input type="text" id="mainBlockTitleInput" value="Sesión principal"
-            style="display:none;grid-column:2;justify-self:center;background:#0f172a;border:1px solid var(--primary);border-radius:10px;color:var(--text);font-size:16px;font-weight:700;padding:4px 10px;outline:none;flex:1;max-width:260px;">
           <div class="manual-block-dist" id="manualDist_main">0m</div>
         </div>
         <div id="manualExList_main"></div>
@@ -2203,20 +2158,19 @@ c48 -9 152 -20 232 -26 80 -6 199 -15 265 -21 180 -14 336 -26 580 -44 270
       </div>
 
       <div class="manual-total-bar">
-        <div class="total-info">
+        <div class="total-info" style="width:100%;align-items:center;">
+          <span id="manualEntrenoNombre" title="Haz clic para cambiar el nombre" style="position:relative;display:flex;align-items:center;justify-content:center;width:100%;font-size:24px;color:#ffffff;font-weight:700;line-height:1.2;cursor:pointer;margin-bottom:6px;text-align:center;padding:0 26px;box-sizing:border-box;"></span>
           <span class="total-label">Total de la sesión</span>
           <span class="total-value" id="manualTotalDist">0m</span>
-          <span id="manualEntrenoNombre" style="display:block;font-size:12px;color:var(--muted);font-weight:500;margin-top:2px;"></span>
-        </div>
-        <div class="bar-actions">
-          <button class="action-btn" id="manualSummaryBtn" title="Ver resumen">
-            <span class="btn-icon">≡</span>Resumen
-          </button>
         </div>
       </div>
+      <button class="action-btn" id="manualSummaryBtn" title="Ver resultado" style="display:flex;width:100%;align-items:center;justify-content:center;gap:8px;margin-top:10px;padding:12px 14px;background:linear-gradient(135deg,rgba(56,189,248,.14),rgba(99,102,241,.14));border:1px solid rgba(56,189,248,.35);color:var(--primary);font-weight:700;font-size:14px;border-radius:14px;">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        Ver resultado
+      </button>
       <div style="display:flex;gap:10px;justify-content:center;padding:12px 16px 4px;flex-wrap:wrap;">
         <button class="action-btn" id="manualCopyBtn" title="Copiar al portapapeles" style="flex:1;max-width:200px;justify-content:center;background:linear-gradient(135deg,#a78bfa,#7c3aed);color:#fff;border:none;font-weight:700;">
-          Copiar entrenamiento (Resumen)
+          Copiar entrenamiento (Texto)
         </button>
         <button class="action-btn" id="manualImgBtn" title="Descargar entrenamiento" style="flex:1;max-width:200px;justify-content:center;background:linear-gradient(135deg,#0ea5e9,#6366f1);color:#fff;border:none;font-weight:700;animation:pwaGlow 2s infinite;">
           Descargar entrenamiento (Imagen)
@@ -2295,14 +2249,16 @@ c48 -9 152 -20 232 -26 80 -6 199 -15 265 -21 180 -14 336 -26 580 -44 270
   Panel lateral fijo que muestra un resumen compacto de la sesión.
   Se abre/cierra con el botón flotante ≡ (esquina inferior derecha).
 ============================================================ -->
-<div class="summary-sidebar" id="summarySidebar">
-  <div class="summary-sidebar-header">
-    <h3>📋 Resumen sesión</h3>
-    <button class="summary-sidebar-close" id="summaryClose">&times;</button>
+<div class="modal-overlay" id="summarySidebar">
+  <div class="modal" style="max-width:480px;max-height:85vh;display:flex;flex-direction:column;padding:24px;">
+    <div class="modal-header" style="margin-bottom:12px;">
+      <h2 style="font-size:18px;">Resultado</h2>
+      <button class="modal-close" id="summaryClose">&times;</button>
+    </div>
+    <div id="summaryBody" style="overflow-y:auto;flex:1;font-size:13px;padding-right:14px;scrollbar-gutter:stable;"></div>
   </div>
-  <div class="summary-sidebar-body" id="summaryBody"></div>
 </div>
-<button class="summary-toggle-btn" id="summaryToggleBtn" title="Ver resumen">≡</button>
+<button class="summary-toggle-btn" id="summaryToggleBtn" title="Ver resultado">≡</button>
 
 <!-- ============================================================
   MODAL MODO MANUAL
@@ -2356,6 +2312,11 @@ c48 -9 152 -20 232 -26 80 -6 199 -15 265 -21 180 -14 336 -26 580 -44 270
         <label>×</label>
         <input type="number" min="50" max="2000" step="50" value="100" id="mmMetros">
         <label>m</label>
+        <span id="mmDescansoWrapSeries" style="display:flex;align-items:center;gap:8px;width:100%;margin-top:2px;">
+          <label>Descanso entre series:</label>
+          <input type="number" min="0" max="600" step="5" value="30" id="mmDescansoSeries" style="width:64px;">
+          <label>s</label>
+        </span>
       </div>
 
       <!-- Por tiempo -->
@@ -2368,6 +2329,11 @@ c48 -9 152 -20 232 -26 80 -6 199 -15 265 -21 180 -14 336 -26 580 -44 270
         <input type="number" min="0" max="59" value="1" id="mmTMin" style="width:52px;" placeholder="min">
         <label>:</label>
         <input type="number" min="0" max="59" value="30" id="mmTSeg" style="width:52px;" placeholder="seg">
+        <span id="mmDescansoWrapTiempo" style="display:flex;align-items:center;gap:8px;width:100%;margin-top:2px;">
+          <label>Descanso entre series:</label>
+          <input type="number" min="0" max="600" step="5" value="30" id="mmDescansoTiempo" style="width:64px;">
+          <label>s</label>
+        </span>
         <div style="display:flex;align-items:center;gap:8px;width:100%;margin-top:6px;">
           <label style="color:var(--muted);font-size:13px;">Ritmo:</label>
           <span id="mmTRitmoLabel" style="color:var(--primary);font-weight:700;font-size:13px;">—</span>
@@ -2381,7 +2347,7 @@ c48 -9 152 -20 232 -26 80 -6 199 -15 265 -21 180 -14 336 -26 580 -44 270
       <div style="display:flex;align-items:center;gap:10px;width:100%;margin-top:10px;">
         <label style="white-space:nowrap;">Intensidad:</label>
         <input type="range" min="0" max="100" step="5" value="50" id="mmIntensidad" style="flex:1;">
-        <span id="mmIntensidadLabel" style="font-size:18px;min-width:36px;text-align:center;">🟡</span>
+        <span id="mmIntensidadLabel" style="display:inline-block;width:36px;height:14px;border-radius:999px;"></span>
         <span id="mmIntensidadPct" style="color:var(--primary);font-weight:700;min-width:36px;">50%</span>
       </div>
 
@@ -2412,6 +2378,34 @@ c48 -9 152 -20 232 -26 80 -6 199 -15 265 -21 180 -14 336 -26 580 -44 270
       <a href="https://lightswan.github.io/biblioteca-natacion/" target="_blank" style="color:var(--primary)">Biblioteca de la Nataci&oacute;n</a>
       &mdash; Blythe Lucero
     </p>
+  </div>
+</div>
+
+<div class="modal-overlay" id="manualNombreModalOverlay">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-header">
+      <h2>Nombre del entrenamiento</h2>
+      <button class="modal-close" id="manualNombreModalClose">&times;</button>
+    </div>
+    <input type="text" id="manualEntrenoNombreInput" maxlength="80" aria-label="Nombre del entrenamiento" style="width:100%;background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;color:var(--text);font-size:16px;font-family:inherit;outline:none;">
+    <div style="display:flex;gap:10px;margin-top:18px;">
+      <button class="action-btn" id="manualNombreCancelBtn" style="flex:1;justify-content:center;">Cancelar</button>
+      <button class="action-btn" id="manualNombreConfirmBtn" style="flex:1;justify-content:center;background:linear-gradient(135deg,#0ea5e9,#6366f1);color:#fff;border:none;font-weight:700;">✓ Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="bloqueNombreModalOverlay">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-header">
+      <h2>Nombre del bloque</h2>
+      <button class="modal-close" id="bloqueNombreModalClose">&times;</button>
+    </div>
+    <input type="text" id="bloqueNombreInput" maxlength="60" aria-label="Nombre del bloque" style="width:100%;background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;color:var(--text);font-size:16px;font-family:inherit;outline:none;">
+    <div style="display:flex;gap:10px;margin-top:18px;">
+      <button class="action-btn" id="bloqueNombreCancelBtn" style="flex:1;justify-content:center;">Cancelar</button>
+      <button class="action-btn" id="bloqueNombreConfirmBtn" style="flex:1;justify-content:center;background:linear-gradient(135deg,#0ea5e9,#6366f1);color:#fff;border:none;font-weight:700;">✓ Guardar</button>
+    </div>
   </div>
 </div>
 
@@ -2591,6 +2585,17 @@ c48 -9 152 -20 232 -26 80 -6 199 -15 265 -21 180 -14 336 -26 580 -44 270
     {id:"mar99",num:99,pagina:274,style:"Mariposa",tags:["Mariposa","Coordinación"],nombre:"Punto de comprobación de la coordinación",desc:"Nada a mariposa estableciendo tres puntos de comprobación en cada ciclo. Punto uno: cuando las manos entran al agua, los pies dan el primer latigazo. Punto dos: cuando las manos pasan bajo el vientre, los pies dan el segundo latigazo. Punto tres: cuando los meñiques salen del agu",objetivos:[]},
     {id:"mar100",num:100,pagina:276,style:"Mariposa",tags:["Mariposa","Coordinación"],nombre:"Nado a mariposa silencioso",desc:"Con el agua a la cintura, haz la reverencia, extiende los brazos y da cuatro brazadas completas observando la salpicadura al entrar las manos. Si el agua salpica hacia los lados, las manos están empujando lateralmente en vez de hacia delante. Si salpica hacia atrás, el ángulo de ",objetivos:[]}
   ];
+
+  // Antepone el estilo al nombre de cada ejercicio de la biblioteca (p.ej.
+  // "Crol - Tirón y empuje con un brazo"), para que sea identificable a
+  // simple vista al añadirlo a un entrenamiento. Se evita duplicarlo si el
+  // nombre ya empieza literalmente por ese estilo.
+  ejerciciosBiblioteca.forEach(ej => {
+    if(!ej.style) return;
+    const yaLoLleva = ej.nombre.toLowerCase().startsWith(ej.style.toLowerCase() + " -") ||
+                       ej.nombre.toLowerCase().startsWith(ej.style.toLowerCase() + " ");
+    if(!yaLoLleva) ej.nombre = `${ej.style} - ${ej.nombre}`;
+  });
 
   // Biblioteca cargada estáticamente (95 ejercicios de lightswan.github.io/biblioteca-natacion)
   function cargarBiblioteca(){
@@ -4404,7 +4409,8 @@ c48 -9 152 -20 232 -26 80 -6 199 -15 265 -21 180 -14 336 -26 580 -44 270
       txt += htmlDecode(b.titulo) + "  (" + b.distancia + ")\n";
       txt += "-".repeat(36) + "\n";
       b.ejercicios.forEach(ej => {
-        txt += "  • " + htmlDecode(ej.nombre) + "\n";
+        const intTxt = (ej.intensidad !== undefined && ej.intensidad !== null) ? "  [" + ej.intensidad + "%]" : "";
+        txt += "  • " + htmlDecode(ej.nombre) + intTxt + "\n";
         if(ej.desc) txt += "    " + htmlDecode(ej.desc) + "\n";
       });
       txt += "\n";
@@ -4449,6 +4455,7 @@ c48 -9 152 -20 232 -26 80 -6 199 -15 265 -21 180 -14 336 -26 580 -44 270
       distanciaTotal: ej.series * ej.metrosSerie,
       intensidad: (ej.intensidad !== undefined && ej.intensidad !== null) ? ej.intensidad : null,
       tiempoObjetivo,
+      descansoSerie: (ej.descansoSerie !== undefined && ej.descansoSerie !== null) ? ej.descansoSerie : 30,
       pagina: ej.pagina || null
     };
   }
@@ -4463,7 +4470,16 @@ c48 -9 152 -20 232 -26 80 -6 199 -15 265 -21 180 -14 336 -26 580 -44 270
 
   // Igual que formatearNombreEntrenamiento pero con guiones (en vez de barras)
   // para que sea un nombre de archivo válido al descargar la imagen/PNG.
-  function nombreArchivoEntrenamiento(iso){
+  function sanearNombreArchivo(str){
+    // Quita caracteres no válidos en nombres de archivo (Windows/Android)
+    // y recorta espacios sobrantes.
+    return str.replace(/[\\/:*?"<>|]/g, "").trim();
+  }
+
+  function nombreArchivoEntrenamiento(iso, nombreEditado){
+    if(nombreEditado){
+      return sanearNombreArchivo(nombreEditado);
+    }
     const d = iso ? new Date(iso) : new Date();
     const dd = String(d.getDate()).padStart(2,"0");
     const mm = String(d.getMonth()+1).padStart(2,"0");
@@ -4481,7 +4497,7 @@ c48 -9 152 -20 232 -26 80 -6 199 -15 265 -21 180 -14 336 -26 580 -44 270
       generadoEn: creadoEn,
       totalMetros,
       bloques: entrenamientoActual.bloques.map(b => ({
-        titulo: htmlDecode(b.titulo),
+        titulo: htmlDecode(b.titulo).replace(/^[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}]\s*/u, ""),
         distancia: b.distancia,
         ejercicios: b.ejercicios.map(normalizarEjercicioAuto)
       }))
@@ -4501,13 +4517,11 @@ c48 -9 152 -20 232 -26 80 -6 199 -15 265 -21 180 -14 336 -26 580 -44 270
     // lightswan.github.io) para que el Reproductor la cargue solo al
     // entrar, aunque el copiado al portapapeles falle.
     try{ localStorage.setItem("lightswan_sesion_pendiente", json); }catch(e){ /* localStorage no disponible */ }
-    navigator.clipboard.writeText(json).catch(() => {
-      const ta = document.createElement("textarea");
-      ta.value = json; ta.style.position = "fixed"; ta.style.opacity = "0";
-      document.body.appendChild(ta); ta.select();
-      try{ document.execCommand("copy"); }catch(e){}
-      document.body.removeChild(ta);
-    });
+    if(navigator.clipboard && window.isSecureContext){
+      navigator.clipboard.writeText(json).catch(() => copiarTextoSinScroll(json));
+    } else {
+      copiarTextoSinScroll(json);
+    }
     if(!win){
       alert("Se ha copiado el entrenamiento al portapapeles. Abre el Reproductor de sesiones y pégalo ahí.");
     }
@@ -4594,6 +4608,11 @@ c48 -9 152 -20 232 -26 80 -6 199 -15 265 -21 180 -14 336 -26 580 -44 270
         <label style="display:flex;align-items:center;gap:5px;color:var(--muted);font-size:12.5px;cursor:pointer;">
           <input type="checkbox" class="fisica-porlado"> por lado
         </label>
+        <label style="display:flex;align-items:center;gap:6px;color:var(--muted);font-size:12.5px;">
+          Descanso entre series:
+          <input type="number" class="fisica-descanso" min="0" max="600" step="5" value="30" style="width:56px;padding:9px 10px;background:var(--bg);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:inherit;font-size:13px;">
+          s
+        </label>
       </div>
       <input type="text" class="fisica-desc" placeholder="Explicación breve (opcional)" style="padding:9px 12px;background:var(--bg);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:inherit;font-size:13px;box-sizing:border-box;">
     `;
@@ -4640,6 +4659,7 @@ c48 -9 152 -20 232 -26 80 -6 199 -15 265 -21 180 -14 336 -26 580 -44 270
       const cantidad = Math.max(1, parseInt(fila.querySelector(".fisica-cantidad").value, 10) || 1);
       const porLado = fila.querySelector(".fisica-porlado").checked;
       const desc = fila.querySelector(".fisica-desc").value.trim();
+      const descansoSerie = Math.max(0, parseInt(fila.querySelector(".fisica-descanso").value, 10) || 0);
       ejercicios.push({
         nombre: nombreEj,
         desc,
@@ -4648,6 +4668,7 @@ c48 -9 152 -20 232 -26 80 -6 199 -15 265 -21 180 -14 336 -26 580 -44 270
         repeticiones: tipo === "reps" ? cantidad : null,
         duracionSegundos: tipo === "tiempo" ? cantidad : null,
         porLado,
+        descansoSerie,
         gifQuery: normalizarTextoGifFisica(nombreEj),
         info: null
       });
@@ -4777,17 +4798,17 @@ c48 -9 152 -20 232 -26 80 -6 199 -15 265 -21 180 -14 336 -26 580 -44 270
     const data = fisicaGenerarJSON();
     if(!data) return;
     const txt = buildFisicaTexto(data);
-    const btn = document.getElementById("fisicaCopyBtn");
-    navigator.clipboard.writeText(txt).then(()=>{
-      const orig = btn.innerHTML;
-      btn.innerHTML = "✅ Copiado";
-      btn.style.color = "var(--success)";
-      setTimeout(()=>{ btn.innerHTML=orig; btn.style.color=""; }, 2000);
-    }).catch(()=>{
-      const ta = document.createElement("textarea");
-      ta.value = txt; ta.style.position="fixed"; ta.style.opacity="0";
-      document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta);
-    });
+    if(navigator.clipboard && window.isSecureContext){
+      navigator.clipboard.writeText(txt).then(()=>{
+        mostrarCopiadoSinSaltar("fisicaCopyBtn", true);
+      }).catch(()=>{
+        copiarTextoSinScroll(txt);
+        mostrarCopiadoSinSaltar("fisicaCopyBtn", true);
+      });
+    } else {
+      copiarTextoSinScroll(txt);
+      mostrarCopiadoSinSaltar("fisicaCopyBtn", true);
+    }
   });
   document.getElementById("fisicaImgBtn").addEventListener("click", () => {
     const data = fisicaGenerarJSON();
@@ -4847,34 +4868,75 @@ c48 -9 152 -20 232 -26 80 -6 199 -15 265 -21 180 -14 336 -26 580 -44 270
     canvas.toBlob(blob => {
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
-      a.download = nombreArchivoEntrenamiento(data.generadoEn) + ".png";
+      a.download = nombreArchivoEntrenamiento(data.generadoEn, data.nombre) + ".png";
       a.click();
       URL.revokeObjectURL(a.href);
     });
   }
 
+  // Copia texto al portapapeles vía execCommand("copy") sin que la página
+  // salte/haga scroll al enfocar el <textarea> temporal (problema típico
+  // en navegadores móviles). Guarda la posición de scroll antes de
+  // enfocar y la restaura justo después de copiar.
+  function copiarTextoSinScroll(texto){
+    const scrollYPrevio = window.scrollY || document.documentElement.scrollTop || 0;
+    const scrollXPrevio = window.scrollX || document.documentElement.scrollLeft || 0;
+    const ta = document.createElement("textarea");
+    ta.value = texto;
+    ta.style.position = "fixed";
+    ta.style.top = "0";
+    ta.style.left = "0";
+    ta.style.opacity = "0";
+    ta.style.pointerEvents = "none";
+    ta.setAttribute("readonly", "");
+    document.body.appendChild(ta);
+    ta.select();
+    ta.setSelectionRange(0, texto.length);
+    try{ document.execCommand("copy"); } catch(e){}
+    document.body.removeChild(ta);
+    window.scrollTo(scrollXPrevio, scrollYPrevio);
+  }
+
   function copiarJSONPortapapeles(data, btnId){
     const json = JSON.stringify(data);
-    navigator.clipboard.writeText(json).then(() => {
-      const btn = document.getElementById(btnId);
-      if(!btn) return;
-      const orig = btn.innerHTML;
-      btn.innerHTML = "✅ Copiado";
-      setTimeout(() => { btn.innerHTML = orig; }, 2000);
-    }).catch(() => {
-      const ta = document.createElement("textarea");
-      ta.value = json;
-      ta.style.position = "fixed"; ta.style.opacity = "0";
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand("copy");
-      document.body.removeChild(ta);
-      const btn = document.getElementById(btnId);
-      if(!btn) return;
-      const orig = btn.innerHTML;
-      btn.innerHTML = "✅ Copiado";
-      setTimeout(() => { btn.innerHTML = orig; }, 2000);
-    });
+    if(navigator.clipboard && window.isSecureContext){
+      navigator.clipboard.writeText(json).then(() => {
+        mostrarCopiadoSinSaltar(btnId);
+      }).catch(() => {
+        copiarTextoSinScroll(json);
+        mostrarCopiadoSinSaltar(btnId);
+      });
+    } else {
+      copiarTextoSinScroll(json);
+      mostrarCopiadoSinSaltar(btnId);
+    }
+  }
+
+  // Cambia el contenido del botón a "✅ Copiado" (y opcionalmente su color)
+  // sin que el botón cambie de tamaño ni haga saltar los botones de al
+  // lado: se fija el ancho actual antes de tocar el contenido y se libera
+  // de nuevo al restaurar el texto original.
+  function mostrarCopiadoSinSaltar(btnId, colorExito){
+    const btn = document.getElementById(btnId);
+    if(!btn) return;
+    const orig = btn.innerHTML;
+    const rect = btn.getBoundingClientRect();
+    btn.style.width = rect.width + "px";
+    btn.style.height = rect.height + "px";
+    btn.style.flex = "0 0 " + rect.width + "px";
+    btn.style.display = "flex";
+    btn.style.alignItems = "center";
+    btn.innerHTML = "✅ Copiado";
+    if(colorExito) btn.style.color = "var(--success)";
+    setTimeout(() => {
+      btn.innerHTML = orig;
+      btn.style.width = "";
+      btn.style.height = "";
+      btn.style.flex = "";
+      btn.style.display = "";
+      btn.style.alignItems = "";
+      if(colorExito) btn.style.color = "";
+    }, 2000);
   }
 
   function descargarJSONAuto(){
@@ -4884,22 +4946,17 @@ c48 -9 152 -20 232 -26 80 -6 199 -15 265 -21 180 -14 336 -26 580 -44 270
 
   function descargarTexto(){
     const txt = buildTextoPlano();
-    navigator.clipboard.writeText(txt).then(() => {
-      const btn = document.getElementById("downloadTxtBtn");
-      if(!btn) return;
-      const orig = btn.innerHTML;
-      btn.innerHTML = "✅ Copiado";
-      btn.style.color = "var(--success)";
-      setTimeout(() => { btn.innerHTML = orig; btn.style.color = ""; }, 2000);
-    }).catch(() => {
-      const ta = document.createElement("textarea");
-      ta.value = txt;
-      ta.style.position = "fixed"; ta.style.opacity = "0";
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand("copy");
-      document.body.removeChild(ta);
-    });
+    if(navigator.clipboard && window.isSecureContext){
+      navigator.clipboard.writeText(txt).then(() => {
+        mostrarCopiadoSinSaltar("downloadTxtBtn", true);
+      }).catch(() => {
+        copiarTextoSinScroll(txt);
+        mostrarCopiadoSinSaltar("downloadTxtBtn", true);
+      });
+    } else {
+      copiarTextoSinScroll(txt);
+      mostrarCopiadoSinSaltar("downloadTxtBtn", true);
+    }
   }
 
   function wrapText(ctx, text, maxWidth){
@@ -4919,43 +4976,174 @@ c48 -9 152 -20 232 -26 80 -6 199 -15 265 -21 180 -14 336 -26 580 -44 270
     return lines;
   }
 
+  // Rectángulo redondeado para dibujar el chip de intensidad en los
+  // canvas de exportación (mismo criterio visual que el chip HTML
+  // .intensidad-chip usado en las tarjetas de la interfaz).
+  function roundRectPath(ctx, x, y, w, h, r){
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y,     x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x,     y + h, r);
+    ctx.arcTo(x,     y + h, x,     y,     r);
+    ctx.arcTo(x,     y,     x + w, y,     r);
+    ctx.closePath();
+  }
+
+  // Paths del logo de la Biblioteca de la Natación (mismo SVG que el footer),
+  // usados para dibujar una marca de agua muy sutil de fondo en las
+  // imágenes exportadas (descargarImagen, modo manual).
+  const LOGO_BIBLIOTECA_PATHS = [
+"M6085 19564 c-369 -29 -842 -107 -943 -155 -66 -32 -89 -96 -58 -158 18 -35 45 -46 163 -72 53 -11 172 -45 265 -75 229 -73 294 -83 623 -94 154 -6 323 -15 375 -21 268 -30 495 -100 773 -240 225 -113 410 -234 897 -584 380 -273 648 -445 1080 -693 421 -241 645 -384 905 -579 501 -376 877 -769 1202 -1258 242 -365 602 -1035 803 -1495 74 -170 97 -198 143 -181 41 16 45 53 13 146 -114 331 -198 529 -368 871 -430 863 -868 1422 -1530 1951 -298 238 -544 401 -1043 690 -533 309 -711 423 -1190 768 -154 110 -320 228 -370 261 -410 275 -771 439 -1108 503 -144 27 -292 40 -602 51 -161 6 -300 16 -345 25 -78 16 -229 62 -243 75 -8 7 212 39 408 60 572 61 1077 12 1562 -150 336 -111 600 -255 1223 -664 372 -244 494 -318 675 -406 225 -110 420 -167 652 -190 54 -5 208 -14 343 -20 135 -6 288 -17 340 -25 373 -60 709 -244 1035 -570 219 -218 441 -511 553 -731 l21 -42 -62 -6 c-133 -15 -277 -38 -387 -63 -63 -14 -127 -28 -142 -31 -39 -6 -67 -42 -78 -101 -13 -68 0 -119 39 -154 16 -14 46 -56 67 -94 75 -135 256 -406 559 -838 170 -242 317 -452 328 -467 25 -34 79 -60 109 -53 13 4 33 14 45 24 26 22 640 896 762 1086 123 192 126 195 161 259 18 32 46 70 61 84 37 33 48 74 38 147 -5 41 -15 65 -31 80 -36 34 -319 93 -576 121 l-62 7 41 76 c214 393 603 817 940 1026 162 101 353 183 499 216 111 25 252 40 475 49 132 6 285 15 340 21 367 38 640 150 1115 459 91 59 262 170 380 247 482 314 738 449 1049 553 550 183 1097 219 1824 118 86 -12 154 -25 150 -29 -14 -12 -167 -59 -243 -74 -45 -9 -184 -19 -345 -25 -428 -15 -593 -37 -822 -106 -362 -110 -649 -272 -1268 -715 -492 -353 -654 -458 -1210 -779 -466 -270 -702 -426 -995 -659 -566 -450 -959 -909 -1335 -1561 -93 -160 -269 -506 -344 -675 -29 -66 -66 -147 -81 -181 -41 -89 -180 -480 -180 -507 0 -29 18 -53 47 -61 32 -10 68 29 99 109 41 107 233 507 351 729 528 1002 897 1474 1573 2011 290 230 478 354 1020 667 512 297 701 420 1215 789 540 388 810 540 1146 648 213 67 364 87 759 101 334 11 398 20 628 94 93 30 213 64 267 76 109 23 148 42 164 77 34 73 -11 139 -116 172 -140 43 -499 99 -818 127 -264 23 -700 15 -900 -15 -290 -45 -575 -120 -810 -213 -294 -117 -530 -252 -1130 -645 -435 -285 -596 -376 -790 -448 -209 -78 -347 -100 -718 -115 -368 -15 -533 -41 -734 -116 -246 -92 -484 -241 -708 -443 -255 -231 -515 -563 -680 -869 l-60 -112 -210 0 -210 0 -64 118 c-230 418 -576 816 -921 1058 -160 113 -297 186 -463 248 -201 75 -363 101 -730 116 -462 19 -646 60 -942 214 -160 83 -221 121 -620 381 -375 245 -581 371 -755 463 -334 177 -714 298 -1135 363 -117 18 -192 22 -460 24 -176 1 -342 1 -370 -1z m7245 -3192 c58 -6 157 -13 220 -17 71 -4 117 -11 122 -18 21 -33 7 -71 -50 -136 -94 -107 -302 -389 -590 -801 -148 -212 -273 -384 -278 -383 -5 0 -135 181 -289 401 -298 425 -483 676 -577 783 -57 65 -71 103 -50 135 4 7 49 15 102 18 252 17 399 27 435 30 79 7 852 -3 955 -12z",
+"M4964 17561 c-52 -24 -74 -55 -74 -104 0 -59 23 -90 110 -151 217 -153 382 -362 634 -806 193 -340 336 -639 606 -1270 142 -331 170 -415 270 -795 84 -322 178 -515 357 -737 245 -302 887 -751 1660 -1161 237 -126 418 -212 793 -377 485 -213 637 -292 877 -457 521 -357 795 -631 1124 -1125 68 -102 143 -220 167 -262 45 -81 71 -99 117 -78 54 25 46 68 -52 292 -71 162 -108 229 -206 375 -106 158 -174 241 -337 408 -151 156 -291 277 -491 425 -350 259 -571 385 -1004 572 -825 358 -1391 668 -1960 1073 -328 234 -479 375 -611 573 -116 174 -168 305 -253 634 -53 205 -102 359 -169 525 -70 175 -347 805 -431 978 l-79 167 56 -46 c31 -26 161 -136 287 -244 221 -190 588 -502 799 -679 56 -47 279 -226 496 -399 626 -499 686 -548 845 -687 83 -72 222 -191 310 -265 256 -214 385 -334 821 -767 480 -477 1040 -1057 1152 -1194 107 -130 220 -293 472 -679 672 -1027 666 -1013 896 -1818 57 -199 111 -374 121 -388 41 -62 151 -56 181 11 17 36 15 70 -8 145 -29 96 -68 282 -95 464 -65 437 -93 569 -186 881 -120 405 -376 1079 -591 1555 -144 317 -512 1034 -686 1335 -138 239 -295 454 -473 651 -365 400 -735 782 -914 942 -122 110 -364 331 -375 342 -22 22 -201 180 -270 237 -338 280 -1068 756 -1635 1065 -889 485 -1568 764 -2056 843 -120 19 -145 19 -195 -4z m524 -296 c260 -80 436 -149 782 -307 610 -280 1164 -589 1811 -1014 393 -256 594 -411 890 -680 102 -93 275 -250 384 -349 109 -99 293 -281 409 -405 115 -124 272 -290 347 -370 409 -434 525 -613 970 -1485 262 -513 374 -763 571 -1270 124 -317 252 -675 244 -682 -2 -2 -16 18 -32 44 -68 117 -691 1064 -784 1190 -135 187 -231 295 -549 623 -147 151 -349 362 -450 468 -102 106 -192 199 -202 205 -9 7 -149 143 -311 302 -162 160 -376 360 -477 445 -101 85 -284 241 -405 345 -269 231 -357 304 -506 420 -331 257 -855 680 -1040 840 -58 50 -186 159 -285 242 -99 83 -241 203 -315 268 -74 64 -227 193 -340 287 -277 232 -434 391 -602 613 -76 100 -162 209 -193 243 -31 34 -51 62 -43 62 7 0 64 -16 126 -35z",
+"M20325 17560 c-218 -38 -489 -119 -755 -225 -348 -138 -856 -381 -1255 -601 -300 -165 -431 -243 -860 -514 -402 -254 -746 -510 -1007 -747 -53 -48 -179 -162 -280 -253 -248 -223 -401 -373 -656 -645 -119 -126 -246 -261 -283 -300 -414 -437 -581 -699 -1073 -1683 -242 -481 -353 -739 -578 -1332 -225 -594 -316 -923 -393 -1412 -54 -346 -67 -418 -106 -561 -33 -122 -35 -147 -14 -186 30 -58 130 -67 172 -15 11 15 38 86 58 158 294 1041 280 1011 919 1987 329 502 425 639 551 787 130 152 638 677 1119 1155 422 420 564 552 816 763 80 67 224 190 320 274 96 83 234 198 305 255 72 57 310 248 530 423 220 175 448 359 506 408 290 244 574 485 758 643 232 200 365 311 369 307 1 -2 -32 -74 -74 -162 -111 -230 -386 -861 -459 -1054 -35 -91 -79 -223 -98 -295 -19 -71 -49 -184 -67 -250 -56 -212 -97 -316 -176 -452 -153 -261 -346 -439 -844 -778 -440 -300 -1034 -620 -1660 -894 -562 -246 -692 -317 -1025 -554 -496 -354 -839 -715 -1044 -1097 -66 -123 -171 -378 -171 -414 0 -38 25 -66 61 -66 38 0 53 16 115 125 73 127 246 383 338 500 224 286 428 484 716 696 386 284 528 364 1095 612 641 280 1142 548 1635 873 439 289 695 505 854 719 175 234 234 368 340 770 85 326 113 400 339 921 184 422 270 607 383 819 323 606 527 881 771 1047 40 26 80 62 88 78 34 66 9 140 -58 171 -51 23 -92 23 -222 -1z m-220 -322 c-31 -35 -105 -126 -163 -203 -206 -272 -328 -401 -538 -572 -54 -44 -173 -144 -264 -223 -158 -136 -565 -482 -864 -734 -159 -134 -701 -570 -936 -753 -169 -131 -276 -221 -571 -474 -107 -92 -275 -236 -374 -320 -99 -84 -299 -271 -445 -415 -146 -144 -289 -284 -319 -311 -29 -26 -130 -129 -224 -228 -94 -99 -294 -306 -443 -460 -288 -296 -379 -398 -501 -560 -71 -94 -287 -414 -432 -640 -36 -55 -136 -209 -222 -342 -87 -133 -165 -255 -173 -272 -82 -158 55 232 297 849 151 382 348 800 635 1345 244 464 370 673 524 867 92 117 101 127 368 413 403 432 512 544 651 670 79 72 220 200 314 285 274 250 334 302 443 389 345 273 1038 717 1582 1014 154 83 672 347 683 347 3 0 51 22 108 49 237 111 510 220 714 285 66 21 131 42 145 46 61 21 62 11 5 -52z",
+"M9745 10469 c-115 -4 -298 -10 -405 -13 -364 -12 -769 -34 -1280 -70 -561 -41 -793 -59 -985 -77 -115 -11 -262 -24 -325 -29 -101 -9 -457 -50 -680 -80 -41 -5 -133 -17 -205 -25 -218 -27 -632 -85 -785 -110 -538 -89 -707 -120 -955 -179 -99 -24 -225 -53 -280 -66 -55 -12 -127 -30 -160 -40 -33 -10 -125 -37 -205 -60 -326 -94 -636 -215 -790 -309 -19 -11 -42 -24 -50 -28 -25 -11 -131 -92 -196 -150 -79 -69 -136 -175 -142 -262 -5 -67 16 -142 56 -206 52 -81 205 -215 312 -272 30 -16 80 -43 110 -61 54 -30 290 -136 340 -152 14 -5 50 -18 80 -30 97 -37 394 -130 560 -175 36 -9 85 -23 110 -31 152 -45 597 -147 825 -189 44 -8 112 -22 150 -30 39 -9 154 -29 257 -45 102 -16 206 -34 230 -39 42 -10 252 -42 398 -62 41 -5 140 -21 220 -34 80 -13 276 -40 435 -60 160 -20 315 -40 345 -45 30 -5 172 -21 315 -35 143 -14 316 -32 385 -40 69 -8 188 -20 265 -25 131 -10 200 -16 605 -55 85 -8 259 -21 385 -30 127 -9 289 -20 360 -25 274 -20 620 -40 860 -50 138 -5 315 -15 395 -20 581 -40 2029 -71 3170 -68 969 3 1631 13 2115 33 61 3 178 7 260 10 212 8 1289 64 1355 70 30 3 134 10 230 16 200 11 687 52 895 74 77 8 239 24 359 35 228 21 594 60 801 85 66 8 159 19 207 25 87 10 276 39 560 85 84 14 198 32 253 40 263 40 760 138 1045 205 180 43 580 156 635 180 11 5 94 36 185 70 91 34 176 68 190 75 14 8 70 36 125 63 221 110 377 243 440 375 12 27 18 62 18 125 0 79 -3 92 -32 145 -17 32 -43 70 -57 85 -96 101 -130 130 -219 186 -257 162 -609 307 -1045 430 -69 20 -138 40 -155 45 -80 24 -436 107 -675 158 -261 55 -327 68 -450 88 -52 8 -151 26 -220 40 -69 13 -213 38 -320 55 -107 17 -235 37 -285 45 -141 23 -364 54 -472 65 -54 6 -138 17 -188 25 -88 14 -257 34 -480 55 -60 6 -159 18 -220 26 -132 17 -425 47 -665 69 -96 8 -213 19 -260 25 -116 13 -301 28 -575 45 -126 8 -284 19 -350 24 -66 6 -205 15 -310 21 -104 5 -320 17 -480 26 -159 9 -365 14 -458 12 l-167 -4 -35 -34 c-19 -19 -35 -37 -35 -41 0 -3 28 -12 63 -20 l62 -14 -84 -7 c-79 -6 -87 -9 -119 -41 l-34 -35 88 -15 c49 -9 253 -28 454 -41 201 -14 448 -32 550 -41 102 -8 275 -22 385 -31 110 -8 261 -22 335 -30 235 -25 320 -34 530 -54 113 -12 252 -27 310 -35 58 -8 220 -28 360 -45 448 -55 788 -106 1115 -170 235 -46 470 -93 520 -105 33 -7 132 -30 220 -50 88 -20 171 -40 185 -45 14 -5 39 -11 55 -15 45 -9 151 -41 325 -97 158 -51 167 -54 232 -82 21 -9 66 -27 100 -40 53 -20 111 -49 223 -110 89 -49 204 -152 238 -213 24 -44 25 -141 1 -180 -28 -44 -119 -130 -182 -170 -167 -107 -478 -220 -897 -327 -146 -37 -470 -108 -565 -124 -30 -5 -135 -24 -232 -41 -360 -64 -638 -105 -958 -141 -531 -59 -783 -84 -995 -100 -82 -6 -159 -13 -170 -15 -78 -17 -918 -69 -1530 -95 -132 -5 -350 -15 -485 -20 -478 -21 -1005 -29 -1785 -29 -1026 -1 -1821 19 -2805 69 -107 6 -283 15 -390 20 -408 21 -1368 100 -2010 166 -337 34 -1052 128 -1315 173 -60 11 -132 22 -160 25 -77 10 -364 62 -645 117 -448 89 -823 190 -1163 313 -105 38 -127 47 -257 109 -234 110 -374 252 -357 360 9 55 12 61 46 109 59 82 211 182 401 263 80 34 349 127 450 155 25 7 65 18 90 26 72 21 405 101 535 128 224 47 666 117 1100 176 160 21 308 41 330 44 22 3 105 13 185 21 80 8 253 26 385 40 325 34 321 34 565 50 118 8 305 21 415 30 110 8 364 24 565 35 201 11 374 22 385 25 11 3 162 9 335 15 324 10 481 22 537 41 l33 10 -28 35 c-16 20 -36 34 -49 34 -12 0 -29 3 -38 7 -15 5 -15 7 4 17 21 12 21 12 -7 45 -25 31 -34 34 -107 42 -92 9 -291 9 -590 -2z m6648 -236 c-7 -2 -19 -2 -25 0 -7 3 -2 5 12 5 14 0 19 -2 13 -5z m135 -10 c-16 -2 -40 -2 -55 0 -16 2 -3 4 27 4 30 0 43 -2 28 -4z m115 -10 c-13 -2 -35 -2 -50 0 -16 2 -5 4 22 4 28 0 40 -2 28 -4z m110 -10 c-7 -2 -21 -2 -30 0 -10 3 -4 5 12 5 17 0 24 -2 18 -5z m130 -10 c-7 -2 -21 -2 -30 0 -10 3 -4 5 12 5 17 0 24 -2 18 -5z m120 -10 c-13 -2 -33 -2 -45 0 -13 2 -3 4 22 4 25 0 35 -2 23 -4z m267 -18 c174 -14 255 -21 475 -45 50 -5 196 -19 325 -30 129 -11 285 -27 345 -35 61 -8 209 -26 330 -40 121 -14 297 -37 390 -50 94 -14 224 -32 290 -41 245 -32 817 -123 939 -148 39 -8 114 -22 166 -31 212 -38 620 -126 770 -167 41 -11 120 -31 175 -44 178 -44 542 -157 725 -226 204 -77 425 -189 510 -257 25 -20 54 -43 65 -51 35 -27 91 -89 103 -115 7 -14 17 -36 24 -50 23 -49 8 -167 -27 -214 -14 -19 -75 -81 -116 -116 -106 -94 -417 -243 -684 -328 -174 -56 -466 -138 -575 -162 -123 -28 -225 -52 -385 -90 -156 -37 -837 -155 -1126 -195 -85 -11 -201 -27 -259 -35 -104 -15 -333 -42 -585 -70 -71 -8 -202 -23 -290 -35 -192 -24 -504 -54 -710 -69 -82 -6 -262 -20 -400 -31 -137 -10 -295 -22 -350 -25 -55 -3 -163 -10 -240 -15 -370 -25 -1064 -60 -1460 -74 -1117 -39 -1214 -41 -2435 -39 -1141 2 -1482 8 -2125 33 -137 6 -389 15 -560 20 -170 6 -386 14 -480 20 -93 5 -251 14 -350 20 -587 35 -911 57 -949 65 -12 3 -136 12 -276 20 -423 25 -1262 108 -1920 189 -284 35 -668 86 -752 100 -51 8 -142 23 -203 32 -232 34 -794 135 -945 169 -36 8 -143 31 -238 50 -96 19 -177 37 -181 39 -3 3 -60 16 -126 31 -66 14 -183 45 -260 67 -77 22 -171 48 -210 58 -83 21 -408 131 -451 153 -16 8 -60 27 -99 42 -110 43 -262 122 -354 184 -46 31 -93 62 -105 70 -27 17 -91 98 -117 146 -11 20 -23 59 -26 85 -11 90 71 217 188 294 24 16 63 42 86 58 48 33 180 99 256 129 46 18 71 29 142 60 46 20 424 140 513 163 321 83 625 149 1012 221 41 7 138 25 215 39 426 79 1465 213 1860 240 44 3 -55 -15 -220 -39 -436 -64 -443 -65 -530 -80 -189 -34 -515 -97 -570 -110 -497 -117 -677 -170 -935 -271 -334 -130 -533 -283 -566 -434 -13 -61 -12 -78 1 -124 21 -70 30 -83 113 -169 194 -201 668 -399 1337 -558 44 -11 136 -33 205 -49 298 -71 783 -162 1140 -215 96 -14 218 -32 270 -40 52 -8 156 -22 230 -30 74 -9 142 -18 150 -20 8 -2 85 -11 170 -20 85 -9 241 -27 345 -40 255 -32 919 -96 1185 -115 74 -5 200 -14 280 -20 240 -17 911 -59 1130 -70 529 -26 654 -31 1075 -40 248 -6 628 -15 845 -20 387 -9 603 -8 1695 5 712 8 1649 42 2055 74 69 6 184 13 255 16 250 12 963 68 1195 94 47 6 112 13 145 16 96 9 311 34 430 50 61 8 166 21 235 30 569 72 979 142 1386 234 119 27 216 52 430 110 292 79 647 225 793 327 142 99 227 222 225 324 -2 88 -39 157 -134 246 -268 251 -1040 507 -2090 693 -63 12 -164 30 -225 41 -383 69 -1155 175 -1605 221 -304 30 -292 39 20 14z m-10233 -11 c-3 -3 -12 -4 -19 -1 -8 3 -5 6 6 6 11 1 17 -2 13 -5z m-89 -11 c-10 -2 -28 -2 -40 0 -13 2 -5 4 17 4 22 1 32 -1 23 -4z",
+"M10275 10095 c-11 -2 -148 -9 -305 -15 -277 -10 -605 -30 -840 -50 -63 -5 -176 -14 -250 -20 -197 -16 -577 -56 -795 -85 -104 -14 -246 -32 -315 -40 -237 -28 -788 -115 -830 -131 -8 -3 -49 -12 -90 -19 -108 -20 -403 -91 -505 -122 -142 -43 -182 -55 -200 -63 -11 -4 -49 -18 -85 -30 -61 -21 -135 -51 -170 -69 -117 -60 -160 -85 -160 -93 0 -4 -6 -8 -13 -8 -19 0 -129 -109 -149 -148 -28 -53 -24 -143 8 -195 104 -166 394 -313 889 -452 233 -65 556 -136 800 -175 33 -5 112 -19 174 -30 63 -12 147 -25 185 -30 39 -5 132 -19 206 -30 242 -37 263 -40 430 -60 294 -36 413 -50 525 -60 61 -5 155 -14 210 -20 111 -11 514 -43 760 -60 88 -6 246 -17 350 -25 326 -25 851 -50 1250 -60 121 -3 279 -8 350 -10 403 -14 1396 -17 1955 -6 594 11 1347 35 1455 46 28 3 138 10 245 15 205 10 309 18 710 50 135 11 304 25 375 30 188 14 623 60 765 81 36 5 99 14 140 19 330 41 736 109 1020 170 52 12 128 27 168 35 373 73 816 237 985 366 111 85 158 161 150 246 -7 81 -51 142 -158 218 -53 38 -233 135 -250 135 -4 0 -21 6 -38 14 -49 22 -283 101 -367 125 -371 104 -903 213 -1360 280 -280 42 -569 80 -670 90 -58 6 -163 17 -235 25 -71 9 -184 20 -250 26 -66 6 -165 15 -220 20 -482 47 -921 75 -1186 75 l-246 0 -36 -32 -36 -31 87 -16 c48 -9 152 -20 232 -26 80 -6 199 -15 265 -21 180 -14 336 -26 580 -44 270 -20 577 -48 801 -75 339 -39 740 -90 794 -100 81 -14 304 -49 390 -61 41 -5 109 -16 150 -24 41 -8 122 -24 180 -35 58 -11 134 -27 170 -35 36 -8 88 -20 115 -25 163 -33 533 -141 673 -196 116 -46 265 -124 328 -172 207 -157 154 -298 -170 -451 -152 -71 -569 -195 -793 -236 -43 -8 -163 -30 -268 -49 -104 -19 -235 -42 -290 -51 -55 -8 -127 -20 -160 -25 -71 -12 -483 -69 -540 -75 -22 -2 -78 -9 -125 -14 -276 -33 -592 -63 -850 -81 -162 -11 -353 -25 -425 -30 -479 -36 -1202 -70 -1692 -79 -554 -11 -2065 -7 -2498 7 -586 18 -1520 66 -1790 92 -94 8 -152 13 -480 40 -332 27 -942 92 -1180 125 -60 9 -171 24 -245 35 -194 27 -499 81 -905 161 -77 15 -448 107 -500 124 -22 7 -83 27 -135 43 -274 88 -450 181 -535 280 -25 30 -30 45 -32 96 -1 54 2 65 30 99 17 22 49 52 71 68 23 16 46 32 51 37 19 15 171 90 240 117 116 47 414 134 600 175 44 10 122 27 174 39 51 12 119 26 150 30 31 5 103 18 161 29 136 27 400 69 515 82 50 6 135 17 190 25 114 17 300 38 525 60 85 8 196 20 245 25 100 11 167 16 300 25 50 4 124 10 165 16 41 5 183 16 315 24 132 9 305 20 385 25 80 5 237 14 350 20 328 17 491 30 549 43 l55 12 -44 35 -44 35 -230 1 c-127 2 -240 1 -251 -1z",
+"M10535 9940 c-76 -8 -234 -20 -535 -40 -74 -5 -171 -14 -215 -19 -44 -6 -132 -15 -195 -21 -382 -37 -911 -127 -1235 -211 -388 -101 -584 -183 -715 -298 -19 -17 -38 -31 -42 -31 -5 0 -8 -7 -8 -15 0 -9 -7 -18 -15 -21 -24 -10 -35 -82 -22 -154 18 -108 249 -260 557 -366 98 -34 350 -107 430 -124 47 -10 139 -31 205 -45 66 -15 171 -35 234 -45 62 -11 121 -22 130 -25 16 -5 197 -32 406 -61 230 -31 795 -95 1000 -113 385 -33 421 -35 930 -61 931 -46 1734 -51 2835 -15 536 18 1219 71 1670 130 63 9 185 25 270 36 399 52 678 104 935 172 218 58 249 67 270 76 11 6 49 19 85 31 80 27 222 97 293 144 77 51 135 117 153 175 15 46 15 52 -2 97 -25 64 -102 139 -203 197 -46 26 -86 47 -90 47 -3 0 -19 7 -34 15 -92 48 -381 141 -592 190 -60 14 -150 35 -200 46 -113 27 -165 37 -560 103 -374 63 -662 101 -1006 132 -569 50 -740 54 -799 17 -18 -11 -28 -23 -22 -27 6 -3 52 -13 104 -20 96 -15 166 -22 548 -57 380 -34 977 -107 1230 -149 208 -35 504 -96 708 -145 426 -105 745 -253 807 -377 19 -39 20 -105 0 -124 -8 -8 -20 -23 -27 -32 -39 -53 -176 -132 -318 -183 -47 -17 -94 -34 -105 -39 -61 -25 -366 -100 -570 -140 -303 -59 -403 -76 -510 -86 -27 -3 -84 -9 -125 -15 -80 -11 -301 -35 -620 -68 -423 -43 -1058 -81 -1535 -91 -440 -9 -1667 -8 -1880 2 -447 19 -987 50 -1205 68 -69 5 -210 17 -315 25 -394 32 -1006 105 -1250 150 -44 8 -114 19 -155 25 -41 5 -104 16 -140 24 -36 8 -108 22 -160 32 -146 26 -477 108 -616 153 -309 99 -486 204 -514 305 -7 25 -9 53 -5 63 5 10 8 21 7 25 -1 3 25 31 58 61 137 124 457 239 917 327 87 17 190 37 228 46 71 15 181 32 380 59 61 9 157 22 215 30 124 18 447 52 610 65 63 5 158 14 210 19 52 6 142 13 200 16 134 8 335 33 378 46 l34 11 -37 25 c-20 14 -49 27 -63 29 -60 9 -322 11 -397 4z"
+  ];
+
+  // Dibuja el logo de la Biblioteca centrado en (cx,cy) ocupando `size` px,
+  // con opacidad `alpha` muy baja (marca de agua). viewBox original 2551x2551,
+  // transform interno translate(0,2551) scale(0.1,-0.1).
+  function dibujarLogoFondo(ctx, cx, cy, size, alpha){
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.translate(cx - size/2, cy - size/2);
+    ctx.scale(size/2551, size/2551);
+    ctx.translate(0, 2551);
+    ctx.scale(0.1, -0.1);
+    ctx.fillStyle = "#38bdf8";
+    LOGO_BIBLIOTECA_PATHS.forEach(d => {
+      ctx.fill(new Path2D(d));
+    });
+    ctx.restore();
+  }
+
+  // Matriz QR precalculada (33x33, ECC M) apuntando a
+  // https://lightswan.github.io/biblioteca-natacion/ — usada para dibujar
+  // un QR discreto en la esquina inferior derecha de las imágenes exportadas.
+  const QR_BIBLIOTECA_SIZE = 33;
+  const QR_BIBLIOTECA_MATRIX = [
+"111111100000110011111011001111111",
+"100000100101111101000100101000001",
+"101110101001010001101110001011101",
+"101110101000001110001010101011101",
+"101110101000010101100101001011101",
+"100000101011000110101000001000001",
+"111111101010101010101010101111111",
+"000000001101101100100111100000000",
+"101111100000111101001010001111100",
+"001101011101100010011011001101101",
+"011110100101100110101010111010110",
+"100001010000101010000110110011110",
+"001111111111100000110011110111001",
+"101010001001011110001101001101011",
+"110000100001010000010010011001010",
+"111000001001000010011110111101100",
+"000010111001111001010010110111001",
+"010010000011010001111001001101101",
+"011001101010011111001010011110110",
+"000011000010000011111101001111100",
+"111101110101111010001000110111011",
+"111101010111011100100101001001101",
+"100111101111011111101100111010110",
+"101001000100000100100110000101100",
+"100110111110010101100010111110000",
+"000000001011110010111000100010101",
+"111111100100000110100011101010110",
+"100000101101010100011111100011101",
+"101110101110011000110100111111000",
+"101110101101110111001001110011111",
+"101110101110010001010010001101100",
+"100000100000001010111101000011100",
+"111111101101000001010001110100010"
+  ];
+
+  // Dibuja el QR de la Biblioteca en (x,y) [esquina superior-izquierda del QR]
+  // ocupando `size` px de lado, con opacidad `alpha` (sutil, no muy llamativo).
+  function dibujarQRBiblioteca(ctx, x, y, size){
+    const n = QR_BIBLIOTECA_SIZE;
+    // Colores suaves con contraste moderado (perceptible visualmente pero
+    // poco llamativo); sigue siendo escaneable porque la diferencia de
+    // luminosidad entre fondo y módulos se mantiene.
+    const quiet = size * 0.06; // pequeño margen silencioso alrededor
+    const inner = size - quiet * 2;
+    const cell = inner / n;
+    ctx.save();
+    ctx.fillStyle = "#1e293b";
+    ctx.fillRect(x, y, size, size);
+    ctx.fillStyle = "#94a3b8";
+    for(let row = 0; row < n; row++){
+      const line = QR_BIBLIOTECA_MATRIX[row];
+      for(let col = 0; col < n; col++){
+        if(line[col] === "1"){
+          ctx.fillRect(x + quiet + col * cell, y + quiet + row * cell, cell + 0.5, cell + 0.5);
+        }
+      }
+    }
+    ctx.restore();
+  }
+
   function descargarImagen(){
     const totalFinal = entrenamientoActual.bloques.reduce((s,b)=>s+(parseInt(b.distancia)||0),0);
 
-    // Build lines
+    // Build lines. Cada ejercicio es una "row" con 3 columnas (nombre,
+    // intensidad, descripción) que se dibujan alineadas horizontalmente;
+    // la descripción puede envolver en varias líneas ancladas a su columna.
     const lines = [];
     lines.push({ text: nombreVisibleEntrenamiento() + " — " + totalFinal + "m", type:"title" });
     entrenamientoActual.bloques.forEach(b => {
       lines.push({ text: htmlDecode(b.titulo) + "  (" + b.distancia + ")", type:"block" });
       b.ejercicios.forEach(ej => {
-        lines.push({ text: "  • " + htmlDecode(ej.nombre), type:"ej" });
-        if(ej.intensidad) lines.push({ text: "    Intensidad: " + ej.intensidad + "%", type:"desc" });
-        const descFinal = ej.desc || (ej.refId ? (ejerciciosBiblioteca.find(b=>b.id===ej.refId)||{}).desc||"" : "");
-        if(descFinal) lines.push({ text: "    " + htmlDecode(descFinal), type:"desc" });
+        const descFinal = ej.desc || (ej.refId ? (ejerciciosBiblioteca.find(bb=>bb.id===ej.refId)||{}).desc||"" : "");
+        lines.push({
+          nombre: "  • " + htmlDecode(ej.nombre),
+          intensidad: (ej.intensidad !== undefined && ej.intensidad !== null) ? ej.intensidad : null,
+          desc: descFinal ? htmlDecode(descFinal) : "",
+          type: "row"
+        });
       });
     });
 
     const PAD = 40, FONT = 15, LINE_H = 26, TITLE_H = 42, DESC_FONT = 12, DESC_LINE_H = 18;
-    const BASE_W = 700;
-    const MAX_TEXT_W = BASE_W - PAD * 2;
+    const BASE_W = 820;
+    const COL_NOMBRE = PAD, COL_DESC = PAD + 20;
+    const MAX_DESC_W = BASE_W - PAD - COL_DESC;
     const SCALE = 2;
 
-    // First pass: expand desc lines into wrapped sub-lines to measure height
+    // First pass: envolver la descripción de cada ejercicio (siempre en su
+    // propia línea, indentada, debajo del nombre+intensidad).
     const ctx0 = document.createElement("canvas").getContext("2d");
     ctx0.font = DESC_FONT + "px 'Inter',system-ui,sans-serif";
     const expanded = [];
     lines.forEach(l => {
-      if(l.type === "desc"){
-        const wrapped = wrapText(ctx0, "    " + l.text, MAX_TEXT_W);
-        wrapped.forEach(w => expanded.push({ text: w, type:"desc" }));
+      if(l.type === "row"){
+        const descLines = l.desc ? wrapText(ctx0, l.desc, MAX_DESC_W) : [];
+        expanded.push({ type:"row", nombre:l.nombre, intensidad:l.intensidad, descLines });
       } else {
         expanded.push(l);
       }
     });
 
+    function rowHeight(l){
+      return LINE_H + l.descLines.length * DESC_LINE_H;
+    }
+
     let canvasH = PAD;
-    expanded.forEach(l => { canvasH += l.type==="title" ? TITLE_H : l.type==="desc" ? DESC_LINE_H : LINE_H; });
-    canvasH += PAD;
+    expanded.forEach(l => {
+      if(l.type === "title") canvasH += TITLE_H;
+      else if(l.type === "block") canvasH += LINE_H;
+      else if(l.type === "row") canvasH += rowHeight(l);
+    });
+    const QR_SIZE = 56;
+    const LOGO_FOOTER_SIZE = QR_SIZE * 1.5;
+    // Espacio entre el último ejercicio y el pie de página (bastante
+    // generoso, ~55px) y margen pequeño entre el contenido del pie y el
+    // borde inferior de la imagen (independientes entre sí).
+    const GAP_ANTES_FOOTER = 55;
+    const MARGEN_FINAL = 16;
+    const ALTO_CONTENIDO_FOOTER = 12 + 6 + 22; // línea de texto + hueco + logo
+    const FOOTER_H = GAP_ANTES_FOOTER + Math.max(ALTO_CONTENIDO_FOOTER, QR_SIZE, LOGO_FOOTER_SIZE) + MARGEN_FINAL;
+    canvasH += FOOTER_H;
 
     const canvas = document.createElement("canvas");
     canvas.width  = BASE_W  * SCALE;
@@ -4965,6 +5153,10 @@ c48 -9 152 -20 232 -26 80 -6 199 -15 265 -21 180 -14 336 -26 580 -44 270
 
     ctx.fillStyle = "#0f172a";
     ctx.fillRect(0, 0, BASE_W, canvasH);
+
+    // Marca de agua: logo de la Biblioteca, muy sutil, centrado en el fondo.
+    const logoSize = Math.min(BASE_W, canvasH) * 0.7;
+    dibujarLogoFondo(ctx, BASE_W/2, canvasH/2, logoSize, 0.035);
 
     let y = PAD;
     expanded.forEach(l => {
@@ -4981,27 +5173,66 @@ c48 -9 152 -20 232 -26 80 -6 199 -15 265 -21 180 -14 336 -26 580 -44 270
         ctx.lineWidth = 1;
         ctx.beginPath(); ctx.moveTo(PAD, y+FONT+8); ctx.lineTo(BASE_W-PAD, y+FONT+8); ctx.stroke();
         y += LINE_H;
-      } else if(l.type==="desc"){
-        ctx.fillStyle = "#64748b";
-        ctx.font = DESC_FONT + "px 'Inter',system-ui,sans-serif";
-        ctx.fillText(l.text, PAD, y + DESC_FONT + 2);
-        y += DESC_LINE_H;
-      } else {
+      } else if(l.type==="row"){
+        // Línea 1: nombre del ejercicio + chip de intensidad, pegado justo después
         ctx.fillStyle = "#e2e8f0";
         ctx.font = FONT + "px 'Inter',system-ui,sans-serif";
-        ctx.fillText(l.text, PAD, y + FONT + 2);
+        ctx.fillText(l.nombre, COL_NOMBRE, y + FONT + 2);
+        if(l.intensidad !== null){
+          const nombreW = ctx.measureText(l.nombre).width;
+          const texto = l.intensidad + "%";
+          ctx.font = "800 11px 'Inter',system-ui,sans-serif";
+          const textW = ctx.measureText(texto).width;
+          const chipW = textW + 14, chipH = 16;
+          const chipX = COL_NOMBRE + nombreW + 12, chipY = y + 3;
+          const grad = ctx.createLinearGradient(chipX, 0, chipX + chipW, 0);
+          const [gradC0, gradC1] = intensidadGradienteExtremos(l.intensidad);
+          grad.addColorStop(0, gradC0);
+          grad.addColorStop(1, gradC1);
+          ctx.fillStyle = grad;
+          roundRectPath(ctx, chipX, chipY, chipW, chipH, chipH/2);
+          ctx.fill();
+          ctx.fillStyle = "#0b1120";
+          ctx.textAlign = "center";
+          ctx.fillText(texto, chipX + chipW/2, chipY + 11);
+          ctx.textAlign = "left";
+        }
         y += LINE_H;
+        // Línea(s) siguiente(s): descripción, indentada
+        if(l.descLines.length){
+          ctx.fillStyle = "#64748b";
+          ctx.font = DESC_FONT + "px 'Inter',system-ui,sans-serif";
+          l.descLines.forEach((dl, i) => {
+            ctx.fillText(dl, COL_DESC, y + DESC_FONT + 2 + i * DESC_LINE_H);
+          });
+          y += l.descLines.length * DESC_LINE_H;
+        }
       }
     });
 
+    // Pie de página, diseño simétrico: logo pequeño en la esquina inferior
+    // izquierda, texto centrado en medio, QR en la esquina inferior
+    // derecha — logo y QR centrados a la misma altura (su centro
+    // vertical coincide, aunque el logo es algo más grande en px porque
+    // el propio dibujo del pez dentro de su viewBox deja más aire que el
+    // QR) y con el mismo margen lateral (PAD) a cada lado.
+    const footerContenidoY = canvasH - FOOTER_H + GAP_ANTES_FOOTER;
+    const centroIconosY = footerContenidoY + Math.max(ALTO_CONTENIDO_FOOTER, QR_SIZE, LOGO_FOOTER_SIZE) / 2 - 14;
     ctx.fillStyle = "#334155";
     ctx.font = "12px 'Inter',system-ui,sans-serif";
-    ctx.fillText("Generado con Generador de Sesiones de Natación", PAD, canvasH - 12);
+    ctx.textAlign = "center";
+    ctx.fillText("Generado con el generador de sesiones de la Biblioteca de la Natación", BASE_W / 2, centroIconosY + 4);
+
+    // Logo de la Biblioteca, esquina inferior izquierda
+    dibujarLogoFondo(ctx, PAD + LOGO_FOOTER_SIZE / 2, centroIconosY + 4, LOGO_FOOTER_SIZE, 0.9);
+
+    // QR a la biblioteca, esquina inferior derecha, centrado a la misma altura que el logo
+    dibujarQRBiblioteca(ctx, BASE_W - PAD - QR_SIZE, centroIconosY - QR_SIZE / 2, QR_SIZE);
 
     canvas.toBlob(blob => {
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
-      a.download = nombreArchivoEntrenamiento(entrenamientoActual.creadoEn) + ".png";
+      a.download = nombreArchivoEntrenamiento(entrenamientoActual.creadoEn, entrenamientoActual.nombre) + ".png";
       a.click();
       URL.revokeObjectURL(a.href);
     });
@@ -5055,9 +5286,8 @@ c48 -9 152 -20 232 -26 80 -6 199 -15 265 -21 180 -14 336 -26 580 -44 270
   }
 
   function renderEjercicioHTML(ej, bi, ei){
-    const emoji = intensidadEmoji ? intensidadEmoji(ej.intensidad) : "";
-    const ritmoStr = ej.ritmo > 0 ? ` · ⏱${String(Math.floor(ej.ritmo/60)).padStart(2,"0")}:${String(ej.ritmo%60).padStart(2,"0")}/100m` : "";
-    const infoLine = `<span style="color:${intensidadColor(ej.intensidad)};font-weight:600;">${emoji} ${ej.intensidad}%</span>${ritmoStr}`;
+    const ritmoStr = ej.ritmo > 0 ? `⏱${String(Math.floor(ej.ritmo/60)).padStart(2,"0")}:${String(ej.ritmo%60).padStart(2,"0")}/100m` : "";
+    const intensidadHTML = `<span class="intensidad-chip" style="background:${intensidadGradiente(ej.intensidad)};">${ej.intensidad}%</span>`;
     const paginaBtn = (ej.pagina && !ej.esGenerica) ? `<a href="https://drive.google.com/file/d/1Xk1ljDGgu5mvXG3CsbF6fA1XN1FpDD-G/preview#page=${ej.pagina}" target="_blank" class="pagina-btn" title="Ver en el libro">📄 Libro pág. ${ej.pagina}</a>` : "";
 
     return `
@@ -5067,11 +5297,12 @@ c48 -9 152 -20 232 -26 80 -6 199 -15 265 -21 180 -14 336 -26 580 -44 270
           <div class="exercise-name-wrap">
             <div class="exercise-name">${ej.nombre}</div>
             ${ej.desc ? `<div class="exercise-desc-small visible">${ej.desc}</div>` : `<div class="exercise-desc-small"></div>`}
-            <div class="exercise-info-line">${infoLine}</div>
           </div>
         </div>
         <div class="exercise-bottom-row">
           <span class="exercise-distance">${ej.distancia}</span>
+          ${intensidadHTML}
+          ${ritmoStr ? `<span class="exercise-ritmo">${ritmoStr}</span>` : ""}
           ${paginaBtn}
           <button class="exercise-action-icon ${ej.bloqueado?'active':''}" onclick="toggleBloquear(${bi},${ei})" title="${ej.bloqueado?'Desbloquear':'Bloquear'}">${ej.bloqueado?'🔒':'🔓'}</button>
           <button class="exercise-action-icon" onclick="openAutoEdit(${bi},${ei})" title="Editar">✎</button>
@@ -5112,6 +5343,7 @@ c48 -9 152 -20 232 -26 80 -6 199 -15 265 -21 180 -14 336 -26 580 -44 270
       document.getElementById("mmTSeries").value = ej.series;
       document.getElementById("mmTSegundos").value = ej.seg || 60;
       document.getElementById("mmTMetros").value = ej.metrosSerie;
+      document.getElementById("mmDescansoTiempo").value = (ej.descansoSerie !== undefined && ej.descansoSerie !== null) ? ej.descansoSerie : 30;
       calcularRitmo();
     } else {
       document.getElementById("mmCfgSeries").style.display = "flex";
@@ -5120,27 +5352,29 @@ c48 -9 152 -20 232 -26 80 -6 199 -15 265 -21 180 -14 336 -26 580 -44 270
       document.getElementById("mmTypeTiempo").classList.remove("active");
       document.getElementById("mmSeries").value = ej.series;
       document.getElementById("mmMetros").value = ej.metrosSerie;
+      document.getElementById("mmDescansoSeries").value = (ej.descansoSerie !== undefined && ej.descansoSerie !== null) ? ej.descansoSerie : 30;
     }
 
     // Intensity
     const intVal = ej.intensidad || 50;
     mmIntensidadSlider.value = intVal;
-    mmIntensidadLabel.textContent = intensidadEmoji(intVal);
+    mmIntensidadLabel.style.background = intensidadGradiente(intVal);
     mmIntensidadPct.textContent = intVal + "%";
 
     document.getElementById("manualModalTitle").textContent = "Editar ejercicio";
     document.getElementById("mmConfirmBtn").textContent = "✓ Guardar cambios";
     manualModalOverlay.classList.add("open");
-    document.getElementById("mmFreeName").focus();
+    // Sin .focus() aquí a propósito: evita que salte el teclado virtual
+    // nada más abrir el modal (ver mismo criterio en openManualModal).
   }
 
-  function buildNombreTiempo(series, seg, tMetros, ritmoLabel, emoji, nombreBase){
+  function buildNombreTiempo(series, seg, tMetros, ritmoLabel, nombreBase){
     const minStr = seg >= 60 ? Math.floor(seg/60)+"'"+(seg%60?String(seg%60).padStart(2,"0")+"\"":"") : seg+"\"";
     const ritmoStr = (ritmoLabel && ritmoLabel!=="—") ? ` @${ritmoLabel}/100m` : "";
-    return `${emoji} ${series}×${minStr} (${tMetros}m)${ritmoStr} ${nombreBase}`;
+    return `${series}×${minStr} (${tMetros}m)${ritmoStr} ${nombreBase}`;
   }
 
-  function applyAutoEdit(nombre, metros, series, intensidad, desc, esTiempo, seg){
+  function applyAutoEdit(nombre, metros, series, intensidad, desc, esTiempo, seg, descansoSerie){
     if(autoEditBi === null) return;
     const ej = entrenamientoActual.bloques[autoEditBi].ejercicios[autoEditEi];
     ej.nombre = nombre;
@@ -5151,6 +5385,7 @@ c48 -9 152 -20 232 -26 80 -6 199 -15 265 -21 180 -14 336 -26 580 -44 270
     ej.intensidad = intensidad;
     ej.esTiempo = esTiempo;
     if(esTiempo) ej.seg = seg;
+    ej.descansoSerie = (descansoSerie !== undefined && descansoSerie !== null) ? descansoSerie : 30;
     actualizarTotalesBloque(autoEditBi);
     refreshEjercicio(autoEditBi, autoEditEi);
     const distHeader = content.querySelector(`.block[data-block-index="${autoEditBi}"] .block-distance`);
@@ -5310,14 +5545,21 @@ c48 -9 152 -20 232 -26 80 -6 199 -15 265 -21 180 -14 336 -26 580 -44 270
     // Update compact row inline
     const nameEl  = exEl.querySelector(".exercise-name");
     const distEl  = exEl.querySelector(".exercise-distance");
-    const infoEl  = exEl.querySelector(".exercise-name-wrap div:last-child");
 
     if(nameEl)  nameEl.textContent = ej.nombre;
     if(distEl)  distEl.textContent = ej.distancia;
-    if(infoEl){
-      const emoji    = intensidadEmoji ? intensidadEmoji(ej.intensidad) : "";
-      const ritmoStr = ej.ritmo > 0 ? ` · ⏱${String(Math.floor(ej.ritmo/60)).padStart(2,"0")}:${String(ej.ritmo%60).padStart(2,"0")}/100m` : "";
-      infoEl.innerHTML = `<span style="color:${intensidadColor(ej.intensidad)};font-weight:600;">${emoji} ${ej.intensidad}%</span>${ritmoStr}`;
+
+    // La intensidad y el ritmo viven en la fila inferior, junto a la
+    // distancia — se actualizan reemplazando ambos nodos (si existían)
+    // justo después de exercise-distance, para no alterar el resto de
+    // botones de esa fila.
+    const bottomRow = exEl.querySelector(".exercise-bottom-row");
+    if(bottomRow && distEl){
+      bottomRow.querySelectorAll(".intensidad-chip, .exercise-ritmo").forEach(el => el.remove());
+      const ritmoStr = ej.ritmo > 0 ? `⏱${String(Math.floor(ej.ritmo/60)).padStart(2,"0")}:${String(ej.ritmo%60).padStart(2,"0")}/100m` : "";
+      const frag = document.createElement("template");
+      frag.innerHTML = `<span class="intensidad-chip" style="background:${intensidadGradiente(ej.intensidad)};">${ej.intensidad}%</span>${ritmoStr ? `<span class="exercise-ritmo">${ritmoStr}</span>` : ""}`;
+      distEl.after(frag.content);
     }
 
     // Update block distance header
@@ -5392,31 +5634,8 @@ c48 -9 152 -20 232 -26 80 -6 199 -15 265 -21 180 -14 336 -26 580 -44 270
   let mmSelectedEj = null; // ejercicio seleccionado en la lista
   let extraBlockCounter = 0; // counter for extra blocks
 
-  // ---- Editable title for "Sesión principal" ----
-  (function(){
-    const display = document.getElementById("mainBlockTitleDisplay");
-    const input = document.getElementById("mainBlockTitleInput");
-    const addBtn = document.getElementById("manualAddMainBtn");
-
-    function showInput(){
-      display.style.display = "none";
-      input.style.display = "";
-      input.focus();
-      input.select();
-    }
-    function applyTitle(){
-      const val = input.value.trim() || "Sesión principal";
-      input.value = val;
-      display.childNodes[0].textContent = val;
-      addBtn.textContent = "+ Añadir ejercicio a " + val;
-      display.style.display = "";
-      input.style.display = "none";
-    }
-    display.addEventListener("click", showInput);
-    input.addEventListener("blur", applyTitle);
-    input.addEventListener("keydown", e => { if(e.key === "Enter") applyTitle(); if(e.key === "Escape") { input.value = display.childNodes[0].textContent.trim(); applyTitle(); } });
-    addBtn.addEventListener("click", () => openManualModal("main"));
-  })();
+  // ---- Botón "+ Añadir ejercicio a Sesión principal" ----
+  document.getElementById("manualAddMainBtn").addEventListener("click", () => openManualModal("main"));
 
   // ---- Extra blocks ----
   const extraBlocksContainer = document.getElementById("manualExtraBlocks");
@@ -5425,26 +5644,22 @@ c48 -9 152 -20 232 -26 80 -6 199 -15 265 -21 180 -14 336 -26 580 -44 270
     extraBlockCounter++;
     const bid = "extra_" + extraBlockCounter;
     manualData[bid] = [];
+    const nombreInicial = "Bloque extra " + extraBlockCounter;
 
     const blockEl = document.createElement("div");
     blockEl.id = "manualBloque_" + bid;
     blockEl.className = "manual-block";
     blockEl.innerHTML = `
-      <div class="manual-block-header">
-        <div class="manual-block-title extra-block-title-display" data-bid="${bid}" style="cursor:pointer;display:flex;align-items:center;gap:8px;" title="Haz clic para editar el nombre">
-          Bloque extra ${extraBlockCounter}
-          <span style="font-size:12px;color:var(--muted);font-weight:400;opacity:0.7;">✎</span>
+      <div class="manual-block-header" style="position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;padding:18px 60px 18px 24px;">
+        <button onclick="removeExtraBlock('${bid}')" style="position:absolute;top:14px;right:16px;background:transparent;border:1px solid var(--danger);color:var(--danger);border-radius:8px;padding:4px 10px;cursor:pointer;font-size:13px;" title="Eliminar bloque">✕</button>
+        <div class="extra-block-title-display" data-bid="${bid}" title="Haz clic para editar el nombre" style="position:relative;display:flex;align-items:center;justify-content:center;width:100%;font-size:18px;color:var(--text);font-weight:700;line-height:1.2;cursor:pointer;padding:0 26px;box-sizing:border-box;text-align:center;">
+          <span>${escapeHtmlTexto(nombreInicial)}</span><svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true" focusable="false" style="position:absolute;right:0;top:50%;transform:translateY(-50%);opacity:.65;flex-shrink:0;"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
         </div>
-        <input type="text" class="extra-block-title-input" data-bid="${bid}" value="Bloque extra ${extraBlockCounter}"
-          style="display:none;grid-column:2;justify-self:center;background:#0f172a;border:1px solid var(--primary);border-radius:10px;color:var(--text);font-size:16px;font-weight:700;padding:4px 10px;outline:none;flex:1;max-width:260px;">
-        <div style="display:flex;align-items:center;gap:8px;grid-column:3;justify-self:end;">
-          <div class="manual-block-dist" id="manualDist_${bid}">0m</div>
-          <button onclick="removeExtraBlock('${bid}')" style="background:transparent;border:1px solid var(--danger);color:var(--danger);border-radius:8px;padding:4px 10px;cursor:pointer;font-size:13px;" title="Eliminar bloque">✕</button>
-        </div>
+        <div class="manual-block-dist" id="manualDist_${bid}">0m</div>
       </div>
       <div id="manualExList_${bid}"></div>
       <div class="manual-add-area" style="display:flex;justify-content:center;">
-        <button class="manual-add-btn extra-block-add-btn" data-bid="${bid}" style="width:100%;max-width:320px;">+ Añadir ejercicio a Bloque extra ${extraBlockCounter}</button>
+        <button class="manual-add-btn extra-block-add-btn" data-bid="${bid}" style="width:100%;max-width:320px;">+ Añadir ejercicio a ${escapeHtmlTexto(nombreInicial)}</button>
       </div>
     `;
     extraBlocksContainer.appendChild(blockEl);
@@ -5454,22 +5669,71 @@ c48 -9 152 -20 232 -26 80 -6 199 -15 265 -21 180 -14 336 -26 580 -44 270
       openManualModal(this.dataset.bid);
     });
 
-    // Editable title
+    // Nombre editable mediante popup (mismo patrón que el nombre del entrenamiento)
     const disp = blockEl.querySelector(".extra-block-title-display");
-    const inp = blockEl.querySelector(".extra-block-title-input");
-    const addB = blockEl.querySelector(".extra-block-add-btn");
-    function showExtraInput(){ disp.style.display="none"; inp.style.display=""; inp.focus(); inp.select(); }
-    function applyExtraTitle(){
-      const val = inp.value.trim() || ("Bloque extra " + extraBlockCounter);
-      inp.value = val;
-      disp.childNodes[0].textContent = val;
-      addB.textContent = "+ Añadir ejercicio a " + val;
-      disp.style.display=""; inp.style.display="none";
-    }
-    disp.addEventListener("click", showExtraInput);
-    inp.addEventListener("blur", applyExtraTitle);
-    inp.addEventListener("keydown", e => { if(e.key==="Enter") applyExtraTitle(); if(e.key==="Escape"){ inp.value=disp.childNodes[0].textContent.trim(); applyExtraTitle(); } });
+    disp.addEventListener("click", () => abrirModalNombreBloque(bid, nombreInicial));
   }
+
+  function elementoTituloBloque(bid){
+    if(bid === "main") return document.getElementById("mainBlockTitleDisplay");
+    return document.querySelector(`.extra-block-title-display[data-bid="${bid}"]`);
+  }
+
+  function nombreActualBloqueExtra(bid){
+    const disp = elementoTituloBloque(bid);
+    return disp ? disp.textContent.trim() : "";
+  }
+
+  function aplicarNombreBloqueExtra(bid, nombreDefecto, val){
+    const disp = elementoTituloBloque(bid);
+    if(!disp) return;
+    const addB = bid === "main"
+      ? document.getElementById("manualAddMainBtn")
+      : document.querySelector(`.extra-block-add-btn[data-bid="${bid}"]`);
+    const nombreFinal = (val || "").trim() || nombreDefecto;
+    disp.innerHTML = `<span>${escapeHtmlTexto(nombreFinal)}</span><svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true" focusable="false" style="position:absolute;right:0;top:50%;transform:translateY(-50%);opacity:.65;flex-shrink:0;"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>`;
+    if(addB) addB.textContent = "+ Añadir ejercicio a " + nombreFinal;
+  }
+
+  let bloqueNombreEditandoBid = null;
+  let bloqueNombreEditandoDefecto = "";
+
+  function abrirModalNombreBloque(bid, nombreDefecto){
+    bloqueNombreEditandoBid = bid;
+    bloqueNombreEditandoDefecto = nombreDefecto;
+    const overlay = document.getElementById("bloqueNombreModalOverlay");
+    const input = document.getElementById("bloqueNombreInput");
+    if(!overlay || !input) return;
+    input.value = nombreActualBloqueExtra(bid) || bloqueNombreEditandoDefecto;
+    overlay.classList.add("open");
+  }
+
+  function cerrarModalNombreBloque(guardar){
+    const overlay = document.getElementById("bloqueNombreModalOverlay");
+    const input = document.getElementById("bloqueNombreInput");
+    if(!overlay || !input || !bloqueNombreEditandoBid) return;
+    if(guardar){
+      aplicarNombreBloqueExtra(bloqueNombreEditandoBid, bloqueNombreEditandoDefecto, input.value);
+    }
+    overlay.classList.remove("open");
+    bloqueNombreEditandoBid = null;
+  }
+
+  (function initModalNombreBloque(){
+    const overlay = document.getElementById("bloqueNombreModalOverlay");
+    const input = document.getElementById("bloqueNombreInput");
+    if(!overlay || !input) return;
+    document.getElementById("bloqueNombreModalClose").addEventListener("click", () => cerrarModalNombreBloque(false));
+    document.getElementById("bloqueNombreCancelBtn").addEventListener("click", () => cerrarModalNombreBloque(false));
+    document.getElementById("bloqueNombreConfirmBtn").addEventListener("click", () => cerrarModalNombreBloque(true));
+    overlay.addEventListener("click", e => { if(e.target === overlay) cerrarModalNombreBloque(false); });
+    input.addEventListener("keydown", e => {
+      if(e.key === "Enter"){ e.preventDefault(); cerrarModalNombreBloque(true); }
+      if(e.key === "Escape"){ e.preventDefault(); cerrarModalNombreBloque(false); }
+    });
+  })();
+
+  document.getElementById("mainBlockTitleDisplay").addEventListener("click", () => abrirModalNombreBloque("main", "Sesión principal"));
 
   function removeExtraBlock(bid){
     delete manualData[bid];
@@ -5505,26 +5769,44 @@ c48 -9 152 -20 232 -26 80 -6 199 -15 265 -21 180 -14 336 -26 580 -44 270
     return "💀";
   }
 
+  // Rueda de color continua para la intensidad: verde (esfuerzo suave) →
+  // amarillo → naranja → rojo (esfuerzo máximo). Interpolación en RGB
+  // punto a punto sobre 4 paradas, para que cualquier % tenga un color
+  // propio en vez de saltos discretos.
+  const INTENSIDAD_STOPS = [
+    [0,   [74,  222, 128]], // verde
+    [40,  [250, 204, 21]],  // amarillo
+    [70,  [251, 146, 60]],  // naranja
+    [100, [248, 113, 113]], // rojo
+  ];
   function intensidadColor(pct){
-    // Interpolación verde(30%) → amarillo(60%) → rojo(90%)
     const p = Math.max(0, Math.min(100, pct));
-    if(p <= 30) return "#4ade80";   // verde
-    if(p >= 90) return "#f87171";   // rojo
-    if(p <= 60){
-      // verde → amarillo (30–60)
-      const t = (p - 30) / 30;
-      const r = Math.round(74  + t * (250 - 74));
-      const g = Math.round(222 + t * (204 - 222));
-      const b = Math.round(128 + t * (20  - 128));
-      return `rgb(${r},${g},${b})`;
-    } else {
-      // amarillo → rojo (60–90)
-      const t = (p - 60) / 30;
-      const r = Math.round(250 + t * (248 - 250));
-      const g = Math.round(204 + t * (113 - 204));
-      const b = Math.round(20  + t * (113 - 20));
-      return `rgb(${r},${g},${b})`;
+    let a = INTENSIDAD_STOPS[0], b = INTENSIDAD_STOPS[INTENSIDAD_STOPS.length-1];
+    for(let i = 0; i < INTENSIDAD_STOPS.length-1; i++){
+      if(p >= INTENSIDAD_STOPS[i][0] && p <= INTENSIDAD_STOPS[i+1][0]){ a = INTENSIDAD_STOPS[i]; b = INTENSIDAD_STOPS[i+1]; break; }
     }
+    const span = b[0] - a[0];
+    const t = span > 0 ? (p - a[0]) / span : 0;
+    const r = Math.round(a[1][0] + t * (b[1][0] - a[1][0]));
+    const g = Math.round(a[1][1] + t * (b[1][1] - a[1][1]));
+    const bl = Math.round(a[1][2] + t * (b[1][2] - a[1][2]));
+    return `rgb(${r},${g},${bl})`;
+  }
+
+  // Franja de gradiente para el chip de intensidad: una ventana móvil de
+  // ±18 puntos alrededor del % actual sobre la rueda verde→amarillo→
+  // naranja→rojo. Así el propio chip "avanza" por la rueda según la
+  // intensidad — a 0% se ve verde puro, a 50% verde→amarillo, a 100% se
+  // ve naranja→rojo (nunca vuelve a mostrar verde en la franja).
+  function intensidadGradienteExtremos(pct){
+    const p = Math.max(0, Math.min(100, pct || 0));
+    const desde = Math.max(0, p - 18);
+    const hasta = Math.min(100, p + 2);
+    return [intensidadColor(desde), intensidadColor(hasta)];
+  }
+  function intensidadGradiente(pct){
+    const [c0, c1] = intensidadGradienteExtremos(pct);
+    return `linear-gradient(90deg, ${c0}, ${c1})`;
   }
 
   // Intensity slider live update
@@ -5533,7 +5815,7 @@ c48 -9 152 -20 232 -26 80 -6 199 -15 265 -21 180 -14 336 -26 580 -44 270
   const mmIntensidadPct = document.getElementById("mmIntensidadPct");
   mmIntensidadSlider.addEventListener("input",()=>{
     const v = parseInt(mmIntensidadSlider.value);
-    mmIntensidadLabel.textContent = intensidadEmoji(v);
+    mmIntensidadLabel.style.background = intensidadGradiente(v);
     mmIntensidadPct.textContent = v + "%";
   });
 
@@ -5579,7 +5861,7 @@ c48 -9 152 -20 232 -26 80 -6 199 -15 265 -21 180 -14 336 -26 580 -44 270
     document.getElementById("mmFreeSection").classList.add("open");
     document.getElementById("mmTabFree").classList.add("active");
     document.getElementById("mmTabBib").classList.remove("active");
-    document.getElementById("manualModalTitle").textContent = "Añadir ejercicio — " + {cal:"Calentamiento",main:"Sesión principal",cool:"Vuelta a la calma"}[bloque];
+    document.getElementById("manualModalTitle").textContent = "Añadir ejercicio — " + etiquetaBloqueManual(bloque);
     manualModalSearch.value = "";
     // Reset type to series
     mmActiveType = "series";
@@ -5587,14 +5869,20 @@ c48 -9 152 -20 232 -26 80 -6 199 -15 265 -21 180 -14 336 -26 580 -44 270
     document.getElementById("mmCfgTiempo").style.display = "none";
     document.getElementById("mmTypeSeries").classList.add("active");
     document.getElementById("mmTypeTiempo").classList.remove("active");
+    // Reset descanso entre series al valor por defecto
+    document.getElementById("mmDescansoSeries").value = 30;
+    document.getElementById("mmDescansoTiempo").value = 30;
     // Reset intensity
     mmIntensidadSlider.value = 50;
-    mmIntensidadLabel.textContent = intensidadEmoji(50);
+    mmIntensidadLabel.style.background = intensidadGradiente(50);
     mmIntensidadPct.textContent = "50%";
     manualEditingUid = null;
     document.getElementById("mmConfirmBtn").textContent = "✓ Añadir ejercicio";
     manualModalOverlay.classList.add("open");
-    document.getElementById("mmFreeName").focus();
+    // Sin .focus() aquí a propósito: si se enfoca el campo de texto nada
+    // más abrir el modal, el teclado virtual salta automáticamente en
+    // móvil tapando buena parte de la pantalla. El usuario toca el campo
+    // cuando quiera escribir.
   }
 
   function renderMmStyleFilter(){
@@ -5724,11 +6012,11 @@ c48 -9 152 -20 232 -26 80 -6 199 -15 265 -21 180 -14 336 -26 580 -44 270
 
   document.getElementById("mmConfirmBtn").addEventListener("click",()=>{
     const intensidad = parseInt(mmIntensidadSlider.value);
-    const emoji = intensidadEmoji(intensidad);
     let ej = null;
     let nombre = "";
     let metros = 0;
     let esTiempo = mmActiveType === "tiempo";
+    const descansoSerie = Math.max(0, parseInt(document.getElementById(esTiempo ? "mmDescansoTiempo" : "mmDescansoSeries").value) || 0);
 
     if(mmActiveTab === "bib"){
       if(!mmSelectedEj){ alert("Selecciona un ejercicio de la lista."); return; }
@@ -5747,12 +6035,12 @@ c48 -9 152 -20 232 -26 80 -6 199 -15 265 -21 180 -14 336 -26 580 -44 270
       const seg  = min * 60 + segC;
       const tMetros = parseInt(document.getElementById("mmTMetros").value)||100;
       const cadaStr = `${min}:${String(segC).padStart(2,"0")}`;
-      nombre = `${emoji} ${series}×${tMetros}m cada ${cadaStr} ${ej.nombre}`;
+      nombre = `${series}×${tMetros}m cada ${cadaStr} ${ej.nombre}`;
       metros = tMetros;
     } else {
       const series = parseInt(document.getElementById("mmSeries").value)||1;
       metros = parseInt(document.getElementById("mmMetros").value)||50;
-      nombre = `${emoji} ${series}×${metros}m ${ej.nombre}`;
+      nombre = `${series}×${metros}m ${ej.nombre}`;
     }
 
     if(autoEditBi !== null){
@@ -5762,10 +6050,11 @@ c48 -9 152 -20 232 -26 80 -6 199 -15 265 -21 180 -14 336 -26 580 -44 270
       if(!editNombre){ alert("Escribe el nombre del ejercicio."); return; }
       const editSeries = esTiempo ? parseInt(document.getElementById("mmTSeries").value)||1 : parseInt(document.getElementById("mmSeries").value)||1;
       applyAutoEdit(
-        (esTiempo ? buildNombreTiempo(editSeries, parseInt(document.getElementById("mmTSegundos").value)||60, parseInt(document.getElementById("mmTMetros").value)||100, document.getElementById("mmTRitmoLabel").textContent, emoji, editNombre)
-                  : `${emoji} ${editSeries}×${metros}m ${editNombre}`),
+        (esTiempo ? buildNombreTiempo(editSeries, parseInt(document.getElementById("mmTSegundos").value)||60, parseInt(document.getElementById("mmTMetros").value)||100, document.getElementById("mmTRitmoLabel").textContent, editNombre)
+                  : `${editSeries}×${metros}m ${editNombre}`),
         metros, editSeries, intensidad, editDesc, esTiempo,
-        esTiempo ? parseInt(document.getElementById("mmTSegundos").value)||60 : 0
+        esTiempo ? parseInt(document.getElementById("mmTSegundos").value)||60 : 0,
+        descansoSerie
       );
       manualModalOverlay.classList.remove("open");
       document.getElementById("mmFreeName").value = "";
@@ -5782,7 +6071,7 @@ c48 -9 152 -20 232 -26 80 -6 199 -15 265 -21 180 -14 336 -26 580 -44 270
           ...manualData[manualActiveBloque][idx],
           nombre,
           desc: document.getElementById("mmFreeDesc").value.trim() || manualData[manualActiveBloque][idx].desc || "", series: esTiempo ? parseInt(document.getElementById("mmTSeries").value)||1 : parseInt(document.getElementById("mmSeries").value)||1,
-          metros, intensidad,
+          metros, intensidad, descansoSerie,
           ...(esTiempo ? {seg: parseInt(document.getElementById("mmTSegundos").value)||60, esTiempo:true} : {esTiempo:false})
         };
       }
@@ -5795,7 +6084,7 @@ c48 -9 152 -20 232 -26 80 -6 199 -15 265 -21 180 -14 336 -26 580 -44 270
         nombre,
         desc: mmActiveTab === "free" ? (document.getElementById("mmFreeDesc").value.trim() || "") : (ej.desc||""),
         series: esTiempo ? parseInt(document.getElementById("mmTSeries").value)||1 : parseInt(document.getElementById("mmSeries").value)||1,
-        metros, intensidad,
+        metros, intensidad, descansoSerie,
         ...(esTiempo ? {seg: parseInt(document.getElementById("mmTSegundos").value)||60, esTiempo:true} : {esTiempo:false}),
         style:ej.style, tags:ej.tags
       });
@@ -5845,6 +6134,7 @@ c48 -9 152 -20 232 -26 80 -6 199 -15 265 -21 180 -14 336 -26 580 -44 270
       document.getElementById("mmTSeg").value = totalSeg % 60;
       document.getElementById("mmTSegundos").value = totalSeg;
       document.getElementById("mmTMetros").value = item.metros;
+      document.getElementById("mmDescansoTiempo").value = (item.descansoSerie !== undefined && item.descansoSerie !== null) ? item.descansoSerie : 30;
       calcularRitmo();
     } else {
       mmActiveType = "series";
@@ -5854,15 +6144,17 @@ c48 -9 152 -20 232 -26 80 -6 199 -15 265 -21 180 -14 336 -26 580 -44 270
       document.getElementById("mmTypeTiempo").classList.remove("active");
       document.getElementById("mmSeries").value = item.series;
       document.getElementById("mmMetros").value = item.metros;
+      document.getElementById("mmDescansoSeries").value = (item.descansoSerie !== undefined && item.descansoSerie !== null) ? item.descansoSerie : 30;
     }
     // Restore intensity
     document.getElementById("mmIntensidad").value = item.intensidad || 50;
-    mmIntensidadLabel.textContent = intensidadEmoji(item.intensidad || 50);
+    mmIntensidadLabel.style.background = intensidadGradiente(item.intensidad || 50);
     mmIntensidadPct.textContent = (item.intensidad || 50) + "%";
 
     document.getElementById("mmConfirmBtn").textContent = "✓ Guardar cambios";
     manualModalOverlay.classList.add("open");
-    document.getElementById("mmFreeName").focus();
+    // Sin .focus() aquí a propósito: evita que salte el teclado virtual
+    // nada más abrir el modal (ver mismo criterio en openManualModal).
   }
 
   function manualRemove(bloque, uid){
@@ -5885,10 +6177,13 @@ c48 -9 152 -20 232 -26 80 -6 199 -15 265 -21 180 -14 336 -26 580 -44 270
         </div>
         <div style="flex:1;min-width:0;">
           <div style="display:flex;align-items:center;gap:8px;width:100%;">
-            <div class="manual-ex-name">${e.nombre}</div>
-            <div class="manual-ex-dist" style="margin-left:auto;flex-shrink:0;">${e.series*e.metros}m</div>
+            <div class="manual-ex-name" style="flex:1;min-width:0;">${e.nombre}</div>
             <button class="manual-ex-remove" style="margin-right:4px;border-color:var(--primary);color:var(--primary);flex-shrink:0;" onclick="manualEdit('${bloque}','${e.uid}')" title="Editar">✎</button>
             <button class="manual-ex-remove" style="flex-shrink:0;" onclick="manualRemove('${bloque}','${e.uid}')" title="Eliminar">✕</button>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;padding-top:4px;flex-wrap:wrap;">
+            ${(e.intensidad !== undefined && e.intensidad !== null) ? `<span class="intensidad-chip" style="background:${intensidadGradiente(e.intensidad)};">${e.intensidad}%</span>` : ""}
+            <div class="manual-ex-dist">${e.series*e.metros}m</div>
           </div>
           ${e.desc ? `<div style="font-size:11px;color:var(--muted);padding-top:2px;padding-bottom:2px;">${e.desc}</div>` : ""}
         </div>
@@ -5990,11 +6285,59 @@ c48 -9 152 -20 232 -26 80 -6 199 -15 265 -21 180 -14 336 -26 580 -44 270
     updateManualTotal();
   }
 
+  let manualNombreListenersVinculados = false;
+
+  function abrirModalNombreManual(){
+    const overlay = document.getElementById("manualNombreModalOverlay");
+    const input = document.getElementById("manualEntrenoNombreInput");
+    if(!overlay || !input) return;
+    input.value = manualNombre || formatearNombreEntrenamiento(manualCreadoEn || new Date().toISOString());
+    overlay.classList.add("open");
+    // No enfocamos el input automáticamente para que no salte el teclado
+    // en móvil al abrir el modal; el usuario lo toca cuando quiere escribir.
+  }
+
+  function cerrarModalNombreManual(guardar){
+    const overlay = document.getElementById("manualNombreModalOverlay");
+    const input = document.getElementById("manualEntrenoNombreInput");
+    if(!overlay || !input) return;
+    if(guardar){
+      const limpio = (input.value || "").trim();
+      if(limpio) manualNombre = limpio;
+    }
+    overlay.classList.remove("open");
+    updateManualTotal();
+  }
+
   function updateManualTotal(){
     const total = Object.keys(manualData).reduce((s,b)=>s+manualData[b].reduce((ss,e)=>ss+e.series*e.metros,0),0);
     document.getElementById("manualTotalDist").textContent = total+"m";
     const nombreEl = document.getElementById("manualEntrenoNombre");
-    if(nombreEl) nombreEl.textContent = manualCreadoEn ? (manualNombre || formatearNombreEntrenamiento(manualCreadoEn)) : "";
+    if(nombreEl){
+      if(manualCreadoEn){
+        const nombreTexto = manualNombre || formatearNombreEntrenamiento(manualCreadoEn);
+        nombreEl.innerHTML = `<span style="color:#ffffff;font-size:24px;font-weight:700;">${escapeHtmlTexto(nombreTexto)}</span><svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true" focusable="false" style="position:absolute;right:0;top:50%;transform:translateY(-50%);opacity:.65;flex-shrink:0;"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>`;
+      } else {
+        nombreEl.innerHTML = "";
+      }
+    }
+
+    if(!manualNombreListenersVinculados){
+      const overlay = document.getElementById("manualNombreModalOverlay");
+      const input = document.getElementById("manualEntrenoNombreInput");
+      if(nombreEl && overlay && input){
+        manualNombreListenersVinculados = true;
+        nombreEl.addEventListener("click", e => { e.preventDefault(); e.stopPropagation(); abrirModalNombreManual(); });
+        document.getElementById("manualNombreModalClose").addEventListener("click", () => cerrarModalNombreManual(false));
+        document.getElementById("manualNombreCancelBtn").addEventListener("click", () => cerrarModalNombreManual(false));
+        document.getElementById("manualNombreConfirmBtn").addEventListener("click", () => cerrarModalNombreManual(true));
+        overlay.addEventListener("click", e => { if(e.target === overlay) cerrarModalNombreManual(false); });
+        input.addEventListener("keydown", e => {
+          if(e.key === "Enter"){ e.preventDefault(); cerrarModalNombreManual(true); }
+          if(e.key === "Escape"){ e.preventDefault(); cerrarModalNombreManual(false); }
+        });
+      }
+    }
   }
 
   // ====================================================================
@@ -6018,6 +6361,7 @@ c48 -9 152 -20 232 -26 80 -6 199 -15 265 -21 180 -14 336 -26 580 -44 270
       metros: ne.metros || 0,
       intensidad: (ne.intensidad !== undefined && ne.intensidad !== null) ? ne.intensidad : 50,
       ...(ne.tiempoObjetivo ? {seg: ne.tiempoObjetivo, esTiempo:true} : {esTiempo:false}),
+      descansoSerie: (ne.descansoSerie !== undefined && ne.descansoSerie !== null) ? ne.descansoSerie : 30,
       style: ne.style || "",
       tags: ne.tags || []
     };
@@ -6044,16 +6388,8 @@ c48 -9 152 -20 232 -26 80 -6 199 -15 265 -21 180 -14 336 -26 580 -44 270
   function crearBloqueExtraConTitulo(titulo){
     addExtraBlock();
     const bid = "extra_" + extraBlockCounter;
-    const blockEl = document.getElementById("manualBloque_" + bid);
-    if(blockEl){
-      const disp = blockEl.querySelector(".extra-block-title-display");
-      const inp = blockEl.querySelector(".extra-block-title-input");
-      const addB = blockEl.querySelector(".extra-block-add-btn");
-      const nombreLimpio = (titulo || "Bloque").replace(/^[\u{1F300}-\u{1FFFF}⬜🟢🟡🟠🔴💀📋]\s*/u, "").trim() || "Bloque";
-      if(disp) disp.childNodes[0].textContent = nombreLimpio;
-      if(inp) inp.value = nombreLimpio;
-      if(addB) addB.textContent = "+ Añadir ejercicio a " + nombreLimpio;
-    }
+    const nombreLimpio = (titulo || "Bloque").replace(/^[\u{1F300}-\u{1FFFF}⬜🟢🟡🟠🔴💀📋]\s*/u, "").trim() || "Bloque";
+    aplicarNombreBloqueExtra(bid, "Bloque extra " + extraBlockCounter, nombreLimpio);
     return bid;
   }
 
@@ -6196,25 +6532,34 @@ c48 -9 152 -20 232 -26 80 -6 199 -15 265 -21 180 -14 336 -26 580 -44 270
   // La función de imagen dibuja la sesión en un <canvas> y descarga
   // un PNG con todos los bloques y ejercicios.
   // ====================================================================
+  function nombreVisibleManual(){
+    return manualNombre || formatearNombreEntrenamiento(manualCreadoEn || new Date().toISOString());
+  }
+
+  // Etiqueta a mostrar/exportar para cada bloque del modo manual. Para
+  // "cal"/"cool" el nombre es fijo; para "main" y los bloques "extra_*" se
+  // lee el nombre real (editable vía popup) desde el DOM, con un fallback
+  // por si el elemento no existe todavía.
+  function etiquetaBloqueManual(b){
+    if(b === "cal") return "Calentamiento";
+    if(b === "cool") return "Vuelta a la calma";
+    const titleEl = elementoTituloBloque(b);
+    if(titleEl) return titleEl.childNodes[0].textContent.replace(/^📋\s*/,"").trim();
+    return b === "main" ? "Sesión principal" : b;
+  }
+
   function buildManualTexto(){
     const total = Object.keys(manualData).reduce((s,b)=>s+manualData[b].reduce((ss,e)=>ss+e.series*e.metros,0),0);
-    const fixedLabels = {cal:"Calentamiento",main:"Sesión principal",cool:"Vuelta a la calma"};
-    const now = new Date();
-    const fechaStr = now.toLocaleDateString("es-ES",{day:"2-digit",month:"2-digit",year:"numeric"});
-    let txt = `SESIÓN ${fechaStr} — ${total}m\n` + "=".repeat(40) + "\n\n";
+    let txt = `${nombreVisibleManual()} — ${total}m\n` + "=".repeat(40) + "\n\n";
     ordenBloquesManual().forEach(b=>{
       const items = manualData[b];
       if(!items.length) return;
-      // Get display label: for extra blocks, use the rendered title
-      let label = fixedLabels[b];
-      if(!label){
-        const titleEl = document.querySelector(`.extra-block-title-display[data-bid="${b}"]`);
-        label = titleEl ? titleEl.childNodes[0].textContent.replace(/^📋\s*/,"") : b;
-      }
+      const label = etiquetaBloqueManual(b);
       const bTotal = items.reduce((s,e)=>s+e.series*e.metros,0);
       txt += label + "  (" + (bTotal||"⏱") + (bTotal?"m":"") + ")\n" + "-".repeat(36) + "\n";
       items.forEach(e=>{
-        txt += "  • " + htmlDecode(e.nombre) + "\n";
+        const intTxt = (e.intensidad !== undefined && e.intensidad !== null) ? "  [" + e.intensidad + "%]" : "";
+        txt += "  • " + htmlDecode(e.nombre) + intTxt + "\n";
         if(e.desc) txt += "    " + htmlDecode(e.desc) + "\n";
       });
       txt += "\n";
@@ -6224,72 +6569,122 @@ c48 -9 152 -20 232 -26 80 -6 199 -15 265 -21 180 -14 336 -26 580 -44 270
 
   document.getElementById("manualCopyBtn").addEventListener("click",()=>{
     const txt = buildManualTexto();
-    navigator.clipboard.writeText(txt).then(()=>{
-      const btn = document.getElementById("manualCopyBtn");
-      const orig = btn.innerHTML;
-      btn.innerHTML = "✅ Copiado";
-      btn.style.color = "var(--success)";
-      setTimeout(()=>{ btn.innerHTML=orig; btn.style.color=""; }, 2000);
-    }).catch(()=>{
-      const ta = document.createElement("textarea");
-      ta.value = txt; ta.style.position="fixed"; ta.style.opacity="0";
-      document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta);
-    });
+    if(navigator.clipboard && window.isSecureContext){
+      navigator.clipboard.writeText(txt).then(()=>{
+        mostrarCopiadoSinSaltar("manualCopyBtn", true);
+      }).catch(()=>{
+        copiarTextoSinScroll(txt);
+        mostrarCopiadoSinSaltar("manualCopyBtn", true);
+      });
+    } else {
+      copiarTextoSinScroll(txt);
+      mostrarCopiadoSinSaltar("manualCopyBtn", true);
+    }
   });
 
   document.getElementById("manualImgBtn").addEventListener("click",()=>{
     const total = Object.keys(manualData).reduce((s,b)=>s+manualData[b].reduce((ss,e)=>ss+e.series*e.metros,0),0);
-    const fixedLabels = {cal:"Calentamiento",main:"Sesión principal",cool:"Vuelta a la calma"};
-    const now = new Date();
-    const fechaStr = now.toLocaleDateString("es-ES",{day:"2-digit",month:"2-digit",year:"numeric"});
     const lines = [];
-    lines.push({text:`SESIÓN ${fechaStr} — ${total}m`, type:"title"});
+    lines.push({text:`${nombreVisibleManual()} — ${total}m`, type:"title"});
     ordenBloquesManual().forEach(b=>{
       const items = manualData[b];
       if(!items.length) return;
-      let label = fixedLabels[b];
-      if(!label){
-        const titleEl = document.querySelector(`.extra-block-title-display[data-bid="${b}"]`);
-        label = titleEl ? titleEl.childNodes[0].textContent.replace(/^📋\s*/,"") : b;
-      }
+      const label = etiquetaBloqueManual(b);
       const bTotal = items.reduce((s,e)=>s+e.series*e.metros,0);
       lines.push({text:label+"  ("+(bTotal||"⏱")+(bTotal?"m":"")+")", type:"block"});
       items.forEach(e=>{
-        lines.push({text:"  • "+htmlDecode(e.nombre), type:"ej"});
-        if(e.intensidad) lines.push({text:"    Intensidad: "+e.intensidad+"%", type:"desc"});
-        // Si desc está vacío pero el ejercicio proviene de biblioteca, recuperarlo
-        const descFinal = e.desc || (e.refId ? (ejerciciosBiblioteca.find(b=>b.id===e.refId)||{}).desc||"" : "");
-        if(descFinal) lines.push({text:"    "+htmlDecode(descFinal), type:"desc"});
+        const descFinal = e.desc || (e.refId ? (ejerciciosBiblioteca.find(bb=>bb.id===e.refId)||{}).desc||"" : "");
+        lines.push({
+          nombre: "  • "+htmlDecode(e.nombre),
+          intensidad: (e.intensidad !== undefined && e.intensidad !== null) ? e.intensidad : null,
+          desc: descFinal ? htmlDecode(descFinal) : "",
+          type: "row"
+        });
       });
     });
     const PAD=40,FONT=15,LINE_H=26,TITLE_H=42,DESC_FONT=12,DESC_LINE_H=18;
-    const BASE_W=700, SCALE=2;
-    const MAX_TEXT_W=BASE_W-PAD*2;
+    const BASE_W=820, SCALE=2;
+    const COL_NOMBRE=PAD, COL_DESC=PAD+20;
+    const MAX_DESC_W=BASE_W-PAD-COL_DESC;
     const ctx0=document.createElement("canvas").getContext("2d");
     ctx0.font=DESC_FONT+"px 'Inter',system-ui,sans-serif";
     const expanded=[];
     lines.forEach(l=>{
-      if(l.type==="desc"){
-        wrapText(ctx0,"    "+l.text,MAX_TEXT_W).forEach(w=>expanded.push({text:w,type:"desc"}));
+      if(l.type==="row"){
+        const descLines = l.desc ? wrapText(ctx0, l.desc, MAX_DESC_W) : [];
+        expanded.push({ type:"row", nombre:l.nombre, intensidad:l.intensidad, descLines });
       } else { expanded.push(l); }
     });
+    function rowHeight(l){
+      return LINE_H + l.descLines.length*DESC_LINE_H;
+    }
     let canvasH=PAD;
-    expanded.forEach(l=>{canvasH+=l.type==="title"?TITLE_H:l.type==="desc"?DESC_LINE_H:LINE_H;});
-    canvasH+=PAD;
+    expanded.forEach(l=>{
+      if(l.type==="title") canvasH+=TITLE_H;
+      else if(l.type==="block") canvasH+=LINE_H;
+      else if(l.type==="row") canvasH += rowHeight(l);
+    });
+    const QR_SIZE = 56;
+    const LOGO_FOOTER_SIZE = QR_SIZE * 1.5;
+    const GAP_ANTES_FOOTER = 55;
+    const MARGEN_FINAL = 16;
+    const ALTO_CONTENIDO_FOOTER = 12 + 6 + 22;
+    const FOOTER_H = GAP_ANTES_FOOTER + Math.max(ALTO_CONTENIDO_FOOTER, QR_SIZE, LOGO_FOOTER_SIZE) + MARGEN_FINAL;
+    canvasH += FOOTER_H;
     const canvas=document.createElement("canvas");
     canvas.width=BASE_W*SCALE; canvas.height=canvasH*SCALE;
     const ctx=canvas.getContext("2d");
     ctx.scale(SCALE,SCALE);
     ctx.fillStyle="#0f172a"; ctx.fillRect(0,0,BASE_W,canvasH);
+    const logoSize = Math.min(BASE_W, canvasH) * 0.7;
+    dibujarLogoFondo(ctx, BASE_W/2, canvasH/2, logoSize, 0.035);
     let y=PAD;
     expanded.forEach(l=>{
       if(l.type==="title"){ctx.fillStyle="#38bdf8";ctx.font="bold 22px 'Inter',system-ui,sans-serif";ctx.fillText(l.text,PAD,y+28);y+=TITLE_H;}
       else if(l.type==="block"){ctx.fillStyle="#38bdf8";ctx.font="bold "+FONT+"px 'Inter',system-ui,sans-serif";ctx.fillText(l.text,PAD,y+FONT+4);ctx.strokeStyle="#1e3a5f";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(PAD,y+FONT+8);ctx.lineTo(BASE_W-PAD,y+FONT+8);ctx.stroke();y+=LINE_H;}
-      else if(l.type==="desc"){ctx.fillStyle="#64748b";ctx.font=DESC_FONT+"px 'Inter',system-ui,sans-serif";ctx.fillText(l.text,PAD,y+DESC_FONT+2);y+=DESC_LINE_H;}
-      else{ctx.fillStyle="#e2e8f0";ctx.font=FONT+"px 'Inter',system-ui,sans-serif";ctx.fillText(l.text,PAD,y+FONT+2);y+=LINE_H;}
+      else if(l.type==="row"){
+        ctx.fillStyle="#e2e8f0";
+        ctx.font=FONT+"px 'Inter',system-ui,sans-serif";
+        ctx.fillText(l.nombre, COL_NOMBRE, y+FONT+2);
+        if(l.intensidad !== null){
+          const nombreW = ctx.measureText(l.nombre).width;
+          const texto=l.intensidad+"%";
+          ctx.font="800 11px 'Inter',system-ui,sans-serif";
+          const textW=ctx.measureText(texto).width;
+          const chipW=textW+14, chipH=16;
+          const chipX=COL_NOMBRE+nombreW+12, chipY=y+3;
+          const grad=ctx.createLinearGradient(chipX,0,chipX+chipW,0);
+          const [gradC0b, gradC1b] = intensidadGradienteExtremos(l.intensidad);
+          grad.addColorStop(0,gradC0b);
+          grad.addColorStop(1,gradC1b);
+          ctx.fillStyle=grad;
+          roundRectPath(ctx,chipX,chipY,chipW,chipH,chipH/2);
+          ctx.fill();
+          ctx.fillStyle="#0b1120";
+          ctx.textAlign="center";
+          ctx.fillText(texto,chipX+chipW/2,chipY+11);
+          ctx.textAlign="left";
+        }
+        y += LINE_H;
+        if(l.descLines.length){
+          ctx.fillStyle="#64748b";
+          ctx.font=DESC_FONT+"px 'Inter',system-ui,sans-serif";
+          l.descLines.forEach((dl,i)=>{
+            ctx.fillText(dl, COL_DESC, y+DESC_FONT+2+i*DESC_LINE_H);
+          });
+          y += l.descLines.length*DESC_LINE_H;
+        }
+      }
     });
-    ctx.fillStyle="#334155";ctx.font="12px 'Inter',system-ui,sans-serif";ctx.fillText("Generado con Generador de Sesiones de Natación",PAD,canvasH-12);
-    canvas.toBlob(blob=>{const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=nombreArchivoEntrenamiento(manualCreadoEn)+".png";a.click();URL.revokeObjectURL(a.href);});
+    ctx.fillStyle="#334155";
+    ctx.font="12px 'Inter',system-ui,sans-serif";
+    ctx.textAlign="center";
+    const footerContenidoY = canvasH - FOOTER_H + GAP_ANTES_FOOTER;
+    const centroIconosY = footerContenidoY + Math.max(ALTO_CONTENIDO_FOOTER, QR_SIZE, LOGO_FOOTER_SIZE) / 2 - 14;
+    ctx.fillText("Generado con el generador de sesiones de la Biblioteca de la Natación", BASE_W / 2, centroIconosY + 4);
+    dibujarLogoFondo(ctx, PAD + LOGO_FOOTER_SIZE / 2, centroIconosY + 4, LOGO_FOOTER_SIZE, 0.9);
+    dibujarQRBiblioteca(ctx, BASE_W-PAD-QR_SIZE, centroIconosY - QR_SIZE / 2, QR_SIZE);
+    canvas.toBlob(blob=>{const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=nombreArchivoEntrenamiento(manualCreadoEn,manualNombre)+".png";a.click();URL.revokeObjectURL(a.href);});
   });
 
   // ====================================================================
@@ -6311,20 +6706,22 @@ c48 -9 152 -20 232 -26 80 -6 199 -15 265 -21 180 -14 336 -26 580 -44 270
       distanciaTotal: e.series * e.metros,
       intensidad: (e.intensidad !== undefined && e.intensidad !== null) ? e.intensidad : null,
       tiempoObjetivo: e.esTiempo ? e.seg : null,
+      descansoSerie: (e.descansoSerie !== undefined && e.descansoSerie !== null) ? e.descansoSerie : 30,
       pagina: refEj ? (refEj.pagina || null) : null
     };
   }
 
   function buildExportManual(){
-    const fixedLabels = {cal:"🌅 Calentamiento", main:"🏊 Sesión principal", cool:"🌊 Vuelta a la calma"};
     const bloques = [];
     ordenBloquesManual().forEach(b => {
       const items = manualData[b];
       if(!items.length) return;
-      let titulo = fixedLabels[b];
-      if(!titulo){
-        const titleEl = document.querySelector(`.extra-block-title-display[data-bid="${b}"]`);
-        titulo = titleEl ? titleEl.childNodes[0].textContent.replace(/^📋\s*/,"").trim() : b;
+      let titulo;
+      if(b === "cal") titulo = "Calentamiento";
+      else if(b === "cool") titulo = "Vuelta a la calma";
+      else {
+        const titleEl = elementoTituloBloque(b);
+        titulo = titleEl ? titleEl.childNodes[0].textContent.replace(/^[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}]\s*/u,"").trim() : (b === "main" ? "Sesión principal" : b);
       }
       const bTotal = items.reduce((s,e) => s + e.series * e.metros, 0);
       bloques.push({
@@ -6356,26 +6753,33 @@ c48 -9 152 -20 232 -26 80 -6 199 -15 265 -21 180 -14 336 -26 580 -44 270
   });
 
   document.getElementById("manualSummaryBtn").addEventListener("click",()=>{
-    // Build manual summary
+    // Vista previa del resumen, reflejando el mismo contenido que la
+    // imagen/texto exportados: nombre, distancia por bloque, cada
+    // ejercicio con su chip de intensidad y su descripción.
     const total = Object.keys(manualData).reduce((s,b)=>s+manualData[b].reduce((ss,e)=>ss+e.series*e.metros,0),0);
-    const fixedLabels = {cal:"Calentamiento",main:"Sesión principal",cool:"Vuelta a la calma"};
-    let html = `<div class="summary-section-title">Resumen manual</div>`;
+    let html = `<div class="summary-section-title" style="margin-top:0;">${escapeHtmlTexto(nombreVisibleManual())}</div>`;
     html += `<div class="summary-row"><span class="summary-label">Total metros</span><span class="summary-val">${total}m</span></div>`;
     ordenBloquesManual().forEach(b=>{
       const items = manualData[b];
       if(!items.length) return;
-      let label = fixedLabels[b];
-      if(!label){
-        const titleEl = document.querySelector(`.extra-block-title-display[data-bid="${b}"]`);
-        label = titleEl ? titleEl.childNodes[0].textContent.replace(/^📋\s*/,"").trim() : b;
-      }
-      html += `<div class="summary-section-title">${label}</div>`;
+      const label = etiquetaBloqueManual(b);
+      const bTotal = items.reduce((s,e)=>s+e.series*e.metros,0);
+      html += `<div class="summary-section-title">${escapeHtmlTexto(label)} <span style="color:var(--muted);font-weight:500;text-transform:none;letter-spacing:0;">(${bTotal}m)</span></div>`;
       items.forEach(e=>{
-        html += `<div class="summary-row"><span class="summary-label" style="font-size:12px;">${htmlDecode(e.nombre)}</span></div>`;
+        const descFinal = e.desc || (e.refId ? (ejerciciosBiblioteca.find(bb=>bb.id===e.refId)||{}).desc||"" : "");
+        const intensidadHTML = (e.intensidad !== undefined && e.intensidad !== null)
+          ? `<span class="intensidad-chip" style="background:${intensidadGradiente(e.intensidad)};flex-shrink:0;">${e.intensidad}%</span>`
+          : "";
+        html += `<div style="padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04);">`;
+        html += `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">`;
+        html += `<span style="color:var(--text);font-size:13px;">${escapeHtmlTexto(htmlDecode(e.nombre))}</span>`;
+        html += intensidadHTML;
+        html += `</div>`;
+        if(descFinal) html += `<div style="color:var(--muted);font-size:11.5px;margin-top:3px;line-height:1.4;">${escapeHtmlTexto(htmlDecode(descFinal))}</div>`;
+        html += `</div>`;
       });
     });
     summaryBody.innerHTML = html;
-    summarySidebar.style.display = "flex";
     summarySidebar.classList.add("open");
   });
 
@@ -6391,6 +6795,8 @@ c48 -9 152 -20 232 -26 80 -6 199 -15 265 -21 180 -14 336 -26 580 -44 270
   const summaryBody = document.getElementById("summaryBody");
   const summaryToggleBtn = document.getElementById("summaryToggleBtn");
   const summaryClose = document.getElementById("summaryClose");
+
+  summarySidebar.addEventListener("click", e => { if(e.target === summarySidebar) summarySidebar.classList.remove("open"); });
 
   function showSummaryToggle(show){
     summaryToggleBtn.style.display = show ? "block" : "none";
@@ -6475,9 +6881,6 @@ c48 -9 152 -20 232 -26 80 -6 199 -15 265 -21 180 -14 336 -26 580 -44 270
   summaryToggleBtn.addEventListener("click", () => {
     buildSummary();
     summarySidebar.classList.toggle("open");
-    if(summarySidebar.classList.contains("open")){
-      summarySidebar.style.display = "flex";
-    }
   });
 
   summaryClose.addEventListener("click", () => {
@@ -6656,6 +7059,88 @@ c48 -9 152 -20 232 -26 80 -6 199 -15 265 -21 180 -14 336 -26 580 -44 270
   });
 
   cargarBiblioteca();
+
+  // ====================================================================
+  // 🔙 GESTIÓN DEL BOTÓN/GESTO "ATRÁS" EN MÓVIL
+  // Cuando hay un modal/popup abierto (Resultado, editar nombre, elegir
+  // ejercicio, cargar JSON...), el gesto de "volver atrás" del móvil no
+  // debe salir de la página: debe cerrar solo ese modal. Para lograrlo,
+  // cada vez que se abre un overlay empujamos un estado en el historial;
+  // si el usuario vuelve atrás (botón físico o gesto de swipe), el
+  // navegador dispara "popstate" en vez de navegar fuera de la app, y
+  // aprovechamos ese evento para cerrar el overlay que esté abierto.
+  // ====================================================================
+  (function(){
+    const overlays = Array.from(document.querySelectorAll(".modal-overlay, .manual-modal-overlay"));
+    if(!overlays.length) return;
+
+    let estadoEmpujado = false;
+    let scrollYGuardado = 0;
+
+    function overlayAbierto(){
+      return overlays.find(o => o.classList.contains("open")) || null;
+    }
+
+    function cerrarOverlay(el){
+      el.classList.remove("open");
+    }
+
+    // Bloquea el scroll de la página de fondo mientras hay un overlay
+    // abierto, para que deslizar dentro del popup no arrastre también el
+    // contenido de detrás. Fijar el body en su posición actual (en vez de
+    // solo overflow:hidden) evita el salto/rebote típico en móvil.
+    function bloquearScrollFondo(){
+      scrollYGuardado = window.scrollY || document.documentElement.scrollTop || 0;
+      document.body.style.position = "fixed";
+      document.body.style.top = -scrollYGuardado + "px";
+      document.body.style.left = "0";
+      document.body.style.right = "0";
+      document.body.style.width = "100%";
+    }
+
+    function desbloquearScrollFondo(){
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.left = "";
+      document.body.style.right = "";
+      document.body.style.width = "";
+      window.scrollTo(0, scrollYGuardado);
+    }
+
+    // Vigila cambios de clase en cada overlay para saber cuándo se abre o
+    // se cierra, sin tener que modificar cada punto del código donde ya
+    // se hace overlay.classList.add/remove("open").
+    const observer = new MutationObserver(muts => {
+      muts.forEach(m => {
+        const el = m.target;
+        const abierto = el.classList.contains("open");
+        if(abierto && !estadoEmpujado){
+          history.pushState({ claudeModalOpen: true }, "");
+          estadoEmpujado = true;
+          bloquearScrollFondo();
+        } else if(!abierto && estadoEmpujado && !overlayAbierto()){
+          // El overlay se cerró por otra vía (botón X, click fuera, Escape...):
+          // deshacemos el estado que habíamos empujado para no dejar una
+          // entrada de historial "fantasma".
+          estadoEmpujado = false;
+          desbloquearScrollFondo();
+          if(history.state && history.state.claudeModalOpen){
+            history.back();
+          }
+        }
+      });
+    });
+    overlays.forEach(o => observer.observe(o, { attributes:true, attributeFilter:["class"] }));
+
+    window.addEventListener("popstate", e => {
+      const abierto = overlayAbierto();
+      if(abierto){
+        estadoEmpujado = false;
+        cerrarOverlay(abierto);
+        desbloquearScrollFondo();
+      }
+    });
+  })();
 
   // source: https://github.com/LightSwan — Kevin
 </script>
